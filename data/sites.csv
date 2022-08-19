@@ -1,6 +1,6 @@
-mpsas,elevation,cloud_cover,air_moisture,moon_phase,temperature
-16,1,8.7,2.7,39.5,53
-17,2,9,2.9,69.8,64.9
+mpsas,elevation,cloud_cover,temperature,wind_speed,air_moisture
+16.0,1,8.7,2.7,39.5,53
+17.1,2,9,2.9,69.8,64.9
 19.2,3,13.9,5.7,25.4,96.7
 19.0,4,14.2,5.2,5.7,169.6
 19.2,5,16.2,6.5,21.3,195

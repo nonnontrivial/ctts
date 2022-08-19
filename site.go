@@ -12,10 +12,11 @@ import (
 var (
 	errBadR2 = errors.New("r2 below threshold")
 	// define the order of the columns in the csv
-	columnOrder = []columnName{"elevation", "cloudCover"}
+	columnOrder = []columnName{"elevation", "cloudCover", "temperature", "windSpeed", "airMoisture"}
 )
 
 const (
+	// closer to 1 is better
 	r2Limit      = 0.5
 	csvPath      = "./data/sites.csv"
 	trainingPath = "./data/training.csv"
