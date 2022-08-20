@@ -16,8 +16,8 @@ var clientFiles embed.FS
 type server struct {
 	assets embed.FS
 	router http.ServeMux
-	mailer interface{}
-	db     interface{}
+	// mailer interface{}
+	// db     interface{}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
