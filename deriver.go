@@ -76,7 +76,6 @@ func (w *weatherResp) getCloudCover(s *site) (float64, error) {
 	return 0., nil
 }
 
-// gets the data for this column from out of the response
 func (w *weatherResp) getWeatherResultColumnData(c string) []float32 {
 	idx := -1
 	for i, v := range w.weatherResponse.Data.Columns {
