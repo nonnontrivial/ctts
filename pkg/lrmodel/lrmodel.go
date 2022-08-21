@@ -108,6 +108,7 @@ func (m *model) Train() error {
 			m.regressor.Train(regression.DataPoint(mpsas, vars))
 		}
 	}
+	// TODO: add timeout
 	log.Println("running regression...")
 	if err = m.regressor.Run(); err != nil {
 		return err

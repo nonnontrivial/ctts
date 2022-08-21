@@ -12,12 +12,12 @@ import (
 //go:embed client
 var clientFiles embed.FS
 
+const defaultPort = "3303"
+
 // server represents the entire ctts service, and holds all dependencies
 type server struct {
 	assets embed.FS
 	router http.ServeMux
-	// mailer interface{}
-	// db     interface{}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +40,6 @@ func main() {
 		os.Exit(0)
 	}()
 	port := os.Getenv("PORT")
-	defaultPort := "3303"
 	if port == "" {
 		port = defaultPort
 		log.Printf("using default port: %s", defaultPort)

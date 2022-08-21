@@ -10,9 +10,8 @@ import (
 )
 
 var (
-	errBadR2 = errors.New("r2 below threshold")
-	// define the order of the columns in the csv
-	columnOrder = []columnName{"elevation", "cloudCover", "temperature", "windSpeed", "airMoisture"}
+	orderedColumns = []columnName{"elevation", "cloudCover", "temperature", "windSpeed", "airMoisture"}
+	errBadR2       = errors.New("r2 below threshold")
 )
 
 const (
@@ -64,7 +63,7 @@ func (s *site) fitToModel() error {
 		return err
 	}
 	xs := []float64{}
-	for _, c := range columnOrder {
+	for _, c := range orderedColumns {
 		xs = append(xs, s.vars[c])
 	}
 	y, err := m.Predict(xs)

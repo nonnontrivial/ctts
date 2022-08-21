@@ -31,7 +31,7 @@ type (
 	weatherCollator interface {
 		getTemperature(*site) (float64, error)
 		getCloudCover(*site) (float64, error)
-		setResponse(wr *weatherResponse)
+		getResponse(*site, chan<- error)
 		getWeatherResultColumnData(c string) []float32
 	}
 	weatherResp struct {
@@ -69,11 +69,13 @@ func getElevation(s *site) (float64, error) {
 }
 
 func (w *weatherResp) getTemperature(s *site) (float64, error) {
-	return 0., nil
+	data := w.getWeatherResultColumnData("temperature")
+	return float64(data[0]), nil
 }
 
 func (w *weatherResp) getCloudCover(s *site) (float64, error) {
-	return 0., nil
+	data := w.getWeatherResultColumnData("cloud_cover")
+	return float64(data[0]), nil
 }
 
 func (w *weatherResp) getWeatherResultColumnData(c string) []float32 {
@@ -89,9 +91,27 @@ func (w *weatherResp) getWeatherResultColumnData(c string) []float32 {
 	return w.weatherResponse.Data.Data[idx]
 }
 
-func (w *weatherResp) setResponse(resp *weatherResponse) {
-	log.Println("setting weather response...")
-	w.weatherResponse = *resp
+func (w *weatherResp) getResponse(s *site, ec chan<- error) {
+	if weatherAPIKey == "" {
+		ec <- errNoWeatherKey
+		return
+	}
+	start := fmt.Sprintf("%d-%02d-%02d", s.time.Year(), s.time.Month(), s.time.Day())
+	url := fmt.Sprintf("%s?start=%s&lat=%s&lng=%s&api-key=%s", weatherURLBase, start, s.lat, s.lng, weatherAPIKey)
+	resp, err := client.Get(url)
+	if err != nil {
+		ec <- err
+		return
+	}
+	defer resp.Body.Close()
+	var weatherRes chan weatherResponse
+	err = json.NewDecoder(resp.Body).Decode(&weatherRes)
+	if err != nil {
+		ec <- err
+		return
+	}
+	res := <-weatherRes
+	w.weatherResponse = res
 }
 
 func newWeatherResp() weatherCollator {
@@ -100,42 +120,17 @@ func newWeatherResp() weatherCollator {
 
 func (s *site) derive() error {
 	errChan := make(chan error)
-	weatherChan := make(chan weatherResponse)
-	// populate the weather results before column-based, weather-related assignment happens
-	go func() {
-		if weatherAPIKey == "" {
-			errChan <- errNoWeatherKey
-			return
-		}
-		start := fmt.Sprintf("%d-%02d-%02d", s.time.Year(), s.time.Month(), s.time.Day())
-		url := fmt.Sprintf("%s?start=%s&lat=%s&lng=%s&api-key=%s", weatherURLBase, start, s.lat, s.lng, weatherAPIKey)
-		resp, err := client.Get(url)
-		if err != nil {
-			errChan <- err
-			return
-		}
-		defer resp.Body.Close()
-		var weatherRes weatherResponse
-		err = json.NewDecoder(resp.Body).Decode(&weatherRes)
-		if err != nil {
-			errChan <- err
-			return
-		}
-		weatherChan <- weatherRes
-	}()
-	weatherResult := <-weatherChan
+	w := newWeatherResp()
+	go w.getResponse(s, errChan)
 	err := <-errChan
 	if err != nil {
 		return err
 	}
-	w := newWeatherResp()
-	w.setResponse(&weatherResult)
-
 	var wg sync.WaitGroup
 	c := columns{
-		columnOrder[0]: getElevation,
-		columnOrder[1]: w.getCloudCover,
-		columnOrder[2]: w.getTemperature,
+		orderedColumns[0]: getElevation,
+		orderedColumns[1]: w.getCloudCover,
+		orderedColumns[2]: w.getTemperature,
 	}
 	for name, f := range c {
 		wg.Add(1)
@@ -149,10 +144,11 @@ func (s *site) derive() error {
 			s.vars[name] = result
 		}(name, f)
 	}
+	err = <-errChan
 	if err != nil {
 		return err
 	}
 	wg.Wait()
-	log.Println("finished...")
+	log.Println("finished deriving independent variables...")
 	return nil
 }
