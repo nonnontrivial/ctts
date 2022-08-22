@@ -104,13 +104,13 @@ func (w *weatherResp) getResponse(s *site, ec chan<- error) {
 		return
 	}
 	defer resp.Body.Close()
-	var weatherRes chan weatherResponse
+	var weatherRes weatherResponse
 	err = json.NewDecoder(resp.Body).Decode(&weatherRes)
 	if err != nil {
 		ec <- err
 		return
 	}
-	res := <-weatherRes
+	res := weatherRes
 	w.weatherResponse = res
 }
 

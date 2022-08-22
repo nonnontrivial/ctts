@@ -45,11 +45,9 @@ type (
 	}
 )
 
-func (s *site) getId() string     { return s.id }
-func (s *site) getMpsas() float32 { return s.mpsas }
-func (s *site) getBortleClass() int {
-	return int(s.mpsas)
-}
+func (s *site) getId() string       { return s.id }
+func (s *site) getMpsas() float32   { return s.mpsas }
+func (s *site) getBortleClass() int { return int(s.mpsas) }
 
 func (s *site) fitToModel() error {
 	m, err := lrmodel.NewModel(trainingPath, testingPath, csvPath)

@@ -37,6 +37,7 @@ type (
 	}
 )
 
+// prepare splits data into training and testing csv files
 // see https://medium.com/devthoughts/linear-regression-with-go-ff1701455bcd
 func (m *model) prepare(csvRecords [][]string) error {
 	header := csvRecords[0]
@@ -45,14 +46,12 @@ func (m *model) prepare(csvRecords [][]string) error {
 	for i, v := range ints {
 		shuffled[v] = csvRecords[i+1]
 	}
-	// index for 80 / 20 split
 	trainingIdx := ((len(shuffled)) * 4) / 5
 	trainingSet := shuffled[1 : trainingIdx+1]
 	testingSet := shuffled[trainingIdx+1:]
 	sets := map[string][][]string{m.trainingPath: trainingSet, m.testingPath: testingSet}
 	var wg sync.WaitGroup
 	wg.Add(1)
-	// remove existing files
 	go func() {
 		defer wg.Done()
 		for path := range sets {
@@ -64,7 +63,6 @@ func (m *model) prepare(csvRecords [][]string) error {
 		}
 	}()
 	wg.Wait()
-	// write new files
 	for path, set := range sets {
 		f, err := os.Create(path)
 		if err != nil {
@@ -90,7 +88,8 @@ func (m *model) Train() error {
 		return err
 	}
 	m.regressor.SetObserved(yValueKey)
-	for i, h := range csvRecords[0] {
+	for i, h := range csvRecords[0][1:] {
+		log.Printf("setting independent var %s", h)
 		m.regressor.SetVar(i, h)
 	}
 	for _, record := range csvRecords[1:] {
@@ -105,10 +104,10 @@ func (m *model) Train() error {
 				return err
 			}
 			vars = append(vars, s)
-			m.regressor.Train(regression.DataPoint(mpsas, vars))
 		}
+		log.Printf("training %f", vars)
+		m.regressor.Train(regression.DataPoint(mpsas, vars))
 	}
-	// TODO: add timeout
 	log.Println("running regression...")
 	if err = m.regressor.Run(); err != nil {
 		return err

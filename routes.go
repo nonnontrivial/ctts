@@ -54,10 +54,10 @@ func (s *server) handleSite() http.HandlerFunc {
 			return
 		}
 		q := r.URL.Query()
-		// TODO: should be external resource somehow; not created on every request
 		site := newSite(q.Get("lat"), q.Get("lng"))
 		if err := site.fitToModel(); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("!got error: %s", err.Error())
 			return
 		}
 		sr := &siteResponse{
