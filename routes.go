@@ -54,7 +54,13 @@ func (s *server) handleSite() http.HandlerFunc {
 			return
 		}
 		q := r.URL.Query()
-		site := newSite(q.Get("lat"), q.Get("lng"))
+		lat := q.Get("lat")
+		lng := q.Get("lng")
+		if lat == "" || lng == "" {
+			http.Error(w, "missing lat or lng in query params", http.StatusBadRequest)
+			return
+		}
+		site := newSite(lat, lng)
 		if err := site.fitToModel(); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Printf("!got error: %s", err.Error())

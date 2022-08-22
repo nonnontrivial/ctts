@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,16 +9,19 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var (
-	client          = &http.Client{Timeout: time.Second * 10}
-	weatherAPIKey   = os.Getenv("WEATHER_API_KEY")
-	mapsAPIKey      = os.Getenv("MAPS_API_KEY")
-	errNoWeatherKey = errors.New("missing oiko weather api key")
-	errNoMapsKey    = errors.New("missing google maps api key")
+	client               = &http.Client{Timeout: time.Second * 10}
+	weatherAPIKey        = os.Getenv("WEATHER_API_KEY")
+	mapsAPIKey           = os.Getenv("MAPS_API_KEY")
+	errWeatherResponse   = errors.New("got bad weather response")
+	errElevationResponse = errors.New("got bad elevation response")
+	errNoWeatherKey      = errors.New("missing oiko weather api key")
+	errNoMapsKey         = errors.New("missing google maps api key")
 )
 
 const (
@@ -31,15 +35,18 @@ type (
 	weatherCollator interface {
 		getTemperature(*site) (float64, error)
 		getCloudCover(*site) (float64, error)
-		getResponse(*site, chan<- error)
+		getResponse(*site, chan<- weatherResponse, chan<- error)
+		setResponse(wr *weatherResponse)
 		getWeatherResultColumnData(c string) []float32
 	}
 	weatherResp struct {
 		weatherResponse
 	}
 	weatherResponse struct {
-		Data struct {
+		Attributes struct{}
+		Data       struct {
 			Columns []string    `json:"columns"`
+			Index   []float32   `json:"index"`
 			Data    [][]float32 `json:"data"`
 		}
 	}
@@ -60,10 +67,16 @@ func getElevation(s *site) (float64, error) {
 		return 0, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return 0, errElevationResponse
+	}
 	var elevationRes elevationResponse
 	err = json.NewDecoder(resp.Body).Decode(&elevationRes)
 	if err != nil {
 		return 0, err
+	}
+	if len(elevationRes.Results) < 1 {
+		return 0, nil
 	}
 	return float64(elevationRes.Results[len(elevationRes.Results)-1].Elevation), nil
 }
@@ -91,27 +104,37 @@ func (w *weatherResp) getWeatherResultColumnData(c string) []float32 {
 	return w.weatherResponse.Data.Data[idx]
 }
 
-func (w *weatherResp) getResponse(s *site, ec chan<- error) {
+func (w *weatherResp) getResponse(s *site, wc chan<- weatherResponse, ec chan<- error) {
 	if weatherAPIKey == "" {
 		ec <- errNoWeatherKey
 		return
 	}
 	start := fmt.Sprintf("%d-%02d-%02d", s.time.Year(), s.time.Month(), s.time.Day())
-	url := fmt.Sprintf("%s?start=%s&lat=%s&lng=%s&api-key=%s", weatherURLBase, start, s.lat, s.lng, weatherAPIKey)
+	url := fmt.Sprintf("%s?start=%s&lat=%s&lon=%s&api-key=%s", weatherURLBase, start, s.lat, s.lng, weatherAPIKey)
 	resp, err := client.Get(url)
 	if err != nil {
 		ec <- err
 		return
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		ec <- errWeatherResponse
+		return
+	}
 	var weatherRes weatherResponse
+	// FIXME: does not decode correctly
+	// see https://stackoverflow.com/a/47063104
 	err = json.NewDecoder(resp.Body).Decode(&weatherRes)
 	if err != nil {
 		ec <- err
 		return
 	}
-	res := weatherRes
-	w.weatherResponse = res
+	wc <- weatherRes
+}
+
+func (w *weatherResp) setResponse(wr *weatherResponse) {
+	log.Println("setting weather response")
+	w.weatherResponse = *wr
 }
 
 func newWeatherResp() weatherCollator {
@@ -119,36 +142,33 @@ func newWeatherResp() weatherCollator {
 }
 
 func (s *site) derive() error {
-	errChan := make(chan error)
-	w := newWeatherResp()
-	go w.getResponse(s, errChan)
-	err := <-errChan
-	if err != nil {
-		return err
-	}
-	var wg sync.WaitGroup
+	ctx := context.Background()
+	errs, _ := errgroup.WithContext(ctx)
+	// weatherChan := make(chan weatherResponse, 1)
+	// w := newWeatherResp()
+	// go w.getResponse(s, weatherChan, errChan)
+	// err := <-errChan
+	// if err != nil {
+	// 	return err
+	// }
+	// weatherRes := <-weatherChan
+	// w.setResponse(&weatherRes)
 	c := columns{
 		orderedColumns[0]: getElevation,
-		orderedColumns[1]: w.getCloudCover,
-		orderedColumns[2]: w.getTemperature,
+		// orderedColumns[1]: w.getCloudCover,
+		// orderedColumns[2]: w.getTemperature,
 	}
 	for name, f := range c {
-		wg.Add(1)
-		go func(name columnName, f fn) {
-			defer wg.Done()
+		errs.Go(func() error {
 			result, err := f(s)
 			if err != nil {
-				errChan <- err
-				return
+				return err
 			}
+			log.Printf("setting %s", name)
 			s.vars[name] = result
-		}(name, f)
+			return nil
+		})
 	}
-	err = <-errChan
-	if err != nil {
-		return err
-	}
-	wg.Wait()
-	log.Println("finished deriving independent variables...")
+	errs.Wait()
 	return nil
 }

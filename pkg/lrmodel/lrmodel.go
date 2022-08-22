@@ -112,6 +112,7 @@ func (m *model) Train() error {
 	if err = m.regressor.Run(); err != nil {
 		return err
 	}
+	log.Println("finished regression...")
 	return nil
 }
 

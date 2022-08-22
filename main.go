@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 )
 
 //go:embed client
@@ -32,13 +30,6 @@ func newServer() *server {
 }
 
 func main() {
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-signals
-		// TODO: any cleanup before exit(?)
-		os.Exit(0)
-	}()
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
