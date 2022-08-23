@@ -35,7 +35,7 @@ type (
 	weatherCollator interface {
 		getTemperature(*site) (float64, error)
 		getCloudCover(*site) (float64, error)
-		getResponse(*site, chan<- weatherResponse, chan<- error)
+		getResponse(*site) (*weatherResponse, error)
 		setResponse(wr *weatherResponse)
 		getWeatherResultColumnData(c string) []float32
 	}
@@ -104,32 +104,28 @@ func (w *weatherResp) getWeatherResultColumnData(c string) []float32 {
 	return w.weatherResponse.Data.Data[idx]
 }
 
-func (w *weatherResp) getResponse(s *site, wc chan<- weatherResponse, ec chan<- error) {
+func (w *weatherResp) getResponse(s *site) (*weatherResponse, error) {
 	if weatherAPIKey == "" {
-		ec <- errNoWeatherKey
-		return
+		return nil, errNoWeatherKey
 	}
 	start := fmt.Sprintf("%d-%02d-%02d", s.time.Year(), s.time.Month(), s.time.Day())
 	url := fmt.Sprintf("%s?start=%s&lat=%s&lon=%s&api-key=%s", weatherURLBase, start, s.lat, s.lng, weatherAPIKey)
 	resp, err := client.Get(url)
 	if err != nil {
-		ec <- err
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		ec <- errWeatherResponse
-		return
+		return nil, errWeatherResponse
 	}
 	var weatherRes weatherResponse
 	// FIXME: does not decode correctly
 	// see https://stackoverflow.com/a/47063104
 	err = json.NewDecoder(resp.Body).Decode(&weatherRes)
 	if err != nil {
-		ec <- err
-		return
+		return nil, err
 	}
-	wc <- weatherRes
+	return &weatherRes, nil
 }
 
 func (w *weatherResp) setResponse(wr *weatherResponse) {
@@ -144,20 +140,20 @@ func newWeatherResp() weatherCollator {
 func (s *site) derive() error {
 	ctx := context.Background()
 	errs, _ := errgroup.WithContext(ctx)
-	// weatherChan := make(chan weatherResponse, 1)
-	// w := newWeatherResp()
-	// go w.getResponse(s, weatherChan, errChan)
-	// err := <-errChan
-	// if err != nil {
-	// 	return err
-	// }
-	// weatherRes := <-weatherChan
-	// w.setResponse(&weatherRes)
+	w := newWeatherResp()
 	c := columns{
 		orderedColumns[0]: getElevation,
-		// orderedColumns[1]: w.getCloudCover,
-		// orderedColumns[2]: w.getTemperature,
+		orderedColumns[1]: w.getCloudCover,
+		orderedColumns[2]: w.getTemperature,
 	}
+	errs.Go(func() error {
+		res, err := w.getResponse(s)
+		if err != nil {
+			return err
+		}
+		w.setResponse(res)
+		return nil
+	})
 	for name, f := range c {
 		errs.Go(func() error {
 			result, err := f(s)
