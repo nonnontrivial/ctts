@@ -7,8 +7,11 @@ import (
 	"os"
 )
 
-//go:embed client
-var clientFiles embed.FS
+var (
+	//go:embed client
+	clientFiles embed.FS
+	port        = os.Getenv("PORT")
+)
 
 const defaultPort = "3303"
 
@@ -30,12 +33,12 @@ func newServer() *server {
 }
 
 func main() {
-	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 		log.Printf("using default port: %s", defaultPort)
 	}
 	s := newServer()
+	log.Println("starting server...")
 	if err := http.ListenAndServe(":"+port, &s.router); err != nil {
 		log.Fatal(err)
 	}

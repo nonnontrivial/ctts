@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -16,39 +17,44 @@ import (
 
 var (
 	client               = &http.Client{Timeout: time.Second * 10}
-	weatherAPIKey        = os.Getenv("WEATHER_API_KEY")
 	mapsAPIKey           = os.Getenv("MAPS_API_KEY")
-	errWeatherResponse   = errors.New("got bad weather response")
+	errMeteoResponse     = errors.New("got bad meteo response")
 	errElevationResponse = errors.New("got bad elevation response")
-	errNoWeatherKey      = errors.New("missing oiko weather api key")
 	errNoMapsKey         = errors.New("missing google maps api key")
 )
 
 const (
 	elevationURLBase = "https://maps.googleapis.com/maps/api/elevation/json"
-	weatherURLBase   = "https://api.oikolab.com/weather"
+	meteoURLBase     = "https://api.open-meteo.com/v1"
 )
 
 type (
-	fn              func(*site) (float64, error)
-	columns         map[columnName]fn
-	weatherCollator interface {
+	fn       func(*site) (float64, error)
+	columns  map[columnName]fn
+	collator interface {
 		getTemperature(*site) (float64, error)
-		getCloudCover(*site) (float64, error)
-		getResponse(*site) (*weatherResponse, error)
-		setResponse(wr *weatherResponse)
-		getWeatherResultColumnData(c string) []float32
+		getRelativeHumidity(*site) (float64, error)
+		getCloudCoverTotal(*site) (float64, error)
+		getWindSpeed(*site) (float64, error)
+		getResponse(*site) error
 	}
-	weatherResp struct {
-		weatherResponse
-	}
-	weatherResponse struct {
-		Attributes struct{}
-		Data       struct {
-			Columns []string    `json:"columns"`
-			Index   []float32   `json:"index"`
-			Data    [][]float32 `json:"data"`
+	meteoClient struct {
+		response meteoResponse
+		data     struct {
+			cloudCover  float32
+			humidity    float32
+			temperature float32
+			windspeed   float32
 		}
+	}
+	meteoResponse struct {
+		Elevation float32 `json:"elevation"`
+		Hourly    struct {
+			Cloudcover  []float32 `json:"cloudcover"`
+			Humidity    []float32 `json:"relativehumidity_2m"`
+			Temperature []float32 `json:"temperature_2m"`
+			Windspeed   []float32 `json:"windspeed_10m"`
+		} `json:"hourly"`
 	}
 	elevationResponse struct {
 		Results []struct {
@@ -81,87 +87,71 @@ func getElevation(s *site) (float64, error) {
 	return float64(elevationRes.Results[len(elevationRes.Results)-1].Elevation), nil
 }
 
-func (w *weatherResp) getTemperature(s *site) (float64, error) {
-	data := w.getWeatherResultColumnData("temperature")
-	return float64(data[0]), nil
+func (m *meteoClient) getTemperature(s *site) (float64, error) {
+	return 0, nil
 }
 
-func (w *weatherResp) getCloudCover(s *site) (float64, error) {
-	data := w.getWeatherResultColumnData("cloud_cover")
-	return float64(data[0]), nil
+func (m *meteoClient) getRelativeHumidity(s *site) (float64, error) {
+	return 0, nil
 }
 
-func (w *weatherResp) getWeatherResultColumnData(c string) []float32 {
-	idx := -1
-	for i, v := range w.weatherResponse.Data.Columns {
-		if strings.HasPrefix(v, c) {
-			idx = i
-		}
-	}
-	if idx == -1 {
-		return []float32{}
-	}
-	return w.weatherResponse.Data.Data[idx]
+func (m *meteoClient) getCloudCoverTotal(s *site) (float64, error) {
+	return 0, nil
 }
 
-func (w *weatherResp) getResponse(s *site) (*weatherResponse, error) {
-	if weatherAPIKey == "" {
-		return nil, errNoWeatherKey
-	}
-	start := fmt.Sprintf("%d-%02d-%02d", s.time.Year(), s.time.Month(), s.time.Day())
-	url := fmt.Sprintf("%s?start=%s&lat=%s&lon=%s&api-key=%s", weatherURLBase, start, s.lat, s.lng, weatherAPIKey)
+func (m *meteoClient) getWindSpeed(s *site) (float64, error) {
+	return 0, nil
+}
+
+func (m *meteoClient) getResponse(s *site) error {
+	params := []string{"temperature_2m", "relativehumidity_2m", "cloudcover", "windspeed_10m"}
+	url := fmt.Sprintf("%s/forecast?latitude=%s&longitude=%s&hourly=%s", meteoURLBase, s.lat, s.lng, strings.Join(params, ","))
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, errWeatherResponse
+		return errMeteoResponse
 	}
-	var weatherRes weatherResponse
-	// FIXME: does not decode correctly
-	// see https://stackoverflow.com/a/47063104
-	err = json.NewDecoder(resp.Body).Decode(&weatherRes)
+	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &weatherRes, nil
+	var res meteoResponse
+	if err := json.Unmarshal(bytes, &res); err != nil {
+		return err
+	}
+	m.response = res
+	return nil
 }
 
-func (w *weatherResp) setResponse(wr *weatherResponse) {
-	log.Println("setting weather response")
-	w.weatherResponse = *wr
-}
-
-func newWeatherResp() weatherCollator {
-	return &weatherResp{}
+func newMeteoClient() collator {
+	return &meteoClient{}
 }
 
 func (s *site) derive() error {
 	ctx := context.Background()
 	errs, _ := errgroup.WithContext(ctx)
-	w := newWeatherResp()
+	m := newMeteoClient()
+	if err := m.getResponse(s); err != nil {
+		return err
+	}
+	fmt.Println(m)
 	c := columns{
 		orderedColumns[0]: getElevation,
-		orderedColumns[1]: w.getCloudCover,
-		orderedColumns[2]: w.getTemperature,
+		orderedColumns[2]: m.getTemperature,
 	}
-	errs.Go(func() error {
-		res, err := w.getResponse(s)
-		if err != nil {
-			return err
-		}
-		w.setResponse(res)
-		return nil
-	})
 	for name, f := range c {
+		columnName := name
+		columnFn := f
 		errs.Go(func() error {
-			result, err := f(s)
+			result, err := columnFn(s)
 			if err != nil {
 				return err
 			}
-			log.Printf("setting %s", name)
-			s.vars[name] = result
+			log.Printf("setting %s", columnName)
+			s.vars[columnName] = result
 			return nil
 		})
 	}

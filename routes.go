@@ -35,7 +35,7 @@ func (s *server) handleRoot() http.Handler {
 		Write:       true,
 	})
 	if errs := result.Errors; len(errs) != 0 {
-		log.Fatal(errs)
+		log.Fatal(errs[len(errs)-1])
 	}
 	staticAssets, _ := fs.Sub(fs.FS(s.assets), "client/web")
 	return http.FileServer(http.FS(staticAssets))
