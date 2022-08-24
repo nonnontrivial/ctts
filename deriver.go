@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -16,26 +15,23 @@ import (
 )
 
 var (
-	client               = &http.Client{Timeout: time.Second * 10}
-	mapsAPIKey           = os.Getenv("MAPS_API_KEY")
-	errMeteoResponse     = errors.New("got bad meteo response")
-	errElevationResponse = errors.New("got bad elevation response")
-	errNoMapsKey         = errors.New("missing google maps api key")
+	client           = &http.Client{Timeout: time.Second * 10}
+	errMeteoResponse = errors.New("got bad meteo response")
 )
 
 const (
-	elevationURLBase = "https://maps.googleapis.com/maps/api/elevation/json"
-	meteoURLBase     = "https://api.open-meteo.com/v1"
+	meteoURLBase = "https://api.open-meteo.com/v1"
 )
 
 type (
-	fn       func(*site) (float64, error)
+	fn       func(*site) (float32, error)
 	columns  map[columnName]fn
 	collator interface {
-		getTemperature(*site) (float64, error)
-		getRelativeHumidity(*site) (float64, error)
-		getCloudCoverTotal(*site) (float64, error)
-		getWindSpeed(*site) (float64, error)
+		getTemperature(*site) (float32, error)
+		getRelativeHumidity(*site) (float32, error)
+		getCloudCoverTotal(*site) (float32, error)
+		getWindSpeed(*site) (float32, error)
+		getElevation(*site) (float32, error)
 		getResponse(*site) error
 	}
 	meteoClient struct {
@@ -56,50 +52,25 @@ type (
 			Windspeed   []float32 `json:"windspeed_10m"`
 		} `json:"hourly"`
 	}
-	elevationResponse struct {
-		Results []struct {
-			Elevation float32 `json:"elevation"`
-		}
-	}
 )
 
-func getElevation(s *site) (float64, error) {
-	if mapsAPIKey == "" {
-		return 0, errNoMapsKey
-	}
-	url := fmt.Sprintf("%s?locations=%s,%s&key=%s", elevationURLBase, s.lat, s.lng, mapsAPIKey)
-	resp, err := client.Get(url)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return 0, errElevationResponse
-	}
-	var elevationRes elevationResponse
-	err = json.NewDecoder(resp.Body).Decode(&elevationRes)
-	if err != nil {
-		return 0, err
-	}
-	if len(elevationRes.Results) < 1 {
-		return 0, nil
-	}
-	return float64(elevationRes.Results[len(elevationRes.Results)-1].Elevation), nil
-}
-
-func (m *meteoClient) getTemperature(s *site) (float64, error) {
+func (m *meteoClient) getElevation(s *site) (float32, error) {
 	return 0, nil
 }
 
-func (m *meteoClient) getRelativeHumidity(s *site) (float64, error) {
+func (m *meteoClient) getTemperature(s *site) (float32, error) {
 	return 0, nil
 }
 
-func (m *meteoClient) getCloudCoverTotal(s *site) (float64, error) {
+func (m *meteoClient) getRelativeHumidity(s *site) (float32, error) {
 	return 0, nil
 }
 
-func (m *meteoClient) getWindSpeed(s *site) (float64, error) {
+func (m *meteoClient) getCloudCoverTotal(s *site) (float32, error) {
+	return 0, nil
+}
+
+func (m *meteoClient) getWindSpeed(s *site) (float32, error) {
 	return 0, nil
 }
 
@@ -139,7 +110,7 @@ func (s *site) derive() error {
 	}
 	fmt.Println(m)
 	c := columns{
-		orderedColumns[0]: getElevation,
+		orderedColumns[0]: m.getElevation,
 		orderedColumns[2]: m.getTemperature,
 	}
 	for name, f := range c {
@@ -151,7 +122,7 @@ func (s *site) derive() error {
 				return err
 			}
 			log.Printf("setting %s", columnName)
-			s.vars[columnName] = result
+			s.vars[columnName] = float64(result)
 			return nil
 		})
 	}
