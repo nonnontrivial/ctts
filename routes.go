@@ -11,20 +11,10 @@ import (
 
 func (s *server) routes() {
 	s.router.Handle("/", s.handleRoot())
-	s.router.HandleFunc("/api/site", s.authGate(s.handleSite()))
+	s.router.HandleFunc("/api/site", s.handleSite())
 }
 
-func (s *server) authGate(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// FIXME: use real condition for auth
-		if !true {
-			http.NotFound(w, r)
-			return
-		}
-		h(w, r)
-	}
-}
-
+// TODO: remove
 func (s *server) handleRoot() http.Handler {
 	result := api.Build(api.BuildOptions{
 		EntryPoints: []string{"./client/src/root.tsx"},

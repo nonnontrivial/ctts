@@ -37,6 +37,20 @@ type (
 	}
 )
 
+func readCSV(path string) ([][]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	return records, nil
+}
+
 // prepare splits data into training and testing csv files
 // see https://medium.com/devthoughts/linear-regression-with-go-ff1701455bcd
 func (m *model) prepare(csvRecords [][]string) error {
@@ -112,7 +126,6 @@ func (m *model) Train() error {
 	if err = m.regressor.Run(); err != nil {
 		return err
 	}
-	log.Println("finished regression...")
 	return nil
 }
 

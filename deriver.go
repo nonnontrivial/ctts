@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -15,41 +17,38 @@ import (
 )
 
 var (
-	client           = &http.Client{Timeout: time.Second * 10}
-	errMeteoResponse = errors.New("got bad meteo response")
+	client               = &http.Client{Timeout: time.Second * 10}
+	errMeteoResponse     = errors.New("got bad meteo response")
+	errLocalTimezone     = errors.New("could not read timezone data")
+	errUnsupportedRegion = errors.New("this region is not yet supported")
 )
 
 const (
-	meteoURLBase = "https://api.open-meteo.com/v1"
+	// potential path segment in localtimezone symlink
+	zoneinfo            = "zoneinfo"
+	pathToLocalTimezone = "/etc/localtime"
+	meteoURLBase        = "https://api.open-meteo.com/v1"
+	meteoTemperatureKey = "temperature_2m"
 )
 
 type (
-	fn       func(*site) (float32, error)
-	columns  map[columnName]fn
-	collator interface {
+	fn            func(*site) (float32, error)
+	columns       map[columnName]fn
+	meteoCollator interface {
 		getTemperature(*site) (float32, error)
-		getRelativeHumidity(*site) (float32, error)
-		getCloudCoverTotal(*site) (float32, error)
-		getWindSpeed(*site) (float32, error)
 		getElevation(*site) (float32, error)
-		getResponse(*site) error
+		getData(*site) error
 	}
 	meteoClient struct {
-		response meteoResponse
-		data     struct {
-			cloudCover  float32
-			humidity    float32
-			temperature float32
-			windspeed   float32
-		}
+		response  hourlyData
+		duskIndex int
 	}
-	meteoResponse struct {
+	// TODO: include daily data
+	hourlyData struct {
 		Elevation float32 `json:"elevation"`
 		Hourly    struct {
-			Cloudcover  []float32 `json:"cloudcover"`
-			Humidity    []float32 `json:"relativehumidity_2m"`
+			Time        []string  `json:"time"`
 			Temperature []float32 `json:"temperature_2m"`
-			Windspeed   []float32 `json:"windspeed_10m"`
 		} `json:"hourly"`
 	}
 )
@@ -62,21 +61,39 @@ func (m *meteoClient) getTemperature(s *site) (float32, error) {
 	return 0, nil
 }
 
-func (m *meteoClient) getRelativeHumidity(s *site) (float32, error) {
-	return 0, nil
+// getHourlyIndexOfAstronomicalDusk gets the index from the meteo client response
+// that corresponds to the upcoming hour of astronomical dusk
+func getHourlyIndexOfAstronomicalDusk(hours []string, requestTime time.Time, lat, lng string) (int, error) {
+	return -1, nil
 }
 
-func (m *meteoClient) getCloudCoverTotal(s *site) (float32, error) {
-	return 0, nil
+// getLocalTimezoneName gets the timezone name from linux symbolic link for use in
+// the meteo client request
+func getLocalTimezoneName() (string, error) {
+	name, err := os.Readlink(pathToLocalTimezone)
+	if err != nil {
+		return "", errLocalTimezone
+	}
+	dir, file := path.Split(name)
+	if dir == "" || file == "" {
+		return "", errLocalTimezone
+	}
+	_, f := path.Split(dir[:len(dir)-1])
+	if f == zoneinfo {
+		return "", errUnsupportedRegion
+	}
+	return fmt.Sprintf("%s/%s", f, file), nil
 }
 
-func (m *meteoClient) getWindSpeed(s *site) (float32, error) {
-	return 0, nil
-}
-
-func (m *meteoClient) getResponse(s *site) error {
-	params := []string{"temperature_2m", "relativehumidity_2m", "cloudcover", "windspeed_10m"}
-	url := fmt.Sprintf("%s/forecast?latitude=%s&longitude=%s&hourly=%s", meteoURLBase, s.lat, s.lng, strings.Join(params, ","))
+// TODO: signature of this should probably change to return a value
+func (m *meteoClient) getData(s *site) error {
+	params := []string{meteoTemperatureKey}
+	timezone, err := getLocalTimezoneName()
+	if err != nil {
+		return err
+	}
+	// FIXME: url needs more params
+	url := fmt.Sprintf("%s/forecast?latitude=%s&longitude=%s&hourly=%s&timezone=%s", meteoURLBase, s.lat, s.lng, strings.Join(params, ","), timezone)
 	resp, err := client.Get(url)
 	if err != nil {
 		return err
@@ -89,30 +106,34 @@ func (m *meteoClient) getResponse(s *site) error {
 	if err != nil {
 		return err
 	}
-	var res meteoResponse
+	var res hourlyData
 	if err := json.Unmarshal(bytes, &res); err != nil {
 		return err
 	}
 	m.response = res
+	idx, err := getHourlyIndexOfAstronomicalDusk(m.response.Hourly.Time, s.time, s.lat, s.lng)
+	if err != nil {
+		return err
+	}
+	m.duskIndex = idx
 	return nil
 }
 
-func newMeteoClient() collator {
+func newMeteoClient() meteoCollator {
 	return &meteoClient{}
 }
 
-func (s *site) derive() error {
-	ctx := context.Background()
-	errs, _ := errgroup.WithContext(ctx)
+func (s *site) deriveIndependentVariables() error {
 	m := newMeteoClient()
-	if err := m.getResponse(s); err != nil {
+	if err := m.getData(s); err != nil {
 		return err
 	}
-	fmt.Println(m)
 	c := columns{
 		orderedColumns[0]: m.getElevation,
-		orderedColumns[2]: m.getTemperature,
+		orderedColumns[1]: m.getTemperature,
 	}
+	ctx := context.Background()
+	errs, _ := errgroup.WithContext(ctx)
 	for name, f := range c {
 		columnName := name
 		columnFn := f

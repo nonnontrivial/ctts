@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"net/http"
+	"net/smtp"
 	"os"
 )
 
@@ -18,6 +19,7 @@ const defaultPort = "3303"
 // server represents the entire ctts service, and holds all dependencies
 type server struct {
 	assets embed.FS
+	mailer smtp.Client
 	router http.ServeMux
 }
 
@@ -28,6 +30,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func newServer() *server {
 	s := &server{}
 	s.assets = clientFiles
+	s.mailer = smtp.Client{}
 	s.routes()
 	return s
 }

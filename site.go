@@ -10,13 +10,12 @@ import (
 )
 
 var (
-	orderedColumns = []columnName{"elevation", "cloudCover", "temperature", "windSpeed", "airMoisture"}
+	orderedColumns = []columnName{"elevation", "temperature"}
 	errBadR2       = errors.New("r2 below threshold")
 )
 
 const (
-	// closer to 1 is better
-	r2Limit      = 0.5
+	r2Limit      = 0.8
 	csvPath      = "./data/sites.csv"
 	trainingPath = "./data/training.csv"
 	testingPath  = "./data/testing.csv"
@@ -28,13 +27,15 @@ type (
 	site       struct {
 		id       string
 		lat, lng string
-		time     time.Time
+		// time of the request
+		time time.Time
 		// magnitudes per square arcsecond
 		mpsas float32
+		// independent variables
 		vars
 	}
 	independentVarsDeriver interface {
-		derive() error
+		deriveIndependentVariables() error
 	}
 	siteModeller interface {
 		getId() string
@@ -57,7 +58,7 @@ func (s *site) fitToModel() error {
 	if err = m.Train(); err != nil {
 		return err
 	}
-	if err = s.derive(); err != nil {
+	if err = s.deriveIndependentVariables(); err != nil {
 		return err
 	}
 	xs := []float64{}
