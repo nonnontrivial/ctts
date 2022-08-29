@@ -10,49 +10,26 @@ import (
 
 func (s *server) routes() {
 	s.router.HandleFunc("/api/site", s.handleSite())
-	s.router.HandleFunc("/api/user", s.handleUser())
+	// s.router.HandleFunc("/api/user", s.handleUser())
 
 	s.router.HandleFunc("/dashboard", s.handleDashboard())
 }
 
-// TODO:
-func getUser() html.User {
-	return html.User{}
-}
-
 func (s *server) handleDashboard() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := getUser()
-		params := html.DashboardParams{
-			User: user,
-		}
+		params := html.DashboardParams{}
 		html.Dashboard(w, params)
-	}
-}
-
-func (s *server) handleUser() http.HandlerFunc {
-	type userResponse struct{}
-	return func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			return
-		case http.MethodPost:
-			return
-		case http.MethodPatch:
-			return
-		default:
-			http.Error(w, "bad method", http.StatusMethodNotAllowed)
-			return
-		}
 	}
 }
 
 func (s *server) handleSite() http.HandlerFunc {
 	type siteResponse struct {
 		// magnitudes per square arcsecond
-		Mpsas       float32 `json:"mpsas"`
-		BortleClass int     `json:"bortleClass"`
-		Id          string  `json:"id"`
+		Mpsas float32 `json:"mpsas"`
+		// integer categorization of Mpsas
+		// see https://en.wikipedia.org/wiki/Bortle_scale
+		BortleClass int    `json:"bortleClass"`
+		Id          string `json:"id"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

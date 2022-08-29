@@ -9,7 +9,7 @@ import (
 var (
 	//go:embed *
 	files     embed.FS
-	dashboard = parse("dashboard.html")
+	dashboard = parse("pages/dashboard.html")
 )
 
 const (
@@ -28,7 +28,6 @@ func Dashboard(w io.Writer, p DashboardParams) error {
 	return dashboard.Execute(w, p)
 }
 
-// parse
 func parse(file string) *template.Template {
 	return template.Must(template.New(layoutPath).ParseFS(files, layoutPath, file))
 }
