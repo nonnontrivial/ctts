@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/nonnontrivial/ctts/pkg/lrmodel"
+	lrmodel "github.com/nonnontrivial/ctts/internal/model"
 )
 
 var (

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/root.tsx"],
-  "sourcesContent": ["const h1 = document.createElement(\"h1\");\nconst t = document.createTextNode(\"!\");\nh1.appendChild(t);\ndocument.body.appendChild(h1);\n"],
-  "mappings": ";AAAA,IAAM,KAAK,SAAS,cAAc,IAAI;AACtC,IAAM,IAAI,SAAS,eAAe,GAAG;AACrC,GAAG,YAAY,CAAC;AAChB,SAAS,KAAK,YAAY,EAAE;",
-  "names": []
-}

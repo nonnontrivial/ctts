@@ -2,33 +2,49 @@ package main
 
 import (
 	"encoding/json"
-	"io/fs"
 	"log"
 	"net/http"
 
-	"github.com/evanw/esbuild/pkg/api"
+	"github.com/nonnontrivial/ctts/internal/html"
 )
 
 func (s *server) routes() {
-	s.router.Handle("/", s.handleRoot())
 	s.router.HandleFunc("/api/site", s.handleSite())
+	s.router.HandleFunc("/api/user", s.handleUser())
+
+	s.router.HandleFunc("/dashboard", s.handleDashboard())
 }
 
-// TODO: remove
-func (s *server) handleRoot() http.Handler {
-	result := api.Build(api.BuildOptions{
-		EntryPoints: []string{"./client/src/root.tsx"},
-		Outfile:     "./client/web/build/index.js",
-		Sourcemap:   api.SourceMapLinked,
-		Format:      api.FormatESModule,
-		Bundle:      true,
-		Write:       true,
-	})
-	if errs := result.Errors; len(errs) != 0 {
-		log.Fatal(errs[len(errs)-1])
+// TODO:
+func getUser() html.User {
+	return html.User{}
+}
+
+func (s *server) handleDashboard() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := getUser()
+		params := html.DashboardParams{
+			User: user,
+		}
+		html.Dashboard(w, params)
 	}
-	staticAssets, _ := fs.Sub(fs.FS(s.assets), "client/web")
-	return http.FileServer(http.FS(staticAssets))
+}
+
+func (s *server) handleUser() http.HandlerFunc {
+	type userResponse struct{}
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			return
+		case http.MethodPost:
+			return
+		case http.MethodPatch:
+			return
+		default:
+			http.Error(w, "bad method", http.StatusMethodNotAllowed)
+			return
+		}
+	}
 }
 
 func (s *server) handleSite() http.HandlerFunc {

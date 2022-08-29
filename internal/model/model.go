@@ -1,4 +1,4 @@
-package lrmodel
+package model
 
 import (
 	"encoding/csv"
