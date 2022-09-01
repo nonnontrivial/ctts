@@ -8,8 +8,8 @@ import (
 
 var (
 	//go:embed *
-	files     embed.FS
-	dashboard = parse("pages/dashboard.html")
+	files embed.FS
+	site  = parse("pages/site.html")
 )
 
 const (
@@ -17,14 +17,15 @@ const (
 )
 
 type (
-	DashboardParams struct {
+	SiteParams struct {
 	}
 )
 
-func Dashboard(w io.Writer, p DashboardParams) error {
-	return dashboard.Execute(w, p)
+func Site(w io.Writer, p SiteParams) error {
+	return site.Execute(w, p)
 }
 
+// parse parses the provided html file in terms of the layout
 func parse(file string) *template.Template {
 	return template.Must(template.New(layoutPath).ParseFS(files, layoutPath, file))
 }

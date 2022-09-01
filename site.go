@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	// columns in the csv records
 	orderedColumns = []columnName{"elevation", "temperature"}
 	errBadR2       = errors.New("r2 below threshold")
 )
