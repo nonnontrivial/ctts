@@ -17,10 +17,7 @@ const (
 )
 
 type (
-	User struct {
-	}
 	DashboardParams struct {
-		User
 	}
 )
 

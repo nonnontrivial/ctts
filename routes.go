@@ -10,7 +10,7 @@ import (
 
 func (s *server) routes() {
 	s.router.HandleFunc("/api/site", s.handleSite())
-	// s.router.HandleFunc("/api/user", s.handleUser())
+	s.router.HandleFunc("/api/user", s.handleUser())
 
 	s.router.HandleFunc("/dashboard", s.handleDashboard())
 }
@@ -22,14 +22,25 @@ func (s *server) handleDashboard() http.HandlerFunc {
 	}
 }
 
+func (s *server) handleUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+		case http.MethodPatch:
+		case http.MethodPost:
+		default:
+			http.Error(w, "bad method", http.StatusMethodNotAllowed)
+			return
+		}
+	}
+}
+
 func (s *server) handleSite() http.HandlerFunc {
 	type siteResponse struct {
-		// magnitudes per square arcsecond
-		Mpsas float32 `json:"mpsas"`
-		// integer categorization of Mpsas
-		// see https://en.wikipedia.org/wiki/Bortle_scale
 		BortleClass int    `json:"bortleClass"`
 		Id          string `json:"id"`
+		// magnitudes per square arcsecond
+		Mpsas float32 `json:"mpsas"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

@@ -17,10 +17,11 @@ import (
 )
 
 var (
-	client               = &http.Client{Timeout: time.Second * 10}
-	errMeteoResponse     = errors.New("got bad meteo response")
-	errLocalTimezone     = errors.New("could not read timezone data")
-	errUnsupportedRegion = errors.New("this region is not yet supported")
+	client                  = &http.Client{Timeout: time.Second * 10}
+	errMeteoResponse        = errors.New("got bad meteo response")
+	errLocalTimezone        = errors.New("could not read timezone data")
+	errUnsupportedRegion    = errors.New("this region is not yet supported")
+	errTooFewTemporalParams = errors.New("got too few hourly or daily params in request")
 )
 
 const (
@@ -29,6 +30,8 @@ const (
 	pathToLocalTimezone = "/etc/localtime"
 	meteoURLBase        = "https://api.open-meteo.com/v1"
 	meteoTemperatureKey = "temperature_2m"
+	meteoSunriseKey     = "sunrise"
+	meteoSunsetKey      = "sunset"
 )
 
 type (
@@ -37,33 +40,41 @@ type (
 	meteoCollator interface {
 		getTemperature(*site) (float32, error)
 		getElevation(*site) (float32, error)
-		getData(*site) error
+		setData(*meteoResponse)
+		getResponse(*site, []string, []string) (*meteoResponse, error)
+		getData() *meteoResponse
 	}
-	meteoClient struct {
-		response  hourlyData
-		duskIndex int
-	}
-	// TODO: include daily data
-	hourlyData struct {
+	meteoResponse struct {
 		Elevation float32 `json:"elevation"`
-		Hourly    struct {
+		Daily     struct {
+			// 7 values of RFC3339
+			Sunrise []string `json:"sunrise"`
+			Sunset  []string `json:"sunset"`
+		}
+		Hourly struct {
 			Time        []string  `json:"time"`
 			Temperature []float32 `json:"temperature_2m"`
 		} `json:"hourly"`
 	}
+	meteoClient struct {
+		data meteoResponse
+	}
 )
 
+// TODO:
 func (m *meteoClient) getElevation(s *site) (float32, error) {
 	return 0, nil
 }
 
+// TODO:
 func (m *meteoClient) getTemperature(s *site) (float32, error) {
 	return 0, nil
 }
 
 // getHourlyIndexOfAstronomicalDusk gets the index from the meteo client response
 // that corresponds to the upcoming hour of astronomical dusk
-func getHourlyIndexOfAstronomicalDusk(hours []string, requestTime time.Time, lat, lng string) (int, error) {
+func getHourlyIndexOfAstronomicalDusk(hours []string, sunrise, sunset string) (int, error) {
+	fmt.Println(hours, sunrise, sunset)
 	return -1, nil
 }
 
@@ -85,38 +96,37 @@ func getLocalTimezoneName() (string, error) {
 	return fmt.Sprintf("%s/%s", f, file), nil
 }
 
-// TODO: signature of this should probably change to return a value
-func (m *meteoClient) getData(s *site) error {
-	params := []string{meteoTemperatureKey}
+// getResponse gets weather and elevation data from the open meteo api
+func (m *meteoClient) getResponse(s *site, hourlyParams, dailyParams []string) (res *meteoResponse, err error) {
+	if len(hourlyParams) == 0 || len(dailyParams) == 0 {
+		return nil, errTooFewTemporalParams
+	}
 	timezone, err := getLocalTimezoneName()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	// FIXME: url needs more params
-	url := fmt.Sprintf("%s/forecast?latitude=%s&longitude=%s&hourly=%s&timezone=%s", meteoURLBase, s.lat, s.lng, strings.Join(params, ","), timezone)
+	url := fmt.Sprintf("%s/forecast?latitude=%s&longitude=%s&hourly=%s&daily=%s&timezone=%s", meteoURLBase, s.lat, s.lng, strings.Join(hourlyParams, ","), strings.Join(dailyParams, ","), timezone)
 	resp, err := client.Get(url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return errMeteoResponse
+		return nil, errMeteoResponse
 	}
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var res hourlyData
 	if err := json.Unmarshal(bytes, &res); err != nil {
-		return err
+		return nil, err
 	}
-	m.response = res
-	idx, err := getHourlyIndexOfAstronomicalDusk(m.response.Hourly.Time, s.time, s.lat, s.lng)
-	if err != nil {
-		return err
-	}
-	m.duskIndex = idx
-	return nil
+	return res, nil
+}
+
+func (m *meteoClient) getData() *meteoResponse { return &m.data }
+func (m *meteoClient) setData(data *meteoResponse) {
+	m.data = *data
 }
 
 func newMeteoClient() meteoCollator {
@@ -125,19 +135,28 @@ func newMeteoClient() meteoCollator {
 
 func (s *site) deriveIndependentVariables() error {
 	m := newMeteoClient()
-	if err := m.getData(s); err != nil {
+	hourlyParams := []string{meteoTemperatureKey}
+	dailyParams := []string{meteoSunriseKey, meteoSunsetKey}
+	data, err := m.getResponse(s, hourlyParams, dailyParams)
+	if err != nil {
 		return err
 	}
+	// TODO: use index...
+	_, err = getHourlyIndexOfAstronomicalDusk(data.Hourly.Time, data.Daily.Sunrise[0], data.Daily.Sunset[0])
+	if err != nil {
+		return err
+	}
+	m.setData(data)
 	c := columns{
 		orderedColumns[0]: m.getElevation,
 		orderedColumns[1]: m.getTemperature,
 	}
 	ctx := context.Background()
-	errs, _ := errgroup.WithContext(ctx)
+	eg, _ := errgroup.WithContext(ctx)
 	for name, f := range c {
 		columnName := name
 		columnFn := f
-		errs.Go(func() error {
+		eg.Go(func() error {
 			result, err := columnFn(s)
 			if err != nil {
 				return err
@@ -147,6 +166,6 @@ func (s *site) deriveIndependentVariables() error {
 			return nil
 		})
 	}
-	errs.Wait()
+	eg.Wait()
 	return nil
 }
