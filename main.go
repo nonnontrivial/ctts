@@ -5,9 +5,13 @@ import (
 	"net/http"
 	"net/smtp"
 	"os"
+	"time"
 )
 
 const defaultPort = "3303"
+
+// TODO: probably need to move after refactor for use with app engine cron
+var now = time.Now()
 
 // server represents the entire ctts service, and holds all dependencies
 type server struct {

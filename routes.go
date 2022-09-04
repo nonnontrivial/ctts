@@ -10,7 +10,7 @@ import (
 
 func (s *server) routes() {
 	s.router.HandleFunc("/api/site", s.handleSite())
-	// s.router.HandleFunc("/api/user", s.handleUser())
+	s.router.HandleFunc("/api/user", s.handleUser())
 
 	s.router.HandleFunc("/site", s.handleSitePage())
 }
@@ -22,20 +22,20 @@ func (s *server) handleSitePage() http.HandlerFunc {
 	}
 }
 
-// func (s *server) handleUser() http.HandlerFunc {
-// 	type userResponse struct{}
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		switch r.Method {
-// 		case http.MethodPost:
-// 		case http.MethodPatch:
-// 		case http.MethodGet:
-// 			return
-// 		default:
-// 			http.Error(w, "bad method", http.StatusMethodNotAllowed)
-// 			return
-// 		}
-// 	}
-// }
+func (s *server) handleUser() http.HandlerFunc {
+	type userResponse struct{}
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+		case http.MethodPatch:
+		case http.MethodGet:
+			return
+		default:
+			http.Error(w, "bad method", http.StatusMethodNotAllowed)
+			return
+		}
+	}
+}
 
 func (s *server) handleSite() http.HandlerFunc {
 	type siteResponse struct {
@@ -54,8 +54,7 @@ func (s *server) handleSite() http.HandlerFunc {
 				http.Error(w, "missing lat or lng in query params", http.StatusBadRequest)
 				return
 			}
-			// FIXME: should be using the time that the cron is executing
-			site := newSite(lat, lng)
+			site := newSite(now, lat, lng)
 			if err := site.fitToModel(); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Printf("!got error: %s", err.Error())

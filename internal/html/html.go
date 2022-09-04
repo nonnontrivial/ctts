@@ -17,8 +17,7 @@ const (
 )
 
 type (
-	SiteParams struct {
-	}
+	SiteParams struct{}
 )
 
 func Site(w io.Writer, p SiteParams) error {

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -44,7 +43,7 @@ type (
 		getTemperature(*site) (float32, error)
 		getElevation(*site) (float32, error)
 		getResponse(*site, []string, []string) (*meteoResponse, error)
-		setColumnarData(*meteoResponse)
+		setColumnarData(*meteoResponse) error
 	}
 	meteoClient struct {
 		columnarData struct {
@@ -65,18 +64,16 @@ type (
 	}
 )
 
-// TODO:
 func (m *meteoClient) getElevation(s *site) (float32, error) {
-	return 0, nil
+	return m.columnarData.elevation, nil
 }
 
-// TODO:
 func (m *meteoClient) getTemperature(s *site) (float32, error) {
-	return 0, nil
+	return m.columnarData.temperature, nil
 }
 
-// getLocalTimezoneName gets the timezone name from linux symbolic link for use in
-// the meteo client request
+// getLocalTimezoneName gets the timezone name from linux symbolic link for
+// use in the meteo client request
 func getLocalTimezoneName() (string, error) {
 	name, err := os.Readlink(pathToLocalTimezone)
 	if err != nil {
@@ -121,9 +118,40 @@ func (m *meteoClient) getResponse(s *site, hourlyParams, dailyParams []string) (
 	return res, nil
 }
 
-// setColumnarData assigns data from the meteo response into the appropriate columns
-func (m *meteoClient) setColumnarData(data *meteoResponse) {
-	// TODO:
+func parseMeteoTime(t isoTime) (time.Time, error) {
+	formatted := fmt.Sprintf("%s:05Z", string(t))
+	return time.Parse(time.RFC3339, formatted)
+}
+
+func getHourlyAstroDuskIndex(hourly, sunset []isoTime) (int, error) {
+	parsedTime, err := parseMeteoTime(sunset[0])
+	if err != nil {
+		return 0, err
+	}
+	approxAstroDuskTime := parsedTime.Add(time.Hour * 2)
+	for i, iso := range hourly {
+		pt, err := parseMeteoTime(iso)
+		if err != nil {
+			return -1, err
+		}
+		if pt.Day() == approxAstroDuskTime.Day() {
+			return i, err
+		}
+	}
+	return -1, nil
+}
+
+// setColumnarData assigns data from the meteo response into the appropriate
+// columns
+func (m *meteoClient) setColumnarData(data *meteoResponse) error {
+	idx, err := getHourlyAstroDuskIndex(data.Hourly.Time, data.Daily.Sunset)
+	if err != nil {
+		return err
+	}
+	// FIXME: always 0
+	m.columnarData.elevation = data.Elevation
+	m.columnarData.temperature = data.Hourly.Temperature[idx]
+	return nil
 }
 
 func newMeteoClient() meteoCollator {
@@ -136,11 +164,14 @@ func (s *site) deriveIndependentVariables() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("%+v", data)
-	m.setColumnarData(data)
+	err = m.setColumnarData(data)
+	if err != nil {
+		return err
+	}
 	c := columns{
 		orderedColumns[0]: m.getElevation,
 		orderedColumns[1]: m.getTemperature,
+		// TODO: other independent vars...
 	}
 	ctx := context.Background()
 	eg, _ := errgroup.WithContext(ctx)
@@ -152,6 +183,7 @@ func (s *site) deriveIndependentVariables() error {
 			if err != nil {
 				return err
 			}
+			// log.Printf("setting %s to %v", columnName, result)
 			s.vars[columnName] = float64(result)
 			return nil
 		})

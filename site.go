@@ -78,8 +78,7 @@ func (s *site) fitToModel() error {
 	return nil
 }
 
-func newSite(lat, lng string) siteModeller {
-	t := time.Now()
+func newSite(t time.Time, lat, lng string) siteModeller {
 	id := fmt.Sprintf("%s,%s@%d", lat, lng, t.Nanosecond())
 	vs := make(vars)
 	s := &site{id: id, time: t, lat: lat, lng: lng, vars: vs}

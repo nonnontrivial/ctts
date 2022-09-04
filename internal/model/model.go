@@ -137,6 +137,8 @@ func (m *model) Predict(vars []float64) (float64, error) {
 	if len(vars) == 0 {
 		return 0, errNoVars
 	}
+	// FIXME: panics
+	// return m.Predict(vars)
 	return 0, nil
 }
 
