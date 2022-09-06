@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestBadRequest(t *testing.T) {
+func TestMissingParams(t *testing.T) {
 	s := newServer()
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/api/site", nil)

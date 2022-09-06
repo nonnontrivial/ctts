@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -9,32 +10,26 @@ import (
 )
 
 func (s *server) routes() {
+	// FIXME: needs to change once using cron
 	s.router.HandleFunc("/api/site", s.handleSite())
-	s.router.HandleFunc("/api/user", s.handleUser())
 
 	s.router.HandleFunc("/site", s.handleSitePage())
 }
 
-func (s *server) handleSitePage() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params := html.SiteParams{}
-		html.Site(w, params)
-	}
+var (
+	errMissingCoords = errors.New("missing lat or lng in query params")
+)
+
+type coords struct {
+	lat, lng string
 }
 
-func (s *server) handleUser() http.HandlerFunc {
-	type userResponse struct{}
-	return func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-		case http.MethodPatch:
-		case http.MethodGet:
-			return
-		default:
-			http.Error(w, "bad method", http.StatusMethodNotAllowed)
-			return
-		}
-	}
+// TODO: return error
+func getCoords(r *http.Request) coords {
+	q := r.URL.Query()
+	lat := q.Get("lat")
+	lng := q.Get("lng")
+	return coords{lat, lng}
 }
 
 func (s *server) handleSite() http.HandlerFunc {
@@ -45,16 +40,14 @@ func (s *server) handleSite() http.HandlerFunc {
 		Mpsas float32 `json:"mpsas"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
-		lat := q.Get("lat")
-		lng := q.Get("lng")
+		coords := getCoords(r)
 		switch r.Method {
 		case http.MethodGet:
-			if lat == "" || lng == "" {
-				http.Error(w, "missing lat or lng in query params", http.StatusBadRequest)
+			if coords.lat == "" || coords.lng == "" {
+				http.Error(w, errMissingCoords.Error(), http.StatusBadRequest)
 				return
 			}
-			site := newSite(now, lat, lng)
+			site := newSite(now, coords.lat, coords.lng)
 			if err := site.fitToModel(); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				log.Printf("!got error: %s", err.Error())
@@ -75,5 +68,23 @@ func (s *server) handleSite() http.HandlerFunc {
 			http.Error(w, "bad method", http.StatusMethodNotAllowed)
 			return
 		}
+	}
+}
+
+func (s *server) handleSitePage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		coords := getCoords(r)
+		if coords.lat == "" || coords.lng == "" {
+			http.Error(w, errMissingCoords.Error(), http.StatusBadRequest)
+			return
+		}
+		site := newSite(now, coords.lat, coords.lng)
+		if err := site.fitToModel(); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("!got error: %s", err.Error())
+			return
+		}
+		params := html.SiteParams{Mpsas: site.getMpsas(), Lat: coords.lat, Lng: coords.lng}
+		html.Site(w, params)
 	}
 }

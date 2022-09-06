@@ -16,6 +16,7 @@ var (
 )
 
 const (
+	// see https://en.m.wikipedia.org/wiki/Coefficient_of_determination
 	r2Limit      = 0.8
 	csvPath      = "./data/sites.csv"
 	trainingPath = "./data/training.csv"
@@ -28,11 +29,8 @@ type (
 	site       struct {
 		id       string
 		lat, lng string
-		// time of the request
-		time time.Time
-		// magnitudes per square arcsecond
-		mpsas float32
-		// independent variables
+		time     time.Time
+		mpsas    float32
 		vars
 	}
 	independentVarsDeriver interface {
@@ -51,6 +49,7 @@ func (s *site) getId() string       { return s.id }
 func (s *site) getMpsas() float32   { return s.mpsas }
 func (s *site) getBortleClass() int { return int(s.mpsas) }
 
+// fitToModel gets a y value for the features of the site
 func (s *site) fitToModel() error {
 	m, err := lrmodel.NewModel(trainingPath, testingPath, csvPath)
 	if err != nil {

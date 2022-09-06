@@ -118,11 +118,14 @@ func (m *meteoClient) getResponse(s *site, hourlyParams, dailyParams []string) (
 	return res, nil
 }
 
+// parseMeteoTime parses the string from the meteo response
 func parseMeteoTime(t isoTime) (time.Time, error) {
 	formatted := fmt.Sprintf("%s:05Z", string(t))
 	return time.Parse(time.RFC3339, formatted)
 }
 
+// getHourlyAstroDuskIndex gets the index (within hourly data) of approximate
+// astronomical dusk
 func getHourlyAstroDuskIndex(hourly, sunset []isoTime) (int, error) {
 	parsedTime, err := parseMeteoTime(sunset[0])
 	if err != nil {
@@ -134,6 +137,7 @@ func getHourlyAstroDuskIndex(hourly, sunset []isoTime) (int, error) {
 		if err != nil {
 			return -1, err
 		}
+		// FIXME: should be hour?
 		if pt.Day() == approxAstroDuskTime.Day() {
 			return i, err
 		}
@@ -148,7 +152,7 @@ func (m *meteoClient) setColumnarData(data *meteoResponse) error {
 	if err != nil {
 		return err
 	}
-	// FIXME: always 0
+	// FIXME: always 0 for some reason...
 	m.columnarData.elevation = data.Elevation
 	m.columnarData.temperature = data.Hourly.Temperature[idx]
 	return nil

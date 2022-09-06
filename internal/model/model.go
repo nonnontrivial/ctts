@@ -119,7 +119,6 @@ func (m *model) Train() error {
 			}
 			vars = append(vars, s)
 		}
-		log.Printf("training %f", vars)
 		m.regressor.Train(regression.DataPoint(mpsas, vars))
 	}
 	log.Println("running regression...")
@@ -137,9 +136,7 @@ func (m *model) Predict(vars []float64) (float64, error) {
 	if len(vars) == 0 {
 		return 0, errNoVars
 	}
-	// FIXME: panics
-	// return m.Predict(vars)
-	return 0, nil
+	return m.regressor.Predict(vars)
 }
 
 func NewModel(trainingPath, testingPath, csvPath string) (lrModeller, error) {

@@ -17,7 +17,10 @@ const (
 )
 
 type (
-	SiteParams struct{}
+	SiteParams struct {
+		Lat, Lng string
+		Mpsas    float32
+	}
 )
 
 func Site(w io.Writer, p SiteParams) error {
