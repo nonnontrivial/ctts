@@ -24,29 +24,30 @@ type coords struct {
 	lat, lng string
 }
 
-// TODO: return error
-func getCoords(r *http.Request) coords {
+func getCoords(r *http.Request) (*coords, error) {
 	q := r.URL.Query()
 	lat := q.Get("lat")
 	lng := q.Get("lng")
-	return coords{lat, lng}
+	if lat == "" || lng == "" {
+		return nil, errMissingCoords
+	}
+	return &coords{lat, lng}, nil
 }
 
 func (s *server) handleSite() http.HandlerFunc {
 	type siteResponse struct {
-		BortleClass int    `json:"bortleClass"`
-		Id          string `json:"id"`
-		// magnitudes per square arcsecond
-		Mpsas float32 `json:"mpsas"`
+		BortleClass int     `json:"bortleClass"`
+		Id          string  `json:"id"`
+		Mpsas       float32 `json:"mpsas"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		coords := getCoords(r)
+		coords, err := getCoords(r)
+		if err != nil {
+			http.Error(w, errMissingCoords.Error(), http.StatusBadRequest)
+			return
+		}
 		switch r.Method {
 		case http.MethodGet:
-			if coords.lat == "" || coords.lng == "" {
-				http.Error(w, errMissingCoords.Error(), http.StatusBadRequest)
-				return
-			}
 			site := newSite(now, coords.lat, coords.lng)
 			if err := site.fitToModel(); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -73,8 +74,8 @@ func (s *server) handleSite() http.HandlerFunc {
 
 func (s *server) handleSitePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		coords := getCoords(r)
-		if coords.lat == "" || coords.lng == "" {
+		coords, err := getCoords(r)
+		if err != nil {
 			http.Error(w, errMissingCoords.Error(), http.StatusBadRequest)
 			return
 		}

@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 
@@ -13,7 +14,8 @@ import (
 )
 
 var (
-	errNoVars = errors.New("no vars supplied")
+	errNoVars     = errors.New("no vars supplied")
+	errFileNotCSV = errors.New("file is not CSV")
 )
 
 const (
@@ -37,7 +39,11 @@ type (
 	}
 )
 
+// readCSV is a utility function to read the csv file at a path and
 func readCSV(path string) ([][]string, error) {
+	if filepath.Ext(path) != "csv" {
+		return nil, errFileNotCSV
+	}
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
