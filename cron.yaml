@@ -1,0 +1,8 @@
+cron:
+- description: "site scanner"
+  url: /api/site/daily
+  schedule: every 30 mins
+  retry_parameters:
+    job_retry_limit: 5
+    min_backoff_seconds: 2.5
+    max_doublings: 5

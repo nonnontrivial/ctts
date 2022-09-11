@@ -10,9 +10,7 @@ import (
 )
 
 func (s *server) routes() {
-	// FIXME: needs to change once using cron
-	s.router.HandleFunc("/api/site", s.handleSite())
-
+	s.router.HandleFunc("/api/site/daily", s.handleSiteDaily())
 	s.router.HandleFunc("/site", s.handleSitePage())
 }
 
@@ -24,6 +22,7 @@ type coords struct {
 	lat, lng string
 }
 
+// getCoords attempts to get the lat and lng from the query params in a request
 func getCoords(r *http.Request) (*coords, error) {
 	q := r.URL.Query()
 	lat := q.Get("lat")
@@ -34,11 +33,13 @@ func getCoords(r *http.Request) (*coords, error) {
 	return &coords{lat, lng}, nil
 }
 
-func (s *server) handleSite() http.HandlerFunc {
+// handleSiteDaily handles the cron task daily
+func (s *server) handleSiteDaily() http.HandlerFunc {
 	type siteResponse struct {
-		BortleClass int     `json:"bortleClass"`
-		Id          string  `json:"id"`
-		Mpsas       float32 `json:"mpsas"`
+		BortleClass int    `json:"bortleClass"`
+		Id          string `json:"id"`
+		// magnitudes per square arc second
+		Mpsas float32 `json:"mpsas"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		coords, err := getCoords(r)
@@ -72,6 +73,7 @@ func (s *server) handleSite() http.HandlerFunc {
 	}
 }
 
+// handleSitePage renders the site template for the request
 func (s *server) handleSitePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		coords, err := getCoords(r)

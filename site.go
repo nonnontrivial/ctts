@@ -49,7 +49,6 @@ func (s *site) getId() string       { return s.id }
 func (s *site) getMpsas() float32   { return s.mpsas }
 func (s *site) getBortleClass() int { return int(s.mpsas) }
 
-// fitToModel gets a y value for the features of the site
 func (s *site) fitToModel() error {
 	m, err := lrmodel.NewModel(trainingPath, testingPath, csvPath)
 	if err != nil {

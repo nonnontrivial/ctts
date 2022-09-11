@@ -152,7 +152,6 @@ func (m *meteoClient) setColumnarData(data *meteoResponse) error {
 	if err != nil {
 		return err
 	}
-	// FIXME: always 0 for some reason...
 	m.columnarData.elevation = data.Elevation
 	m.columnarData.temperature = data.Hourly.Temperature[idx]
 	return nil
@@ -187,7 +186,6 @@ func (s *site) deriveIndependentVariables() error {
 			if err != nil {
 				return err
 			}
-			// log.Printf("setting %s to %v", columnName, result)
 			s.vars[columnName] = float64(result)
 			return nil
 		})

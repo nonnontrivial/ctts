@@ -39,24 +39,6 @@ type (
 	}
 )
 
-// readCSV is a utility function to read the csv file at a path and
-func readCSV(path string) ([][]string, error) {
-	if filepath.Ext(path) != "csv" {
-		return nil, errFileNotCSV
-	}
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	csvReader := csv.NewReader(f)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-	return records, nil
-}
-
 // prepare splits data into training and testing csv files
 // see https://medium.com/devthoughts/linear-regression-with-go-ff1701455bcd
 func (m *model) prepare(csvRecords [][]string) error {
@@ -102,6 +84,7 @@ func (m *model) prepare(csvRecords [][]string) error {
 	return nil
 }
 
+// Train loads the model's regressor with
 func (m *model) Train() error {
 	csvRecords, err := readCSV(m.trainingPath)
 	if err != nil {
@@ -155,4 +138,22 @@ func NewModel(trainingPath, testingPath, csvPath string) (lrModeller, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+// readCSV is a utility function to read the csv file at a path and
+func readCSV(path string) ([][]string, error) {
+	if filepath.Ext(path) != "csv" {
+		return nil, errFileNotCSV
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	return records, nil
 }
