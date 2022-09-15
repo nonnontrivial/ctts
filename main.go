@@ -6,20 +6,17 @@ import (
 	"os"
 )
 
-var (
-	projectId  = os.Getenv("PROJECT_ID")
-	locationId = os.Getenv("LOCATION_ID")
-	queueId    = os.Getenv("QUEUE_ID")
-)
-
 const (
 	defaultPort = "3303"
 )
 
 // server represents the entire ctts service, and holds all dependencies.
 type server struct {
-	router http.ServeMux
-	db     interface{}
+	projectId  string
+	locationId string
+	queueId    string
+	router     http.ServeMux
+	db         interface{}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +24,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func newServer() *server {
-	s := &server{}
+	s := &server{os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux(), nil}
 	s.routes()
 	return s
 }

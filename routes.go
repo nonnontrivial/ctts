@@ -78,7 +78,7 @@ func (s *server) handleSitesSubmit() http.HandlerFunc {
 			return
 		}
 		defer client.Close()
-		queuePath := fmt.Sprintf("projects/%s/locations/%s/queues/%s", projectId, locationId, queueId)
+		queuePath := fmt.Sprintf("projects/%s/locations/%s/queues/%s", s.projectId, s.locationId, s.queueId)
 		// build task payload
 		req := &taskspb.CreateTaskRequest{
 			Parent: queuePath,

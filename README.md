@@ -12,9 +12,9 @@ It uses [GCP](https://cloud.google.com/) and is designed to be configurable / tu
 # gcp cloud storage record name
 CLOUD_STORAGE_CSV_FILENAME
 # gcp app engine-specific
-PROJECT_ID
-LOCATION_ID
-QUEUE_ID
+GCP_PROJECT_ID
+GCP_LOCATION_ID
+GCP_QUEUE_ID
 ```
 
 ### optional
