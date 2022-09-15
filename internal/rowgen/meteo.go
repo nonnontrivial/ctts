@@ -97,7 +97,7 @@ func getHourlyAstroDuskIndex(hourly, sunset []string) (int, error) {
 	return -1, nil
 }
 
-// fetchWeatherData uses the open meteo api to put datapoints intot eh meteo client struct fields.
+// fetchWeatherData uses open meteo api to put datapoints into meteo client struct fields.
 func (mc *meteoClient) fetchWeatherData(lat, lng string, hourlyParams, dailyParams []string) error {
 	timezone, err := getLocalTimezoneName()
 	if err != nil {
@@ -136,5 +136,5 @@ func setupWeatherClient(lat, lng string) (*meteoClient, error) {
 	if err := client.fetchWeatherData(lat, lng, hourlyParams, dailyParams); err != nil {
 		return nil, err
 	}
-	return &meteoClient{}, nil
+	return client, nil
 }
