@@ -1,6 +1,6 @@
 # ctts
 
-> note to user: very much a work in progress
+> note to user: **very much** a work in progress
 
 This is a [Go](https://go.dev/) application that records and predicts
 [sky brightness](http://unihedron.com/projects/darksky/Instruction_sheet.pdf).
