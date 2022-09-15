@@ -3,7 +3,9 @@ module github.com/nonnontrivial/ctts
 go 1.16
 
 require (
-	github.com/sajari/regression v1.0.1
+	cloud.google.com/go/cloudtasks v1.4.0
+	cloud.google.com/go/storage v1.26.0
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
-	gonum.org/v1/gonum v0.11.0 // indirect
+	google.golang.org/appengine v1.6.7
+	google.golang.org/genproto v0.0.0-20220909194730-69f6226f97e5
 )
