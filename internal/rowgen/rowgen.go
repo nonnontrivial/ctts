@@ -37,7 +37,7 @@ func (rg *rowGenerator) getTemperature(mc *meteoClient) func() (float32, error) 
 //
 // `columns` order corresponds to the order of columns in the generated row.
 func (rg *rowGenerator) Backfill(r *[]string) error {
-	weatherClient, err := setupWeatherClient(rg.lat, rg.lng)
+	weatherClient, err := setupWeatherClient(rg.timeOfMeasurement, rg.lat, rg.lng)
 	if err != nil {
 		return err
 	}

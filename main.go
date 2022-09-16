@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"embed"
 	"log"
 	"net/http"
 	"os"
@@ -15,26 +16,23 @@ const (
 
 // server represents the entire ctts service, and holds all dependencies.
 type server struct {
+	frontend   embed.FS
 	projectId  string
 	locationId string
 	queueId    string
 	router     http.ServeMux
-	// TODO: implement
-	db interface{}
-}
-
-func (s *server) routes() {
-	// TODO: handle client
-	s.router.HandleFunc("/api/sites/submit", s.authOnly(s.handleSitesSubmit()))
-	s.router.HandleFunc(sitesUpdatePath, s.handleSitesUpdate())
+	db         interface{}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
+//go:embed frontend/dist
+var frontend embed.FS
+
 func newServer() *server {
-	s := &server{os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux(), nil}
+	s := &server{frontend, os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux(), nil}
 	s.routes()
 	return s
 }
@@ -68,7 +66,7 @@ func loadEnv(pathToEnvFile string) (err error) {
 
 func main() {
 	if err := loadEnv(pathToEnvFile); err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	s := newServer()
 	port := os.Getenv("PORT")
@@ -78,6 +76,6 @@ func main() {
 	}
 	log.Println("starting server...")
 	if err := http.ListenAndServe(":"+port, &s.router); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }

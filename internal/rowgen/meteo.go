@@ -99,13 +99,29 @@ func getHourlyAstroDuskIndex(hourly, sunset []string) (int, error) {
 	return -1, nil
 }
 
+type fetchParams struct {
+	t            time.Time
+	lat          string
+	lng          string
+	hourlyParams []string
+	dailyParams  []string
+}
+
+// formatTime formats a time to yyyy-mm-dd
+func (mc *meteoClient) formatTime(t time.Time) string {
+	return fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day())
+}
+
 // fetchWeatherData uses open meteo api to put datapoints into meteo client struct fields.
-func (mc *meteoClient) fetchWeatherData(lat, lng string, hourlyParams, dailyParams []string) error {
+func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
 	timezone, err := getLocalTimezoneName()
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("%s/forecast?latitude=%s&longitude=%s&hourly=%s&daily=%s&timezone=%s", meteoURLBase, lat, lng, strings.Join(hourlyParams, ","), strings.Join(dailyParams, ","), timezone)
+	startDate := mc.formatTime(p.t)
+	endDate := mc.formatTime(p.t.Add(time.Hour * 24))
+	log.Printf("using time range in meteo client: %s->%s", startDate, endDate)
+	url := fmt.Sprintf("%s/forecast?latitude=%s&longitude=%s&hourly=%s&daily=%s&timezone=%s&start_date=%s&end_date=%s", meteoURLBase, p.lat, p.lng, strings.Join(p.hourlyParams, ","), strings.Join(p.dailyParams, ","), timezone, startDate, endDate)
 	resp, err := mc.client.Get(url)
 	if err != nil {
 		return err
@@ -131,11 +147,11 @@ func (mc *meteoClient) fetchWeatherData(lat, lng string, hourlyParams, dailyPara
 	return nil
 }
 
-func setupWeatherClient(lat, lng string) (*meteoClient, error) {
+func setupWeatherClient(t time.Time, lat, lng string) (*meteoClient, error) {
 	client := &meteoClient{
 		client: &http.Client{Timeout: time.Second * 10},
 	}
-	if err := client.fetchWeatherData(lat, lng, hourlyParams, dailyParams); err != nil {
+	if err := client.fetchWeatherData(fetchParams{t, lat, lng, hourlyParams, dailyParams}); err != nil {
 		return nil, err
 	}
 	return client, nil

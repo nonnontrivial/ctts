@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
+	"github.com/evanw/esbuild/pkg/api"
 	sites "github.com/nonnontrivial/ctts/internal/records"
 	"github.com/nonnontrivial/ctts/internal/rowgen"
 	taskspb "google.golang.org/genproto/googleapis/cloud/tasks/v2"
@@ -18,8 +20,32 @@ import (
 
 const (
 	// endpoint of task runner for sites
-	sitesUpdatePath = "/edi/sites/update"
+	sitesUpdatePath  = "/edi/sites/update"
+	frontendRootPath = "./frontend"
 )
+
+func (s *server) routes() {
+	s.router.HandleFunc("/api/sites/submit", s.authOnly(s.handleSitesSubmit()))
+	s.router.HandleFunc(sitesUpdatePath, s.handleSitesUpdate())
+
+	// TODO: handle spa
+	// build and serve frontend
+	result := api.Build(api.BuildOptions{
+		EntryPoints: []string{fmt.Sprintf("%s/src/index.tsx", frontendRootPath)},
+		Outfile:     fmt.Sprintf("%s/dist/build/out.js", frontendRootPath),
+		Write:       true,
+	})
+	if len(result.Errors) > 0 {
+		log.Fatalln("got errors during client build")
+	}
+	fsys := fs.FS(s.frontend)
+	subtree, err := fs.Sub(fsys, fmt.Sprintf("%s/dist", frontendRootPath))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fileServer := http.FileServer(http.FS(subtree))
+	s.router.Handle("/", fileServer)
+}
 
 type (
 	SQMRead struct {
@@ -106,8 +132,6 @@ func (s *server) handleSitesSubmit() http.HandlerFunc {
 // When a user submites a SQM read, this function appends the csv in cloud storage
 // with the generated row.
 func (s *server) handleSitesUpdate() http.HandlerFunc {
-	type request struct{}
-	type response struct{}
 	return func(w http.ResponseWriter, r *http.Request) {
 		taskName := r.Header.Get("X-Appengine-Taskname")
 		if taskName == "" {
