@@ -46,11 +46,6 @@ func (r *SQMRead) generateRow() ([]string, error) {
 	return row, nil
 }
 
-func (s *server) routes() {
-	s.router.HandleFunc("/api/sites/submit", s.authOnly(s.handleSitesSubmit()))
-	s.router.HandleFunc(sitesUpdatePath, s.handleSitesUpdate())
-}
-
 // TODO: implement
 // authOnly restricts use of the given http handler to authenticated requests.
 func (s *server) authOnly(h http.HandlerFunc) http.HandlerFunc {

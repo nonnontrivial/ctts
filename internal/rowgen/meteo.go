@@ -26,7 +26,8 @@ const (
 	meteoTemperatureKey = "temperature_2m"
 	meteoSunriseKey     = "sunrise"
 	meteoSunsetKey      = "sunset"
-	// potential path segment in localtimezone symlink
+	// potential path segment in localtimezone symlink; if found in path to
+	// local timezone, timezone is determined to be unsupported
 	zoneinfo            = "zoneinfo"
 	pathToLocalTimezone = "/etc/localtime"
 )
@@ -62,6 +63,7 @@ func getLocalTimezoneName() (string, error) {
 		return "", errLocalTimezone
 	}
 	_, f := path.Split(dir[:len(dir)-1])
+	// FIXME: should not need to error
 	if f == zoneinfo {
 		return "", errUnsupportedRegion
 	}
