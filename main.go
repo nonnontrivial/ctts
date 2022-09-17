@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"embed"
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -65,9 +66,12 @@ func loadEnv(pathToEnvFile string) (err error) {
 }
 
 func main() {
-	// TODO: restrict usage to dev flag
-	if err := loadEnv(pathToEnvFile); err != nil {
-		log.Fatalln(err)
+	dev := flag.Bool("dev", true, "determines if running in dev mode")
+	flag.Parse()
+	if *dev {
+		if err := loadEnv(pathToEnvFile); err != nil {
+			log.Fatalln(err)
+		}
 	}
 	s := newServer()
 	log.Printf("starting server on port %s...\n", s.port)
