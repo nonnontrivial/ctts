@@ -16,8 +16,6 @@ type rowGenerator struct {
 
 type generator interface {
 	Backfill(*[]string) error
-	getElevation(*meteoClient) func() (float32, error)
-	getTemperature(*meteoClient) func() (float32, error)
 }
 
 func (rg *rowGenerator) getElevation(mc *meteoClient) func() (float32, error) {
@@ -32,7 +30,7 @@ func (rg *rowGenerator) getTemperature(mc *meteoClient) func() (float32, error) 
 	}
 }
 
-// Backfill fills in values for independent variables according to known
+// Backfill fills in values for independent variables according to the known
 // conditions at measurement.
 //
 // `columns` order corresponds to the order of columns in the generated row.

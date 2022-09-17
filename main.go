@@ -11,12 +11,12 @@ import (
 
 const (
 	pathToEnvFile = ".env"
-	defaultPort   = "3303"
 )
 
 // server represents the entire ctts service, and holds all dependencies.
 type server struct {
 	frontend   embed.FS
+	port       string
 	projectId  string
 	locationId string
 	queueId    string
@@ -32,7 +32,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var frontend embed.FS
 
 func newServer() *server {
-	s := &server{frontend, os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux(), nil}
+	s := &server{frontend, os.Getenv("PORT"), os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux(), nil}
 	s.routes()
 	return s
 }
@@ -65,17 +65,13 @@ func loadEnv(pathToEnvFile string) (err error) {
 }
 
 func main() {
+	// TODO: restrict usage to dev flag
 	if err := loadEnv(pathToEnvFile); err != nil {
 		log.Fatalln(err)
 	}
 	s := newServer()
-	port := os.Getenv("PORT")
-	if port == "" {
-		log.Printf("using default port: %s", defaultPort)
-		port = defaultPort
-	}
-	log.Println("starting server...")
-	if err := http.ListenAndServe(":"+port, &s.router); err != nil {
+	log.Printf("starting server on port %s...\n", s.port)
+	if err := http.ListenAndServe(":"+s.port, &s.router); err != nil {
 		log.Fatalln(err)
 	}
 }

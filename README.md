@@ -6,6 +6,8 @@ This is a [Go](https://go.dev/) application that records and predicts
 [sky brightness](http://unihedron.com/projects/darksky/Instruction_sheet.pdf).
 It uses [GCP](https://cloud.google.com/) and is designed to be configurable / tunable. 
 
+It contains a small embedded [React](https://reactjs.org/) frontend.
+
 ## env vars
 ### required
 ```shell

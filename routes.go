@@ -20,26 +20,24 @@ import (
 
 const (
 	// endpoint of task runner for sites
-	sitesUpdatePath  = "/edi/sites/update"
-	frontendRootPath = "./frontend"
+	sitesUpdatePath = "/edi/sites/update"
 )
 
 func (s *server) routes() {
 	s.router.HandleFunc("/api/sites/submit", s.authOnly(s.handleSitesSubmit()))
 	s.router.HandleFunc(sitesUpdatePath, s.handleSitesUpdate())
 
-	// TODO: handle spa
-	// build and serve frontend
-	result := api.Build(api.BuildOptions{
-		EntryPoints: []string{fmt.Sprintf("%s/src/index.tsx", frontendRootPath)},
-		Outfile:     fmt.Sprintf("%s/dist/build/out.js", frontendRootPath),
+	// TODO: handle spa (404 handling)
+	frontendBuildResult := api.Build(api.BuildOptions{
+		EntryPoints: []string{"./frontend/src/index.tsx"},
+		Outfile:     "./frontend/dist/build/out.js",
 		Write:       true,
 	})
-	if len(result.Errors) > 0 {
+	if len(frontendBuildResult.Errors) > 0 {
 		log.Fatalln("got errors during client build")
 	}
 	fsys := fs.FS(s.frontend)
-	subtree, err := fs.Sub(fsys, fmt.Sprintf("%s/dist", frontendRootPath))
+	subtree, err := fs.Sub(fsys, "frontend/dist")
 	if err != nil {
 		log.Fatalln(err)
 	}

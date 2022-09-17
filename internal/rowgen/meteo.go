@@ -27,7 +27,8 @@ const (
 	meteoSunriseKey     = "sunrise"
 	meteoSunsetKey      = "sunset"
 	// potential path segment in localtimezone symlink; if found in path to
-	// local timezone, timezone is determined to be unsupported
+	// local timezone, timezone is determined to be unsupported; this is not
+	// strictly necessary, and should be accounted for in a future version.
 	zoneinfo            = "zoneinfo"
 	pathToLocalTimezone = "/etc/localtime"
 )
@@ -112,7 +113,7 @@ func (mc *meteoClient) formatTime(t time.Time) string {
 	return fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day())
 }
 
-// fetchWeatherData uses open meteo api to put datapoints into meteo client struct fields.
+// fetchWeatherData uses open meteo api to put datapoints into `meteoClient` struct fields.
 func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
 	timezone, err := getLocalTimezoneName()
 	if err != nil {
