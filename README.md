@@ -11,8 +11,6 @@ It contains a small embedded [React](https://reactjs.org/) frontend.
 ## env vars
 ### required
 ```shell
-# gcp cloud storage record name
-CLOUD_STORAGE_CSV_FILENAME
 # gcp app engine-specific
 GCP_PROJECT_ID
 GCP_LOCATION_ID

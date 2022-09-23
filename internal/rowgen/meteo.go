@@ -148,6 +148,7 @@ func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
 	return nil
 }
 
+// setupWeatherClient creates a new weather client in terms of the time and location of a brightness measurement.
 func setupWeatherClient(t time.Time, lat, lng string) (*meteoClient, error) {
 	client := &meteoClient{
 		client: &http.Client{Timeout: time.Second * 10},

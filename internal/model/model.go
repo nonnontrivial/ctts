@@ -9,12 +9,10 @@ type (
 	}
 )
 
-// TODO:
 func (m *model) Train(yValueKey string) error {
 	return nil
 }
 
-// TODO:
 func (m *model) Predict(vars []float64) (float64, error) {
 	return 0, nil
 }

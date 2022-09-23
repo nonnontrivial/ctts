@@ -19,15 +19,15 @@ import (
 )
 
 const (
-	// endpoint of task runner for sites
-	sitesUpdatePath = "/edi/sites/update"
+	// endpoint of task runner for appending to csv records.
+	sitesRecordsAppendPath = "/edi/sites/append"
 )
 
 func (s *server) routes() {
 	s.router.HandleFunc("/api/sites/submit", s.authOnly(s.handleSitesSubmit()))
-	s.router.HandleFunc(sitesUpdatePath, s.handleSitesUpdate())
+	s.router.HandleFunc(sitesRecordsAppendPath, s.handleSitesRecordsAppend())
 
-	// TODO: handle spa (404 handling)
+	// TODO: handle spa (404-based handling)
 	frontendBuildResult := api.Build(api.BuildOptions{
 		EntryPoints: []string{"./frontend/src/index.tsx"},
 		Outfile:     "./frontend/dist/build/out.js",
@@ -57,7 +57,7 @@ type (
 )
 
 // generateRow uses the sqm read data to derive a csv record suitable for
-// appending to the record in cloud storage.
+// appending to the record.
 func (r *SQMRead) generateRow() ([]string, error) {
 	g := rowgen.NewGenerator(r.Lat, r.Lng, r.TimeOfMeasurement)
 	var independentVars []string
@@ -70,7 +70,6 @@ func (r *SQMRead) generateRow() ([]string, error) {
 	return row, nil
 }
 
-// TODO: implement
 // authOnly restricts use of the given http handler to authenticated requests.
 func (s *server) authOnly(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -98,14 +97,13 @@ func (s *server) handleSitesSubmit() http.HandlerFunc {
 		}
 		defer client.Close()
 		queuePath := fmt.Sprintf("projects/%s/locations/%s/queues/%s", s.projectId, s.locationId, s.queueId)
-		// build task payload
 		req := &taskspb.CreateTaskRequest{
 			Parent: queuePath,
 			Task: &taskspb.Task{
 				MessageType: &taskspb.Task_AppEngineHttpRequest{
 					AppEngineHttpRequest: &taskspb.AppEngineHttpRequest{
 						HttpMethod:  taskspb.HttpMethod_POST,
-						RelativeUri: sitesUpdatePath,
+						RelativeUri: sitesRecordsAppendPath,
 					},
 				},
 			},
@@ -115,7 +113,6 @@ func (s *server) handleSitesSubmit() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// TODO: validate body
 		req.Task.GetHttpRequest().Body = body
 		_, err = client.CreateTask(ctx, req)
 		if err != nil {
@@ -125,11 +122,10 @@ func (s *server) handleSitesSubmit() http.HandlerFunc {
 	}
 }
 
-// handleSitesUpdate is a [task handler](https://cloud.google.com/tasks/docs/creating-appengine-handlers).
+// handleSitesRecordsAppend is a [task handler](https://cloud.google.com/tasks/docs/creating-appengine-handlers).
 //
-// When a user submites a SQM read, this function appends the csv in cloud storage
-// with the generated row.
-func (s *server) handleSitesUpdate() http.HandlerFunc {
+// When a user submits a SQM read, this function appends the csv with a new row.
+func (s *server) handleSitesRecordsAppend() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		taskName := r.Header.Get("X-Appengine-Taskname")
 		if taskName == "" {
@@ -153,7 +149,6 @@ func (s *server) handleSitesUpdate() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// put the sqm read into cloud storage
 		if err := records.Append(row); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
