@@ -33,7 +33,8 @@ func (rg *rowGenerator) getTemperature(mc *meteoClient) func() (float32, error) 
 // Backfill fills in values for independent variables according to the known
 // conditions at measurement.
 //
-// `columns` order corresponds to the order of columns in the generated row.
+// Order of funcs in `columns` corresponds to the order of columns in the generated
+// row.
 func (rg *rowGenerator) Backfill(r *[]string) error {
 	weatherClient, err := setupWeatherClient(rg.timeOfMeasurement, rg.lat, rg.lng)
 	if err != nil {

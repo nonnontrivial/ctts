@@ -9,17 +9,15 @@ It uses [GCP](https://cloud.google.com/) and is designed to be configurable / tu
 It contains a small embedded [React](https://reactjs.org/) frontend.
 
 ## env vars
-### required
+The following environment variables are requried to use ctts.
+> note that a `.env` file can be used to load the following values directly.
 ```shell
+PORT=
 # gcp app engine-specific
-GCP_PROJECT_ID
-GCP_LOCATION_ID
-GCP_QUEUE_ID
-```
-
-### optional
-```shell
-PORT
+GCP_PROJECT_ID=
+GCP_DATASET_ID=
+GCP_LOCATION_ID=
+GCP_QUEUE_ID=
 ```
 
 ## develop

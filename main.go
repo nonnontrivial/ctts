@@ -18,11 +18,12 @@ const (
 type server struct {
 	frontend   embed.FS
 	port       string
+	datasetId  string
+	tableId    string
 	projectId  string
 	locationId string
 	queueId    string
 	router     http.ServeMux
-	db         interface{}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var frontend embed.FS
 
 func newServer() *server {
-	s := &server{frontend, os.Getenv("PORT"), os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux(), nil}
+	s := &server{frontend, os.Getenv("PORT"), os.Getenv("GCP_DATASET_ID"), os.Getenv("GCP_TABLEID"), os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux()}
 	s.routes()
 	return s
 }

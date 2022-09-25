@@ -2,18 +2,27 @@ package records
 
 import (
 	"context"
-	"log"
+
+	"cloud.google.com/go/bigquery"
 )
 
 type Records struct {
+	Client    *bigquery.Client
+	datasetId string
+	tableId   string
 }
 
-func NewRecords(ctx context.Context) (*Records, error) {
-	return &Records{}, nil
+func NewRecords(ctx context.Context, datasetId, tableId, projectId string) (*Records, error) {
+	c, err := bigquery.NewClient(ctx, projectId)
+	if err != nil {
+		return nil, err
+	}
+	return &Records{c, datasetId, tableId}, nil
 }
 
-// Append appends the csv with a row.
+// Append loads a new row into the bigquery table.
+//
+// This is typically called as part of a GCP task handler for SQM reads.
 func (r *Records) Append(row []string) error {
-	log.Println(row)
 	return nil
 }

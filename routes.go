@@ -13,7 +13,7 @@ import (
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"github.com/evanw/esbuild/pkg/api"
-	sites "github.com/nonnontrivial/ctts/internal/records"
+	"github.com/nonnontrivial/ctts/internal/records"
 	"github.com/nonnontrivial/ctts/internal/rowgen"
 	taskspb "google.golang.org/genproto/googleapis/cloud/tasks/v2"
 )
@@ -47,8 +47,8 @@ func (s *server) routes() {
 
 type (
 	SQMRead struct {
-		// sky brightness (presumably from a device) measured in
-		// [mpsas](http://www.unihedron.com/projects/darksky/faq.php#:~:text=The%20term%20magnitudes%20per%20square,square%20arcsecond%20of%20the%20sky.)
+		// sky brightness (presumably from a device) measured in mpsas
+		// (http://www.unihedron.com/projects/darksky/faq.php#:~:text=The%20term%20magnitudes%20per%20square,square%20arcsecond%20of%20the%20sky.)
 		Brightness        float32   `json:"brightness"`
 		Lat               string    `json:"lat"`
 		Lng               string    `json:"lng"`
@@ -56,8 +56,8 @@ type (
 	}
 )
 
-// generateRow uses the sqm read data to derive a csv record suitable for
-// appending to the record.
+// generateRow uses the sqm read data to derive a csv record suitable for appending
+// to the list of records.
 func (r *SQMRead) generateRow() ([]string, error) {
 	g := rowgen.NewGenerator(r.Lat, r.Lng, r.TimeOfMeasurement)
 	var independentVars []string
@@ -139,17 +139,18 @@ func (s *server) handleSitesRecordsAppend() http.HandlerFunc {
 			return
 		}
 		ctx := context.Background()
-		records, err := sites.NewRecords(ctx)
+		rs, err := records.NewRecords(ctx, s.datasetId, s.tableId, s.projectId)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		defer rs.Client.Close()
 		row, err := sqmRead.generateRow()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := records.Append(row); err != nil {
+		if err := rs.Append(row); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
