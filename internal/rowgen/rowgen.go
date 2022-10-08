@@ -30,7 +30,7 @@ func (rg *rowGenerator) getTemperature(mc *meteoClient) func() (float32, error) 
 	}
 }
 
-// Backfill fills in values for independent variables according to the known
+// Backfill fills in values of independent variables according to the known
 // conditions at measurement.
 //
 // Order of funcs in `columns` corresponds to the order of columns in the generated

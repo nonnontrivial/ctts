@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -18,43 +19,50 @@ import (
 	taskspb "google.golang.org/genproto/googleapis/cloud/tasks/v2"
 )
 
+var errFailedToBuildClient = errors.New("failed to build client")
+
 const (
 	// endpoint of task runner for appending to csv records.
-	sitesRecordsAppendPath = "/edi/sites/append"
+	sitesRecordsAppendPath = "/edi/records/insert"
 )
 
-func (s *server) routes() {
-	s.router.HandleFunc("/api/sites/submit", s.authOnly(s.handleSitesSubmit()))
-	s.router.HandleFunc(sitesRecordsAppendPath, s.handleSitesRecordsAppend())
-
-	// TODO: handle spa (404-based handling)
+// TODO: handle spa (404-based handling)
+func setupClientHandler(s *server) (http.Handler, error) {
 	frontendBuildResult := api.Build(api.BuildOptions{
 		EntryPoints: []string{"./frontend/src/index.tsx"},
 		Outfile:     "./frontend/dist/build/out.js",
 		Write:       true,
 	})
 	if len(frontendBuildResult.Errors) > 0 {
-		log.Fatalln("got errors during client build")
+		return nil, errFailedToBuildClient
 	}
 	fsys := fs.FS(s.frontend)
 	subtree, err := fs.Sub(fsys, "frontend/dist")
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
-	fileServer := http.FileServer(http.FS(subtree))
-	s.router.Handle("/", fileServer)
+	return http.FileServer(http.FS(subtree)), nil
 }
 
-type (
-	SQMRead struct {
-		// sky brightness (presumably from a device) measured in mpsas
-		// (http://www.unihedron.com/projects/darksky/faq.php#:~:text=The%20term%20magnitudes%20per%20square,square%20arcsecond%20of%20the%20sky.)
-		Brightness        float32   `json:"brightness"`
-		Lat               string    `json:"lat"`
-		Lng               string    `json:"lng"`
-		TimeOfMeasurement time.Time `json:"timeOfMeasurement"`
+func (s *server) routes() {
+	s.router.HandleFunc("/api/reads/new", s.authOnly(s.handleNewRead()))
+	s.router.HandleFunc(sitesRecordsAppendPath, s.handleRecordsInsert())
+
+	h, err := setupClientHandler(s)
+	if err != nil {
+		log.Fatalln("got errors during client build")
 	}
-)
+	s.router.Handle("/", h)
+}
+
+type SQMRead struct {
+	// sky brightness (presumably from a device) measured in mpsas
+	// (http://www.unihedron.com/projects/darksky/faq.php#:~:text=The%20term%20magnitudes%20per%20square,square%20arcsecond%20of%20the%20sky.)
+	Brightness        float32   `json:"brightness"`
+	Lat               string    `json:"lat"`
+	Lng               string    `json:"lng"`
+	TimeOfMeasurement time.Time `json:"timeOfMeasurement"`
+}
 
 // generateRow uses the sqm read data to derive a csv record suitable for appending
 // to the list of records.
@@ -81,9 +89,9 @@ func (s *server) authOnly(h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// handleSitesSubmit submits a valid SQM read to become a row in the sky quality
-// model by triggering the model update task to be run.
-func (s *server) handleSitesSubmit() http.HandlerFunc {
+// handleNewRead submits a valid SQM read to become a row in the sky quality model
+// by triggering the model update task to be run.
+func (s *server) handleNewRead() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "only accepts POST", http.StatusMethodNotAllowed)
@@ -123,10 +131,10 @@ func (s *server) handleSitesSubmit() http.HandlerFunc {
 }
 
 // handleSitesRecordsAppend is a [task handler](https://cloud.google.com/tasks/docs/creating-appengine-handlers).
-//
 // When a user submits a SQM read, this function appends the csv with a new row.
-func (s *server) handleSitesRecordsAppend() http.HandlerFunc {
+func (s *server) handleRecordsInsert() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("running records insert task handler")
 		taskName := r.Header.Get("X-Appengine-Taskname")
 		if taskName == "" {
 			http.Error(w, "bad request", http.StatusBadRequest)

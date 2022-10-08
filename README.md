@@ -16,6 +16,7 @@ PORT=
 # gcp app engine-specific
 GCP_PROJECT_ID=
 GCP_DATASET_ID=
+GCP_TABLE_ID=
 GCP_LOCATION_ID=
 GCP_QUEUE_ID=
 ```
