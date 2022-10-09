@@ -13,7 +13,7 @@ The following environment variables are requried to use ctts.
 > note that a `.env` file can be used to load the following values directly.
 ```shell
 PORT=
-# gcp app engine-specific
+# gcp-specific
 GCP_PROJECT_ID=
 GCP_DATASET_ID=
 GCP_TABLE_ID=

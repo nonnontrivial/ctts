@@ -14,32 +14,32 @@ const (
 	pathToEnvFile = ".env"
 )
 
-// server represents the entire ctts service, and holds all dependencies.
+// server represents the entire ctts service, and holds all dependencies
 type server struct {
-	frontend   embed.FS
-	port       string
-	datasetId  string
-	tableId    string
-	projectId  string
-	locationId string
-	queueId    string
-	router     http.ServeMux
+	clientFiles embed.FS
+	port        string
+	datasetId   string
+	tableId     string
+	projectId   string
+	locationId  string
+	queueId     string
+	router      http.ServeMux
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-//go:embed frontend/dist
-var frontend embed.FS
+//go:embed client/dist
+var client embed.FS
 
 func newServer() *server {
-	s := &server{frontend, os.Getenv("PORT"), os.Getenv("GCP_DATASET_ID"), os.Getenv("GCP_TABLEID"), os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux()}
+	s := &server{client, os.Getenv("PORT"), os.Getenv("GCP_DATASET_ID"), os.Getenv("GCP_TABLEID"), os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID"), *http.NewServeMux()}
 	s.routes()
 	return s
 }
 
-// loadEnv sets environment variables defined in an `.env` file.
+// loadEnv sets environment variables defined in an `.env` file
 func loadEnv(pathToEnvFile string) (err error) {
 	file, err := os.Open(pathToEnvFile)
 	if err != nil {

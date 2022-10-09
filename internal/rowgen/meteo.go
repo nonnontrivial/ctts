@@ -28,7 +28,7 @@ const (
 	meteoSunsetKey      = "sunset"
 	// potential path segment in localtimezone symlink; if found in path to
 	// local timezone, timezone is determined to be unsupported; this is not
-	// strictly necessary, and should be accounted for in a future version.
+	// strictly necessary...
 	zoneinfo            = "zoneinfo"
 	pathToLocalTimezone = "/etc/localtime"
 )
@@ -113,7 +113,7 @@ func (mc *meteoClient) formatTime(t time.Time) string {
 	return fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day())
 }
 
-// fetchWeatherData uses open meteo api to put datapoints into `meteoClient` struct fields.
+// fetchWeatherData uses open meteo api to put datapoints into `meteoClient` struct fields
 func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
 	timezone, err := getLocalTimezoneName()
 	if err != nil {
@@ -148,7 +148,7 @@ func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
 	return nil
 }
 
-// setupWeatherClient creates a new weather client in terms of the time and location of a brightness measurement.
+// setupWeatherClient creates a new weather client in terms of the time and location of a brightness measurement
 func setupWeatherClient(t time.Time, lat, lng string) (*meteoClient, error) {
 	client := &meteoClient{
 		client: &http.Client{Timeout: time.Second * 10},
