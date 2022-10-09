@@ -23,5 +23,5 @@ GCP_QUEUE_ID=
 
 ## develop
 ```shell
-go run ./...
+go run *.go
 ```
