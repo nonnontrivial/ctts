@@ -2,8 +2,6 @@ package main
 
 import (
 	"time"
-
-	"github.com/nonnontrivial/ctts/internal/rowgen"
 )
 
 // struct for the sky quality meter read used during POST
@@ -17,9 +15,9 @@ type Read struct {
 }
 
 func (r *Read) FindFeatures() (*Row, error) {
-	g := rowgen.NewGenerator(r.Lat, r.Lng, r.TimeOfMeasurement)
-	var independentVars []string
-	if err := g.Backfill(&independentVars); err != nil {
+	g := NewRowGenerator(r.Lat, r.Lng, r.TimeOfMeasurement)
+	var features Row
+	if err := g.Backfill(&features); err != nil {
 		return nil, err
 	}
 	// brightness := strconv.FormatFloat(float64(r.Brightness), 'E', -1, 64)

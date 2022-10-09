@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -77,7 +77,7 @@ func (s *server) handleNewRead() http.HandlerFunc {
 				},
 			},
 		}
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

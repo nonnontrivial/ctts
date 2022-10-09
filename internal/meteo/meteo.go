@@ -1,10 +1,10 @@
-package rowgen
+package meteo
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -33,11 +33,11 @@ const (
 	pathToLocalTimezone = "/etc/localtime"
 )
 
-type meteoClient struct {
+type MeteoClient struct {
 	client *http.Client
-	data   struct {
-		elevation   float32
-		temperature float32
+	Data   struct {
+		Elevation   float32
+		Temperature float32
 	}
 }
 type meteoResponse struct {
@@ -109,12 +109,12 @@ type fetchParams struct {
 }
 
 // formatTime formats a time to yyyy-mm-dd
-func (mc *meteoClient) formatTime(t time.Time) string {
+func (mc *MeteoClient) formatTime(t time.Time) string {
 	return fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day())
 }
 
 // fetchWeatherData uses open meteo api to put datapoints into `meteoClient` struct fields
-func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
+func (mc *MeteoClient) fetchWeatherData(p fetchParams) error {
 	timezone, err := getLocalTimezoneName()
 	if err != nil {
 		return err
@@ -131,7 +131,7 @@ func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
 	if resp.StatusCode != http.StatusOK {
 		return errMeteoResponse
 	}
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -139,18 +139,18 @@ func (mc *meteoClient) fetchWeatherData(p fetchParams) error {
 	if err := json.Unmarshal(bytes, &res); err != nil {
 		return err
 	}
-	mc.data.elevation = res.Elevation
+	mc.Data.Elevation = res.Elevation
 	idx, err := getHourlyAstroDuskIndex(res.Hourly.Time, res.Daily.Sunset)
 	if err != nil {
 		return err
 	}
-	mc.data.temperature = res.Hourly.Temperature[idx]
+	mc.Data.Temperature = res.Hourly.Temperature[idx]
 	return nil
 }
 
 // setupWeatherClient creates a new weather client in terms of the time and location of a brightness measurement
-func setupWeatherClient(t time.Time, lat, lng string) (*meteoClient, error) {
-	client := &meteoClient{
+func SetupWeatherClient(t time.Time, lat, lng string) (*MeteoClient, error) {
+	client := &MeteoClient{
 		client: &http.Client{Timeout: time.Second * 10},
 	}
 	if err := client.fetchWeatherData(fetchParams{t, lat, lng, hourlyParams, dailyParams}); err != nil {

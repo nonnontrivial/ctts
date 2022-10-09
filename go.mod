@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/bigquery v1.42.0
 	cloud.google.com/go/cloudtasks v1.5.0
 	github.com/evanw/esbuild v0.15.7
+	github.com/golang/protobuf v1.5.2
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 	google.golang.org/genproto v0.0.0-20220920201722-2b89144ce006
 )
@@ -13,7 +14,6 @@ require (
 require (
 	cloud.google.com/go/compute v1.7.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.1.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.5.1 // indirect
