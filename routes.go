@@ -28,6 +28,7 @@ func setupClientHandler(s *server) (http.Handler, error) {
 		EntryPoints: []string{"./client/src/index.tsx"},
 		Outfile:     "./client/dist/build/out.js",
 		Write:       true,
+		Bundle:      true,
 	})
 	if len(result.Errors) > 0 {
 		return nil, errFailedToBuildClient
@@ -48,6 +49,7 @@ func (s *server) routes() {
 	if err != nil {
 		log.Fatalln("got errors during client build")
 	}
+	log.Println("built client")
 	// TODO: handle spa (404-based handling)
 	s.router.Handle("/", h)
 }
