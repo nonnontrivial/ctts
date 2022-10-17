@@ -15,14 +15,7 @@ import (
 	taskspb "google.golang.org/genproto/googleapis/cloud/tasks/v2"
 )
 
-var errFailedToBuildClient = errors.New("failed to build client")
-
-const (
-	// endpoint of task runner for appending to csv records
-	sitesRecordsAppendPath = "/edi/records/insert"
-)
-
-// setupClientHandler builds the frontend react client
+// setupClientHandler builds the client
 func setupClientHandler(s *server) (http.Handler, error) {
 	result := esbuildAPI.Build(esbuildAPI.BuildOptions{
 		EntryPoints: []string{"./client/src/index.tsx"},
@@ -31,7 +24,7 @@ func setupClientHandler(s *server) (http.Handler, error) {
 		Bundle:      true,
 	})
 	if len(result.Errors) > 0 {
-		return nil, errFailedToBuildClient
+		return nil, errors.New("failed to build client")
 	}
 	fsys := fs.FS(s.clientFiles)
 	subtree, err := fs.Sub(fsys, "client/dist")
@@ -41,9 +34,18 @@ func setupClientHandler(s *server) (http.Handler, error) {
 	return http.FileServer(http.FS(subtree)), nil
 }
 
+const apiPrefix = "/api"
+
+var (
+	recordsAppendPath = fmt.Sprintf("%s/records/append", apiPrefix)
+	newReadPath       = fmt.Sprintf("%s/read", apiPrefix)
+)
+
+// routes registers the routes
 func (s *server) routes() {
-	s.router.HandleFunc("/api/reads/new", s.handleNewRead())
-	s.router.HandleFunc(sitesRecordsAppendPath, s.handleRecordsInsert())
+	// TODO: use gRPC
+	s.router.HandleFunc(newReadPath, s.handleNewRead())
+	s.router.HandleFunc(recordsAppendPath, s.handleRecordsAppend())
 
 	h, err := setupClientHandler(s)
 	if err != nil {
@@ -74,7 +76,7 @@ func (s *server) handleNewRead() http.HandlerFunc {
 				MessageType: &taskspb.Task_AppEngineHttpRequest{
 					AppEngineHttpRequest: &taskspb.AppEngineHttpRequest{
 						HttpMethod:  taskspb.HttpMethod_POST,
-						RelativeUri: sitesRecordsAppendPath,
+						RelativeUri: recordsAppendPath,
 					},
 				},
 			},
@@ -93,7 +95,7 @@ func (s *server) handleNewRead() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleRecordsInsert() http.HandlerFunc {
+func (s *server) handleRecordsAppend() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("running records insert task handler")
 		taskName := r.Header.Get("X-Appengine-Taskname")

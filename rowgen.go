@@ -31,7 +31,7 @@ func (rg *rowGenerator) getTemperature(mc *meteo.MeteoClient) func() (float32, e
 }
 
 func (rg *rowGenerator) Backfill(row *Row) error {
-	_, err := meteo.SetupWeatherClient(rg.timeOfMeasurement, rg.lat, rg.lng)
+	_, err := meteo.SetupClient(rg.timeOfMeasurement, rg.lat, rg.lng)
 	if err != nil {
 		return err
 	}

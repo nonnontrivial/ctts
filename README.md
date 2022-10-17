@@ -9,6 +9,7 @@ It uses [GCP](https://cloud.google.com/) and is designed to be configurable / tu
 It contains a small embedded [React](https://reactjs.org/) frontend.
 
 ## env vars
+
 The following environment variables are requried to use ctts.
 > note that a `.env` file can be used to load the following values directly.
 ```shell
@@ -22,6 +23,7 @@ GCP_QUEUE_ID=
 ```
 
 ## develop
+
 ```shell
 go run *.go
 ```
