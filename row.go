@@ -17,7 +17,6 @@ func InsertRow(row *Row, projectId, datasetId, tableId string) error {
 		return err
 	}
 	defer c.Close()
-	// TODO:
 	_, err = c.CreateWriteStream(ctx, &storagepb.CreateWriteStreamRequest{
 		Parent: fmt.Sprintf("projects/%s/datasets/%s/tables/%s", projectId, datasetId, tableId),
 		WriteStream: &storagepb.WriteStream{
@@ -27,16 +26,5 @@ func InsertRow(row *Row, projectId, datasetId, tableId string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.AppendRows(ctx)
-	if err != nil {
-		return err
-	}
-	// var opts proto.MarshalOptions
-	// var data [][]byte
-	// buf, err := opts.Marshal(row)
-	// if err != nil {
-	// 	return err
-	// }
-	// data = append(data, buf)
 	return nil
 }
