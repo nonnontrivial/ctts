@@ -27,3 +27,8 @@ GCP_QUEUE_ID=
 ```shell
 go run *.go
 ```
+
+## deploy
+
+```shell
+```

@@ -35,7 +35,7 @@ type spaHandler struct {
 	indexPath   string
 }
 
-// provider SPA-friendly implementation of this method
+// provide SPA-friendly implementation of this method
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path, err := filepath.Abs(r.URL.Path)
 	if err != nil {
@@ -67,13 +67,17 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.FS(files)).ServeHTTP(w, r)
 }
 
+func (s *server) handleRead(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(map[string]bool{"42": true})
+}
+
 func (s *server) routes() {
 	if err := buildClient(); err != nil {
 		log.Fatalln(err)
 	}
-	s.router.HandleFunc("/api/read", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]bool{"42": true})
-	})
+	api := s.router.PathPrefix("/api").Subrouter()
+	api.HandleFunc("/read", s.handleRead).Methods(http.MethodPost, http.MethodGet)
+
 	spa := spaHandler{clientFiles, "client/dist", "index.html"}
 	s.router.PathPrefix("/").Handler(spa)
 }

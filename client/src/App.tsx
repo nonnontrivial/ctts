@@ -1,25 +1,38 @@
 import * as React from 'react'
+import { createBrowserRouter, RouterProvider, useRouteError } from 'react-router-dom'
+import Root from './routes/Root'
+import Read from './routes/Read'
 
-const App = () => {
-  const [errorMessage, setErrorMesage] = React.useState<string | null>(null)
-  const [geoEnabled, setGeoEnabled] = React.useState(false)
-  React.useEffect(() => {
-    setGeoEnabled('geolocation' in window.navigator)
-    try {
-      window.navigator.geolocation.getCurrentPosition((pos) => {
-        console.log(pos)
-        setErrorMesage(null)
-      })
-    } catch {
-      setErrorMesage('something went wrong')
-    }
-  }, [])
+const NotFound = () => {
+  const error = useRouteError()
+  console.error(error)
 
   return (
     <>
-      {errorMessage}
-      geolocation enabled: {geoEnabled ? 'true' : 'false'}
+      <p>that's an error (!)</p>
     </>
+  )
+}
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    errorElement: <NotFound />,
+    children: [
+      {
+        path: "read",
+        element: <Read />,
+      }
+    ]
+  },
+])
+
+const App = () => {
+  return (
+    <React.StrictMode>
+      <RouterProvider router={router} />
+    </React.StrictMode>
   )
 }
 
