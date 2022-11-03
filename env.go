@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-// loadEnv sets environment variables defined in an `.env` file
 func loadEnv(pathToEnvFile string) (err error) {
 	file, err := os.Open(pathToEnvFile)
 	if err != nil {

@@ -1,3 +1,4 @@
 .env
 .vscode
+client/dist/build
 client/node_modules

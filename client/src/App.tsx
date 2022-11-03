@@ -28,12 +28,10 @@ const router = createBrowserRouter([
   },
 ])
 
-const App = () => {
-  return (
-    <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>
-  )
-}
+const App = () => (
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
+)
 
 export default App
