@@ -43,7 +43,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		ReadTimeout:  10 * time.Second,
 	}
-	log.Printf("starting server on port %s...\n", s.port)
+	log.Printf("serving HTTP on port %s...\n", s.port)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalln(err)
 	}
