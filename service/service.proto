@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package ctts;
+
+option go_package = "github.com/nonnontrivial/ctts/service";
+
+service Service {
+    rpc Read(ReadRequest) returns (ReadReply) {}
+    rpc View(ViewRequest) returns (ViewReply) {}
+}
+
+message ReadRequest {
+    string brightness = 1;
+}
+
+message ReadReply {
+}
+
+message ViewRequest {
+    string lat = 1;
+    string lng = 2;
+}
+
+message ViewReply {
+    string brightness = 1;
+}

@@ -1,31 +1,32 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"log"
-	"net/http"
 
+	pb "github.com/nonnontrivial/ctts/service"
 	"google.golang.org/grpc"
 )
 
-func (s *server) handleRead(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(map[string]bool{"42": true})
-}
-
-func (s *server) handleView(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(map[string]bool{"42": false})
-}
-
 type gServer struct {
+	pb.UnimplementedServiceServer
+}
+
+func (gs *gServer) Read(ctx context.Context, in *pb.ReadRequest) (*pb.ReadReply, error) {
+	log.Println(in.GetBrightness())
+	return &pb.ReadReply{}, nil
+}
+
+func (gs *gServer) View(ctx context.Context, in *pb.ViewRequest) (*pb.ViewReply, error) {
+	lat := in.GetLat()
+	lng := in.GetLng()
+	log.Println(lat, lng)
+	return &pb.ViewReply{Brightness: "1"}, nil
 }
 
 func (s *server) routes() {
 	g := grpc.NewServer()
-	log.Println(g)
-
-	api := s.router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/read", s.handleRead).Methods(http.MethodPost, http.MethodGet)
-	api.HandleFunc("/view", s.handleView)
+	pb.RegisterServiceServer(g, &gServer{})
 
 	if err := buildClient(); err != nil {
 		log.Fatalln(err)

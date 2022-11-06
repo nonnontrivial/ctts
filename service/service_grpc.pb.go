@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: service.proto
+// source: service/service.proto
 
-package main
+package service
 
 import (
 	context "context"
@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
 	Read(ctx context.Context, in *ReadRequest, opts ...grpc.CallOption) (*ReadReply, error)
+	View(ctx context.Context, in *ViewRequest, opts ...grpc.CallOption) (*ViewReply, error)
 }
 
 type serviceClient struct {
@@ -42,11 +43,21 @@ func (c *serviceClient) Read(ctx context.Context, in *ReadRequest, opts ...grpc.
 	return out, nil
 }
 
+func (c *serviceClient) View(ctx context.Context, in *ViewRequest, opts ...grpc.CallOption) (*ViewReply, error) {
+	out := new(ViewReply)
+	err := c.cc.Invoke(ctx, "/ctts.Service/View", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
 	Read(context.Context, *ReadRequest) (*ReadReply, error)
+	View(context.Context, *ViewRequest) (*ViewReply, error)
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -56,6 +67,9 @@ type UnimplementedServiceServer struct {
 
 func (UnimplementedServiceServer) Read(context.Context, *ReadRequest) (*ReadReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Read not implemented")
+}
+func (UnimplementedServiceServer) View(context.Context, *ViewRequest) (*ViewReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method View not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -88,6 +102,24 @@ func _Service_Read_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_View_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ViewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).View(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ctts.Service/View",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).View(ctx, req.(*ViewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -99,7 +131,11 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Read",
 			Handler:    _Service_Read_Handler,
 		},
+		{
+			MethodName: "View",
+			Handler:    _Service_View_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "service.proto",
+	Metadata: "service/service.proto",
 }
