@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/evanw/esbuild v0.15.7
 	github.com/golang/protobuf v1.5.2
-	github.com/gorilla/mux v1.8.0
 	google.golang.org/grpc v1.49.0
 )
 

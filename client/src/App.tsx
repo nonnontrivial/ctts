@@ -1,18 +1,8 @@
 import * as React from 'react'
-import { createBrowserRouter, RouterProvider, useRouteError } from 'react-router-dom'
-import Root from './routes/Root'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import Root, { NotFound } from './routes/Root'
 import Read from './routes/Read'
-
-const NotFound = () => {
-  const error = useRouteError()
-  console.error(error)
-
-  return (
-    <>
-      <p>that's an error (!)</p>
-    </>
-  )
-}
+import View from './routes/View'
 
 const router = createBrowserRouter([
   {
@@ -23,7 +13,11 @@ const router = createBrowserRouter([
       {
         path: "read",
         element: <Read />,
-      }
+      },
+      {
+        path: "view",
+        element: <View />,
+      },
     ]
   },
 ])

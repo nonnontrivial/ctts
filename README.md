@@ -15,11 +15,11 @@ The following environment variables are requried to use ctts.
 ```shell
 PORT=
 # gcp-specific
-GCP_PROJECT_ID=
-GCP_DATASET_ID=
-GCP_TABLE_ID=
-GCP_LOCATION_ID=
-GCP_QUEUE_ID=
+# GCP_PROJECT_ID=
+# GCP_DATASET_ID=
+# GCP_TABLE_ID=
+# GCP_LOCATION_ID=
+# GCP_QUEUE_ID=
 ```
 
 ## develop

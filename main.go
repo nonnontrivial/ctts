@@ -6,24 +6,16 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
-// server represents the entire ctts service, and holds all dependencies
 type server struct {
-	router     *mux.Router
-	port       string
-	datasetId  string
-	tableId    string
-	projectId  string
-	locationId string
-	queueId    string
+	router *http.ServeMux
+	port   string
 }
 
 func newServer() *server {
-	router := mux.NewRouter()
-	s := &server{router, os.Getenv("PORT"), os.Getenv("GCP_DATASET_ID"), os.Getenv("GCP_TABLEID"), os.Getenv("GCP_PROJECT_ID"), os.Getenv("GCP_LOCATION_ID"), os.Getenv("GCP_QUEUE_ID")}
+	router := http.NewServeMux()
+	s := &server{router, os.Getenv("PORT")}
 	s.routes()
 	return s
 }

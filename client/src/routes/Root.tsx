@@ -1,5 +1,17 @@
 import * as React from 'react'
-import { Outlet } from "react-router-dom"
+import { Outlet,Link,useRouteError } from "react-router-dom"
+
+const NotFound = () => {
+  const error = useRouteError()
+  console.error(error)
+
+  return (
+    <>
+      <p>that's an error (!)</p>
+      <Link to="/">go back</Link>
+    </>
+  )
+}
 
 const Root = () => {
   const [errorMessage, setErrorMesage] = React.useState<string | null>(null)
@@ -27,3 +39,4 @@ const Root = () => {
 }
 
 export default Root
+export {NotFound}
