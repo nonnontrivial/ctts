@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Dialog } from '@headlessui/react'
 
 const useUSBDeviceConnected = (): boolean => {
   const [connected, setConnected] = React.useState(false)
@@ -12,7 +13,11 @@ const Read = () => {
   const connected = useUSBDeviceConnected()
   return (
     <>
-      {connected ? 'connected' : 'not connected'}
+      <Dialog open={!connected} onClose={() => { }} className="relative z-50">
+        <Dialog.Panel>
+          <Dialog.Title>USB device not connected</Dialog.Title>
+        </Dialog.Panel>
+      </Dialog>
     </>
   )
 }
