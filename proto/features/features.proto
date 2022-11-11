@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ctts;
+
+option go_package = "github.com/nonnontrivial/ctts/proto/features";
+
+message Row {
+    int32 LightPollution = 1;
+    int32 VEI = 2;
+    int32 CloudCover = 3;
+    int32 Humidity = 4;
+}

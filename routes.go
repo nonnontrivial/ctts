@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
-	pb "github.com/nonnontrivial/ctts/service"
+	pb "github.com/nonnontrivial/ctts/proto/service"
 	"google.golang.org/grpc"
 )
 
@@ -13,18 +14,24 @@ type serviceServer struct {
 }
 
 func (ss *serviceServer) Read(ctx context.Context, in *pb.ReadRequest) (*pb.ReadReply, error) {
-	log.Println(in.GetBrightness())
 	return &pb.ReadReply{}, nil
 }
 
+type profile struct {
+	lat, lng string
+	timeOf   time.Time
+}
+
 func (ss *serviceServer) View(ctx context.Context, in *pb.ViewRequest) (*pb.ViewReply, error) {
-	lat := in.GetLat()
-	lng := in.GetLng()
-	log.Println(lat, lng)
+	p := &profile{
+		lat:    in.GetLat(),
+		lng:    in.GetLng(),
+		timeOf: time.Now(),
+	}
+	log.Println(p)
 	return &pb.ViewReply{Brightness: "1"}, nil
 }
 
-// routes establishes the gRPC server and handles the REST-based endpoints.
 func (s *server) routes() {
 	g := grpc.NewServer()
 	pb.RegisterServiceServer(g, &serviceServer{})

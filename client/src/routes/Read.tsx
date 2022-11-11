@@ -1,9 +1,20 @@
 import * as React from 'react'
 
-const Read = ()=>{
-  console.log('read')
+const useUSBDeviceConnected = (): boolean => {
+  const [connected, setConnected] = React.useState(false)
+  React.useEffect(() => {
+    return () => { }
+  }, [])
+  return connected
+}
 
-  return null
+const Read = () => {
+  const connected = useUSBDeviceConnected()
+  return (
+    <>
+      {connected ? 'connected' : 'not connected'}
+    </>
+  )
 }
 
 export default Read

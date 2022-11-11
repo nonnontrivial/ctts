@@ -2,7 +2,7 @@ import * as React from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Root, { NotFound } from './routes/Root'
 import Read from './routes/Read'
-import View from './routes/View'
+import View, { loader as viewLoader } from './routes/View'
 
 const router = createBrowserRouter([
   {
@@ -17,6 +17,7 @@ const router = createBrowserRouter([
       {
         path: "view",
         element: <View />,
+        loader: viewLoader
       },
     ]
   },

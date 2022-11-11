@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ctts;
 
-option go_package = "github.com/nonnontrivial/ctts/service";
+option go_package = "github.com/nonnontrivial/ctts/proto/service";
 
 service Service {
     rpc Read(ReadRequest) returns (ReadReply) {}
