@@ -19,11 +19,22 @@ PORT=
 
 ## develop
 
+Generating the server gRPC code happens like this:
+
+> note: need to install the grpc web binary first
+
 ```shell
-go run *.go
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/service/service.proto
 ```
 
-## deploy
+Generating the client gRPC code happens like this:
 
 ```shell
+protoc -I=proto service/service.proto \
+  --js_out=import_style=commonjs,binary:client/src/grpc \
+  --grpc-web_out=import_style=typescript,mode=grpcweb:client/src/grpc
+```
+
+```shell
+go run *.go
 ```

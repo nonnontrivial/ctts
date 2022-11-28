@@ -4,7 +4,6 @@ import { Outlet, Link, useRouteError } from "react-router-dom"
 const NotFound = () => {
   const error = useRouteError()
   console.error(error)
-
   return (
     <>
       <p>that's an error (!)</p>
@@ -15,9 +14,7 @@ const NotFound = () => {
 
 const Root = () => {
   return (
-    <>
-      <Outlet />
-    </>
+    <Outlet />
   )
 }
 

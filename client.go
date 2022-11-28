@@ -19,7 +19,7 @@ func buildClient() error {
 		Bundle:      true,
 	})
 	if len(result.Errors) > 0 {
-		return errors.New("failed to build client")
+		return errors.New(result.Errors[0].Text)
 	}
 	return nil
 }
