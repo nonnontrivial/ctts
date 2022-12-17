@@ -1,5 +1,2 @@
 .env
-.vscode
-client/src/grpc
-client/dist/build
-client/node_modules
+NOTES.md
