@@ -1,7 +1,7 @@
 """Script for getting the bortle classification at a location's nearest
 astronomical twilight.
 
->>> python get_bortle_at_astro_twilight.py
+>>> python get_sky_brightness_at_nearest_astro_twilight.py
 """
 import argparse
 import typing as t
@@ -20,6 +20,8 @@ features = [
     "Elevation(m)",
     "CloudCover",
     "UTTimeHour",
+    "MoonAlt",
+    "MoonAz",
 ]
 HIDDEN_SIZE = 64 * 3
 OUTPUT_SIZE = 1
@@ -66,6 +68,9 @@ def get_astro_time_hour(astro_time: Time):
 
 
 class Site(Observer):
+    def __str__(self):
+        return f"<astro twilight: {self.utc_astro_twilight.iso}; moon alt: {self.moon_alt}; moon az: {self.moon_az}>"
+
     @property
     def utc_astro_twilight(self):
         return self.sun_set_time(
@@ -77,6 +82,21 @@ class Site(Observer):
         import numpy as np
 
         return np.sin(2 * np.pi * get_astro_time_hour(self.utc_astro_twilight) / 24)
+
+    @property
+    def moon_alt(self):
+        altaz = self.get_moon_altaz()
+        return altaz.alt.value
+
+    @property
+    def moon_az(self):
+        altaz = self.get_moon_altaz()
+        return altaz.az.value
+
+    def get_moon_altaz(self):
+        location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
+        observer = Observer(location=location)
+        return observer.moon_altaz(self.utc_astro_twilight)
 
 
 class MeteoClient:
@@ -119,15 +139,13 @@ if __name__ == "__main__":
     print(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
     site = Site(location=location, name=SITE_NAME)
+    print(f"registered site {site}")
     meteo = MeteoClient(site=site)
     try:
         cloud_cover, elevation = meteo.get_response_for_site()
     except Exception as e:
         print(f"could not get meteo data because {e}")
     else:
-        print(
-            f"astro twilight is at {site.utc_astro_twilight.iso} (sine is {site.time_hour}); cloud cover is {cloud_cover} oktas; elevation is {elevation} meters"
-        )
         torch.set_printoptions(sci_mode=False)
         X = torch.tensor(
             [
@@ -136,6 +154,8 @@ if __name__ == "__main__":
                 elevation,
                 cloud_cover,
                 site.time_hour,
+                site.moon_alt,
+                site.moon_az,
             ],
             dtype=torch.float32,
         ).unsqueeze(0)
