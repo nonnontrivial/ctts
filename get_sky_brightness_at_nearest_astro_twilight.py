@@ -1,5 +1,4 @@
-"""Script for getting the bortle classification at a location's nearest
-astronomical twilight.
+"""Script for getting predicted sky brightness at a location's nearest astronomical twilight.
 
 >>> python get_sky_brightness_at_nearest_astro_twilight.py
 """
@@ -45,13 +44,6 @@ class NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
-
-cwd = Path.cwd()
-path_to_state_dict = cwd / "model.pth"
-
-model = NeuralNetwork()
-model.load_state_dict(torch.load(path_to_state_dict))
-model.eval()
 
 ASTRO_TWILIGHT_DEGS = -18
 TEST_LAT = 43.05148
@@ -146,6 +138,12 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"could not get meteo data because {e}")
     else:
+        cwd = Path.cwd()
+        path_to_state_dict = cwd / "model.pth"
+        model = NeuralNetwork()
+        model.load_state_dict(torch.load(path_to_state_dict))
+        model.eval()
+
         torch.set_printoptions(sci_mode=False)
         X = torch.tensor(
             [
