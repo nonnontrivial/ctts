@@ -5,8 +5,6 @@
 import subprocess
 from pathlib import Path
 
-from google.cloud import sql
-
 script_path = Path.cwd() / "get_sky_brightness_at_nearest_astro_twilight.py"
 sites = {
     "home": (43.05148, -78.5767),
