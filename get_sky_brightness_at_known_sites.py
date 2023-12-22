@@ -2,20 +2,20 @@
 
 >>> python get_sky_brightness_at_known_sites.py
 """
+import csv
 import subprocess
 from pathlib import Path
 
-sites = {
-    "clarence": (43.05148, -78.5767),
-    "vera_rubin_lsst": (-30.2446, -70.7494),
-    "kitt_peak": (31.9583, -111.5967),
-}
+parent_path = Path(__file__).parent
+path_to_csv = parent_path / "sites.csv"
 
+with open(path_to_csv, mode="r") as f:
+    reader = csv.reader(f)
+    sites = list(reader)[1:]
 
 if __name__ == "__main__":
-    script_path = (
-        Path(__file__).parent / "get_sky_brightness_at_nearest_astro_twilight.py"
-    )
-    for site_name, (lat, lon) in sites.items():
+    script_path = parent_path / "get_sky_brightness_at_nearest_astro_twilight.py"
+    for site in sites:
+        lat, lon = site[1], site[2]
         cmd = ["python3", script_path, "--lat", str(lat), "--lon", str(lon)]
         subprocess.run(cmd)
