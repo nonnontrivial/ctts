@@ -3,6 +3,7 @@
 >>> python get_sky_brightness_at_nearest_astro_twilight.py
 """
 import argparse
+import logging
 import typing as t
 from pathlib import Path
 
@@ -12,6 +13,13 @@ import torch.nn as nn
 from astroplan import Observer
 from astropy.coordinates import EarthLocation
 from astropy.time import Time
+
+logging.basicConfig(
+    format="%(asctime)s -> %(levelname)s:%(message)s",
+    filename="app.log",
+    encoding="utf-8",
+    level=logging.DEBUG,
+)
 
 features = [
     "Latitude",
@@ -128,15 +136,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
     lat = float(args.lat)
     lon = float(args.lon)
-    print(f"registering site at {lat},{lon}")
+    logging.info(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
     site = Site(location=location, name=SITE_NAME)
-    print(f"registered site {site}")
+    logging.info(f"registered site {site}")
     meteo = MeteoClient(site=site)
     try:
         cloud_cover, elevation = meteo.get_response_for_site()
     except Exception as e:
-        print(f"could not get meteo data because {e}")
+        logging.error(f"could not get meteo data because {e}")
     else:
         cwd = Path.cwd()
         path_to_state_dict = cwd / "model.pth"
@@ -159,4 +167,4 @@ if __name__ == "__main__":
         ).unsqueeze(0)
         with torch.no_grad():
             pred = model(X)
-            print(f"got prediction {pred} on {X}")
+            logging.info(f"got prediction {pred} on {X}")

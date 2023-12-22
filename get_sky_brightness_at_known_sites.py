@@ -5,7 +5,6 @@
 import subprocess
 from pathlib import Path
 
-script_path = Path.cwd() / "get_sky_brightness_at_nearest_astro_twilight.py"
 sites = {
     "home": (43.05148, -78.5767),
     "vera_rubin_lsst": (-30.2446, -70.7494),
@@ -13,13 +12,8 @@ sites = {
 }
 
 
-def main():
-    """Get predictions for all sites known about ahead of time."""
+if __name__ == "__main__":
+    script_path = Path.cwd() / "get_sky_brightness_at_nearest_astro_twilight.py"
     for site_name, (lat, lon) in sites.items():
-        print(f"> processing site {site_name}")
         cmd = ["python3", script_path, "--lat", str(lat), "--lon", str(lon)]
         subprocess.run(cmd)
-
-
-if __name__ == "__main__":
-    main()

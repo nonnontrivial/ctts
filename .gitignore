@@ -1,2 +1,3 @@
 .venv
+*.log
 data/globe_at_night/*.csv
