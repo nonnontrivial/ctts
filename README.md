@@ -10,14 +10,14 @@ a threshold they set_.
 
 ## phase one: modeling & verification
 
-The first phase of this is to get the data and contruct the model, and prove out
-the results.
+The first phase of this is to get the data, construct the model, and then prove out
+the results..
 
 ### requirements
 
 - ability to find nearest astronomical twilight for a lat,lon,datetime
 - definition of runtime-constructable features expected to impact sky brightness
 - ability to clean/aggregate data containing Xs -> y relationship and form model
-- ability to create new X on data around a lat,lon,datetime
-- ability to persist predited result and compare with ground truth
-- ability to run as a launchd service
+- ability to create new Xs on data around a lat,lon,datetime
+- ability to persist predited result (logfile) and compare with ground truth (..?)
+- ability to run daily as a launchd service

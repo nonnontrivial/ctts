@@ -4,6 +4,7 @@
 """
 import argparse
 import logging
+import os
 import typing as t
 from pathlib import Path
 
@@ -14,9 +15,11 @@ from astroplan import Observer
 from astropy.coordinates import EarthLocation
 from astropy.time import Time
 
+logfile_name = os.getenv("LOGFILE_NAME", "ctts.log")
+path_to_logfile = Path.home() / logfile_name
 logging.basicConfig(
     format="%(asctime)s -> %(levelname)s:%(message)s",
-    filename="app.log",
+    filename=path_to_logfile,
     encoding="utf-8",
     level=logging.DEBUG,
 )
@@ -146,8 +149,7 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"could not get meteo data because {e}")
     else:
-        cwd = Path.cwd()
-        path_to_state_dict = cwd / "model.pth"
+        path_to_state_dict = Path(__file__).parent / "model.pth"
         model = NeuralNetwork()
         model.load_state_dict(torch.load(path_to_state_dict))
         model.eval()
