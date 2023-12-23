@@ -2,7 +2,7 @@
 # Runs the prediction on the known sites.
 # Intended to be run from launchd.
 script_dir=$(dirname "$(readlink -f "$0")")
-pip3 install -r "$script_dir/requirements.txt"
+cd "$script_dir" || exit 1
 
-script_path="$script_dir/get_sky_brightness_at_known_sites.py"
-python3 "$script_path"
+/usr/local/bin/pip3 install -r "requirements.txt"
+/usr/local/bin/python3 -m "prediction.predict"

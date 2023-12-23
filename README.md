@@ -23,3 +23,13 @@ the results..
 - ability to run daily as a launchd service
 
 ## phase two: notification
+
+Now that there are reasonable predictions coming out of the model, the user should
+be notified when a prediction is at or above that site's threshold..
+
+The script should, for each site:
+
+- predict brightness
+- find all users that watch that site
+- see if the prediction met their threshold
+- send a notification in the configured way if so

@@ -1,6 +1,4 @@
 """Script for getting predicted sky brightness at a location's nearest astronomical twilight.
-
->>> python get_sky_brightness_at_nearest_astro_twilight.py
 """
 import argparse
 import logging
@@ -131,8 +129,6 @@ class MeteoClient:
 
 
 if __name__ == "__main__":
-    import pdb
-
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--lat", required=True, type=str, help="latitude")
     parser.add_argument("--lon", required=True, type=str, help="longitude")
