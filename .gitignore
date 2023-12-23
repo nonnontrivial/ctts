@@ -3,3 +3,4 @@ __pycache__
 *.log
 .DS_Store
 data/globe_at_night/*.csv
+prediction/*.csv

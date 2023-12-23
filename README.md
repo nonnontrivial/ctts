@@ -2,11 +2,11 @@
 
 ## purpose
 
-The purpose of CTTS is to bring the night sky closer to the user.
+> The purpose of CTTS is to bring the night sky closer to the user.
 
 For now, this will take the form of _notifying the user when a site that they are
 watching has a predicted brightness at that site's astronomical twilight which is above
-a threshold they set_.
+a threshold the user sets_.
 
 ## phase one: modeling & verification
 
@@ -22,7 +22,7 @@ the results..
 - ability to persist predicted result (logfile) and compare with ground truth (..?)
 - ability to run daily as a launchd service
 
-## phase two: notification
+## phase two: messaging
 
 Now that there are reasonable predictions coming out of the model, the user should
 be notified when a prediction is at or above that site's threshold..
@@ -32,10 +32,6 @@ The script should, for each site:
 - predict brightness
 - find all users that watch that site
 - see if the prediction met their threshold
-- send a notification in the configured way if so
+- send an imessage to the user if so
 
-## phase three: user interface
-
-Users can be notified when sites are expected to have brightness above a threshold
-at the time of astronomical twilight. But what about how sites are selected in the
-first place?
+## phase three: infrastructure & data storage

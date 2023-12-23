@@ -2,4 +2,3 @@ astroplan==0.9.1
 astropy==6.0.0
 torch==2.1.2
 requests==2.31.0
-twilio==8.11.0

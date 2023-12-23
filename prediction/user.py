@@ -7,3 +7,4 @@ class User:
     id: str
     site_ids: t.List[str]
     site_thresholds: t.Dict[str, float]
+    number: str

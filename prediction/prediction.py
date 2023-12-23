@@ -1,5 +1,4 @@
 import logging
-import os
 import typing as t
 from pathlib import Path
 
@@ -15,15 +14,6 @@ from .constants import (
     SITE_NAME,
 )
 from .nn import NeuralNetwork
-
-logfile_name = os.getenv("LOGFILE_NAME", "ctts.log")
-path_to_logfile = Path.home() / logfile_name
-logging.basicConfig(
-    format="%(asctime)s -> %(levelname)s:%(message)s",
-    filename=path_to_logfile,
-    encoding="utf-8",
-    level=logging.DEBUG,
-)
 
 
 def get_astro_time_hour(astro_time: Time):
@@ -98,10 +88,10 @@ class MeteoClient:
 def get_model_prediction_for_nearest_astro_twilight(
     lat: float, lon: float
 ) -> t.Tuple[torch.Tensor, torch.Tensor]:
-    logging.info(f"registering site at {lat},{lon}")
+    logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
     site = Site(location=location, name=SITE_NAME)
-    logging.info(f"registered site {site}")
+    logging.debug(f"registered site {site}")
     meteo = MeteoClient(site=site)
     try:
         cloud_cover, elevation = meteo.get_response_for_site()
@@ -128,5 +118,5 @@ def get_model_prediction_for_nearest_astro_twilight(
         ).unsqueeze(0)
         with torch.no_grad():
             pred = model(X)
-            logging.info(f"got prediction {pred} on {X}")
+            logging.debug(f"got prediction {pred} on {X}")
             return X, pred, site.utc_astro_twilight.iso
