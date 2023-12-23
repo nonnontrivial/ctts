@@ -129,4 +129,4 @@ def get_model_prediction_for_nearest_astro_twilight(
         with torch.no_grad():
             pred = model(X)
             logging.info(f"got prediction {pred} on {X}")
-            return X, pred
+            return X, pred, site.utc_astro_twilight.iso

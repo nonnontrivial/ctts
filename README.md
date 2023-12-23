@@ -33,3 +33,9 @@ The script should, for each site:
 - find all users that watch that site
 - see if the prediction met their threshold
 - send a notification in the configured way if so
+
+## phase three: user interface
+
+Users can be notified when sites are expected to have brightness above a threshold
+at the time of astronomical twilight. But what about how sites are selected in the
+first place?
