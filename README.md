@@ -8,6 +8,15 @@ For now, this will take the form of _notifying the user when a site that they ar
 watching has a predicted brightness at that site's astronomical twilight which is above
 a threshold the user sets_.
 
+## run
+
+> Note: messaging works for macOS only
+
+```sh
+cd ctts
+python -m prediction.predict
+```
+
 ## phase one: modeling & verification
 
 The first phase of this is to get the data, construct the model, and then prove out

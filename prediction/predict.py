@@ -2,6 +2,7 @@
 
 Usually called from the `predict.sh` script, as part of a launchd service.
 """
+import platform
 import csv
 import logging
 import os
@@ -83,6 +84,10 @@ if __name__ == "__main__":
                 else:
                     site_summaries_per_user[user.id].append(summary)
     for user_id, site_summaries in site_summaries_per_user.items():
+        os_name = platform.system()
+        if os_name != "Darwin":
+            logging.warning(f"OS must be macOS; detected {os_name}.")
+            break
         user = get_user_by_id(user_id, users)
         imessage = build_imessage(user, site_summaries)
         logging.info(
