@@ -14,13 +14,7 @@ from .constants import (
     SITE_NAME,
 )
 from .nn import NeuralNetwork
-
-
-def get_astro_time_hour(astro_time: Time):
-    iso: str = astro_time.iso
-    second_segment = iso.split(" ")[1]
-    mins_idx = second_segment.index(":")
-    return int(second_segment[:mins_idx])
+from .utils import get_astro_time_hour
 
 
 class Site(Observer):

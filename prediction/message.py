@@ -26,16 +26,17 @@ class SiteSummary:
 def build_imessage(user: User, site_summaries: t.List[SiteSummary]) -> Message:
     formatted_site_summaries = "\n".join(
         [
-            f"site '{x.name}' predicted to have {x.predicted_y:.2f}mpsas at {x.astro_twilight}\n"
+            f"\nsite '{x.name}' predicted to have {x.predicted_y:.2f}mpsas at {x.astro_twilight} UTC."
             for x in site_summaries
         ]
     )
-    message = f"<<ctts>>\n{formatted_site_summaries}"
+    num_summaries = len(site_summaries)
+    message = f"Hi. CTTS predicted {num_summaries} site{'s' if num_summaries > 1 else ''} will have good sky brightness at nearest astronomical twilight:\n{formatted_site_summaries}"
     return Message(message=message, recipients=[user.number])
 
 
 def send_imessage_to_user(message: Message) -> None:
-    """Send an imessage to the user via Shortcuts.
+    """Send an iMessage to a recipient via Shortcuts.
 
     See https://github.com/kevinschaich/py-imessage-shortcuts
     """

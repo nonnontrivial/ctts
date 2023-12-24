@@ -2,15 +2,16 @@
 
 Usually called from the `predict.sh` script, as part of a launchd service.
 """
-import platform
 import csv
 import logging
 import os
+import platform
 import typing as t
 from pathlib import Path
 
 from .message import SiteSummary, build_imessage, send_imessage_to_user
 from .prediction import get_model_prediction_for_nearest_astro_twilight
+from .site import Site
 from .user import User
 
 logfile_name = os.getenv("LOGFILE_NAME", "ctts.log")
@@ -27,9 +28,12 @@ parent_path = Path(__file__).parent
 path_to_sites_csv = parent_path / "sites.csv"
 path_to_users_csv = parent_path / "users.csv"
 
-with open(path_to_sites_csv, mode="r") as f:
-    reader = csv.reader(f)
-    sites = list(reader)[1:]
+
+def get_sites() -> t.List[Site]:
+    with open(path_to_sites_csv, mode="r") as f:
+        reader = csv.reader(f)
+        _header = next(reader)
+        return [Site(*x) for x in reader]
 
 
 def get_users() -> t.List[User]:
@@ -61,23 +65,23 @@ def get_user_threshold_for_site(user: User, site_id: str) -> float:
 
 
 if __name__ == "__main__":
+    sites = get_sites()
     users = get_users()
     site_summaries_per_user: t.Dict[str, t.List[SiteSummary]] = {}
     for site in sites:
-        site_id, site_name, lat, lon, *remaining = site
-        lat, lon = float(lat), float(lon)
+        lat, lon = float(site.lat), float(site.lon)
         _, y, astro_twilight = get_model_prediction_for_nearest_astro_twilight(lat, lon)
         y = float(y.item())
-        users_watching_site = get_users_watching_site(site_id, users)
+        users_watching_site = get_users_watching_site(site.id, users)
         for user in users_watching_site:
-            user_threshold = get_user_threshold_for_site(user, site_id)
+            user_threshold = get_user_threshold_for_site(user, site.id)
             brightness_meets_threshold = y >= user_threshold
             if brightness_meets_threshold:
                 logging.info(
-                    f"brightness threshold ({y}/{user_threshold}) met for user {user.id} at site {site_id}"
+                    f"brightness threshold ({y}/{user_threshold}) met for user {user.id} at site {site.id}"
                 )
                 summary = SiteSummary(
-                    name=site_name, astro_twilight=astro_twilight, predicted_y=y
+                    name=site.name, astro_twilight=astro_twilight, predicted_y=y
                 )
                 if user.id not in site_summaries_per_user:
                     site_summaries_per_user.setdefault(user.id, [summary])
