@@ -36,11 +36,9 @@ the results..
 Now that there are reasonable predictions coming out of the model, the user should
 be notified when a prediction is at or above that site's threshold..
 
-The script should, for each site:
+### requirements
 
-- predict brightness
-- find all users that watch that site
-- see if the prediction met their threshold
-- send an imessage to the user if so
+- ability to generate site summaries for each user
+- ability to send an iMessage to each user
 
 ## phase three: infrastructure & data storage
