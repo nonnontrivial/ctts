@@ -24,6 +24,10 @@ brightness value at its nearest astronomical twilight).
 
 ```sh
 cd ctts
+git checkout v0.1.0
 pip install -r requirements.txt
+```
+
+```sh
 python -m prediction.predict
 ```
