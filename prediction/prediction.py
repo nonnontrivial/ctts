@@ -81,7 +81,7 @@ class MeteoClient:
 
 def get_model_prediction_for_nearest_astro_twilight(
     lat: float, lon: float
-) -> t.Tuple[torch.Tensor, torch.Tensor]:
+) -> t.Tuple[torch.Tensor, torch.Tensor, str]:
     logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
     site = Site(location=location, name=SITE_NAME)
