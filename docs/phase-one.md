@@ -18,7 +18,7 @@ brightness value at its nearest astronomical twilight).
 
 ### run
 
-> Note: messaging works for macOS only due to use of iMessage and Shortcuts
+> Note: messaging works for _macOS only_ due to use of iMessage and Shortcuts
 
 > Note: tested on python3.11
 
