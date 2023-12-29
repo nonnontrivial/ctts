@@ -1,0 +1,5 @@
+.venv
+.pytest_cache
+notebooks
+data
+docs

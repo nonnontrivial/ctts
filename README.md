@@ -8,6 +8,16 @@
 
 CTTS contains a sky brightness model, which allows getting a sky brightness prediction at nearest astronomical twilight to a latitude and longitude.
 
+### _`/api/prediction`_
+
+Gets the predicted sky brightness at nearest [astronomical twilight](https://www.weather.gov/lmk/twilight-types#:~:text=Astronomical%20Twilight%3A,urban%20or%20suburban%20light%20pollution.) to provided `lat` and `lon`.
+
+#### example
+
+```
+/api/prediction?lat=-30.2466&lon=-70.7494"
+```
+
 ### running with docker
 
 - build the image
@@ -23,10 +33,10 @@ docker build -t ctts:latest .
 docker run -d --name ctts -p 8000:80 ctts:latest
 ```
 
-- GET `/predict` to see model's predicted sky brightness at a `lat`, `lon` for that site's astronomical twilight.
+- GET `/api/prediction` to see model's predicted sky brightness at a `lat`, `lon` for that site's astronomical twilight.
 
 ```sh
-curl "http://localhost:8000/api/predict?lat=-30.2466&lon=-70.7494"
+curl "http://localhost:8000/api/prediction?lat=-30.2466&lon=-70.7494"
 ```
 
 ```json

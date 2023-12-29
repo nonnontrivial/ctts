@@ -55,19 +55,20 @@ class MeteoClient:
     def __init__(self, site: Site) -> None:
         self.site = site
 
-    def get_response_for_site(self) -> t.Tuple:
-        import requests
+    async def get_response_for_site(self) -> t.Tuple:
+        import httpx
 
         lat, lon = self.site.latitude.value, self.site.longitude.value
-        res = requests.get(
-            f"{OPEN_METEO_BASE_URL}/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,cloud_cover&forecast_days=1"
-        )
-        res.raise_for_status()
-        res_json = res.json()
-        idx = self.get_hourly_index_of_astro_twilight()
-        cloud_cover = res_json["hourly"]["cloud_cover"][idx]
-        cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
-        return cloud_cover, res_json["elevation"]
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"{OPEN_METEO_BASE_URL}/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,cloud_cover&forecast_days=1"
+            )
+            r.raise_for_status()
+            res_json = r.json()
+            idx = self.get_hourly_index_of_astro_twilight()
+            cloud_cover = res_json["hourly"]["cloud_cover"][idx]
+            cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
+            return cloud_cover, res_json["elevation"]
 
     def get_hourly_index_of_astro_twilight(self) -> int:
         return get_astro_time_hour(self.site.utc_astro_twilight)
@@ -79,16 +80,17 @@ class MeteoClient:
         return int(scaled)
 
 
-def get_model_prediction_for_nearest_astro_twilight(
+async def get_model_prediction_for_nearest_astro_twilight(
     lat: float, lon: float
 ) -> t.Tuple[torch.Tensor, torch.Tensor, str]:
     logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
     site = Site(location=location, name=SITE_NAME)
     logging.debug(f"registered site {site}")
+
     meteo = MeteoClient(site=site)
     try:
-        cloud_cover, elevation = meteo.get_response_for_site()
+        cloud_cover, elevation = await meteo.get_response_for_site()
     except Exception as e:
         logging.error(f"could not get meteo data because {e}")
     else:
