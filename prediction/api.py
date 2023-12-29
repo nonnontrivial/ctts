@@ -10,7 +10,7 @@ PREFIX = "api"
 async def get_prediction(
     lat: str, lon: str, astro_twilight_type: str | None = "nearest"
 ):
-    """Predict the sky brightness at the latitude and longitude."""
+    """Get predicted sky brightness at the latitude and longitude."""
     lat, lon = float(lat), float(lon)
     _, y, astro_twilight_iso = await get_model_prediction_for_nearest_astro_twilight(
         lat, lon
