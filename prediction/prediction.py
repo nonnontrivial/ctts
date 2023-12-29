@@ -1,4 +1,5 @@
 import logging
+import os
 import typing as t
 from pathlib import Path
 
@@ -12,9 +13,20 @@ from .constants import (
     ASTRO_TWILIGHT_DEGS,
     OPEN_METEO_BASE_URL,
     SITE_NAME,
+    LOGFILE_KEY,
 )
 from .nn import NeuralNetwork
 from .utils import get_astro_time_hour
+
+logfile_name = os.getenv(LOGFILE_KEY)
+path_to_logfile = (Path.home() / logfile_name) if logfile_name else None
+
+logging.basicConfig(
+    format="%(asctime)s -> %(levelname)s:%(message)s",
+    filename=path_to_logfile if bool(path_to_logfile) else None,
+    encoding="utf-8",
+    level=logging.INFO,
+)
 
 
 class Site(Observer):

@@ -14,15 +14,6 @@ from .prediction import get_model_prediction_for_nearest_astro_twilight
 from .site import Site
 from .user import User
 
-logfile_name = os.getenv("LOGFILE_NAME", "ctts.log")
-path_to_logfile = Path.home() / logfile_name
-logging.basicConfig(
-    format="%(asctime)s -> %(levelname)s:%(message)s",
-    filename=path_to_logfile,
-    encoding="utf-8",
-    level=logging.INFO,
-)
-
 
 parent_path = Path(__file__).parent
 path_to_sites_csv = parent_path / "sites.csv"

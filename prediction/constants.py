@@ -13,4 +13,6 @@ FEATURES_SIZE = len(features)
 
 ASTRO_TWILIGHT_DEGS = -18
 OPEN_METEO_BASE_URL = "https://api.open-meteo.com"
-SITE_NAME = "some-h3-cell"
+
+SITE_NAME = "user-site"
+LOGFILE_KEY = "LOGFILE_NAME"
