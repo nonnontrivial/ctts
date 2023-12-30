@@ -13,7 +13,7 @@ async def get_prediction(
     """Get model's sky brightness prediction at the latitude and longitude."""
     lat, lon = float(lat), float(lon)
     _, y, astro_twilight_iso = await get_model_prediction_for_nearest_astro_twilight(
-        lat, lon
+        lat, lon, astro_twilight_type
     )
     y = round(float(y.item()), 4)
     return {

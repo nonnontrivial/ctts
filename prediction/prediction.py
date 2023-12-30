@@ -25,18 +25,48 @@ logging.basicConfig(
     format="%(asctime)s -> %(levelname)s:%(message)s",
     filename=path_to_logfile if bool(path_to_logfile) else None,
     encoding="utf-8",
-    level=logging.INFO,
+    level=logging.DEBUG,
 )
 
 
 class Site(Observer):
+    def __init__(
+        self,
+        astro_twilight_type: str,
+        location=None,
+        timezone="UTC",
+        name=None,
+        latitude=None,
+        longitude=None,
+        elevation=0 * u.m,
+        pressure=None,
+        relative_humidity=None,
+        temperature=None,
+        description=None,
+    ):
+        super().__init__(
+            location,
+            timezone,
+            name,
+            latitude,
+            longitude,
+            elevation,
+            pressure,
+            relative_humidity,
+            temperature,
+            description,
+        )
+        self.astro_twilight_type = astro_twilight_type
+
     def __str__(self):
         return f"<astro twilight: {self.utc_astro_twilight.iso}; moon alt: {self.moon_alt}; moon az: {self.moon_az}>"
 
     @property
     def utc_astro_twilight(self):
         return self.sun_set_time(
-            Time.now(), which="nearest", horizon=u.degree * ASTRO_TWILIGHT_DEGS
+            Time.now(),
+            which=self.astro_twilight_type,
+            horizon=u.degree * ASTRO_TWILIGHT_DEGS,
         )
 
     @property
@@ -56,11 +86,7 @@ class Site(Observer):
         return altaz.az.value
 
     def get_moon_altaz(self):
-        location = EarthLocation.from_geodetic(
-            self.location.lon.value * u.degree, self.location.lat.value * u.degree
-        )
-        observer = Observer(location=location)
-        return observer.moon_altaz(self.utc_astro_twilight)
+        return self.moon_altaz(self.utc_astro_twilight)
 
 
 class MeteoClient:
@@ -95,11 +121,13 @@ class MeteoClient:
 
 
 async def get_model_prediction_for_nearest_astro_twilight(
-    lat: float, lon: float
+    lat: float, lon: float, astro_twilight_type: str
 ) -> t.Tuple[torch.Tensor, torch.Tensor, str]:
     logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
-    site = Site(location=location, name=SITE_NAME)
+    site = Site(
+        location=location, name=SITE_NAME, astro_twilight_type=astro_twilight_type
+    )
     logging.debug(f"registered site {site}")
 
     meteo = MeteoClient(site=site)
