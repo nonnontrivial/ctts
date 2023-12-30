@@ -60,3 +60,12 @@ docker run -d --name ctts -p 8000:80 ctts:latest
 cd ctts
 python -m pytest
 ```
+
+### env
+
+Location of logfile can be controlled by setting `SKY_BRIGHTNESS_LOGFILE` to
+some filename (in the home directory).
+
+```sh
+export SKY_BRIGHTNESS_LOGFILE=ctts.log
+```
