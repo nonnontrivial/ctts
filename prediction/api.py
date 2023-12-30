@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 
 from .prediction import get_model_prediction_for_nearest_astro_twilight
 
@@ -10,7 +10,7 @@ PREFIX = "api"
 async def get_prediction(
     lat: str, lon: str, astro_twilight_type: str | None = "nearest"
 ):
-    """Get predicted sky brightness at the latitude and longitude."""
+    """Get model's sky brightness prediction at the latitude and longitude."""
     lat, lon = float(lat), float(lon)
     _, y, astro_twilight_iso = await get_model_prediction_for_nearest_astro_twilight(
         lat, lon
