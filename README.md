@@ -25,7 +25,7 @@ curl "http://localhost:8000/api/prediction?lat=-30.2466&lon=-70.7494"
 ```json
 {
   "brightness_mpsas": 19.9871,
-  "astro_twilight": { "iso": "2023-12-28 01:23:32.453 UTC", "type": "nearest" }
+  "astro_twilight": { "iso": "2023-12-28 01:23:32.453", "type": "nearest" }
 }
 ```
 

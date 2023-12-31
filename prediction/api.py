@@ -24,7 +24,7 @@ async def get_prediction(
     return {
         "brightness_mpsas": y,
         "astro_twilight": {
-            "iso": f"{astro_twilight_iso} UTC",
+            "iso": astro_twilight_iso,
             "type": astro_twilight_type,
         },
     }
