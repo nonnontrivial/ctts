@@ -37,6 +37,10 @@ Gets the predicted sky brightness at (default) nearest [astronomical twilight](h
 
 Optional query param `astro_twilight_type` can be `nearest` | `next` | `previous` to denote the astronomical twilight that should be used relative to the [Time.now](https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time.now).
 
+#### swagger ui
+
+Open the [ui](http://localhost:8000/docs) in a browser.
+
 ### running with docker
 
 > Note: image size is on the order of 5.13GB
