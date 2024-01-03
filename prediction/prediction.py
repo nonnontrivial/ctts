@@ -19,7 +19,7 @@ logfile_name = os.getenv(LOGFILE_KEY)
 path_to_logfile = (Path.home() / logfile_name) if logfile_name else None
 
 logging.basicConfig(
-    format="%(asctime)s -> %(levelname)s:%(message)s",
+    format="%(asctime)s -> %(levelname)s: %(message)s",
     filename=path_to_logfile if bool(path_to_logfile) else None,
     encoding="utf-8",
     level=logging.DEBUG,
