@@ -41,8 +41,10 @@ async def get_model_prediction_for_nearest_astro_twilight(
         cloud_cover, elevation = await meteo.get_response_for_site()
     except Exception as e:
         logging.error(f"could not get meteo data because {e}")
+        return torch.empty(4,4), torch.empty(4,4), astro_twilight_type
     else:
         path_to_state_dict = Path(__file__).parent / "model.pth"
+
         model = NeuralNetwork()
         model.load_state_dict(torch.load(path_to_state_dict))
         model.eval()
@@ -63,4 +65,4 @@ async def get_model_prediction_for_nearest_astro_twilight(
         with torch.no_grad():
             pred = model(X)
             logging.debug(f"got prediction {pred} on {X}")
-            return X, pred, site.utc_astro_twilight.iso
+            return X, pred, str(site.utc_astro_twilight.iso)
