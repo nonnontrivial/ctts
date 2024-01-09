@@ -71,7 +71,7 @@ def train_loop(
             size = len(data_loader.dataset)
             print(f"loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
 
-def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.MSELoss):
+def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberLoss):
     model.eval()
     with torch.no_grad():
         test_loss = 0
