@@ -1,7 +1,3 @@
-"""Train the sky brightness model.
-
-python -m prediction.model.train
-"""
 from pathlib import Path
 
 import numpy as np
@@ -14,7 +10,6 @@ from ..constants import features
 from ..nn import NeuralNetwork
 
 GAN_FILENAME = "globe_at_night.csv"
-
 HIDDEN_SIZE = 64 * 3
 OUTPUT_SIZE = 1
 FEATURES_SIZE = len(features)
@@ -83,13 +78,14 @@ def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberL
         avg_loss = test_loss / len(data_loader.dataset)
         print(f"avg loss in test is {avg_loss}")
 
-epochs = 100
-for t in range(epochs):
-    print(f"epoch {t+1}")
-    train_loop(train_dataloader, model, loss_fn, optimizer)
+if __name__ == "__main__":
+    epochs = 100
+    for t in range(epochs):
+        print(f"epoch {t+1}")
+        train_loop(train_dataloader, model, loss_fn, optimizer)
 
-test_model(test_dataloader, model, loss_fn)
+    test_model(test_dataloader, model, loss_fn)
 
-saved_model_path = cwd / "model.pth"
-print(f"saving to {saved_model_path}")
-torch.save(model.state_dict(), saved_model_path)
+    saved_model_path = cwd / "model.pth"
+    print(f"saving to {saved_model_path}")
+    torch.save(model.state_dict(), saved_model_path)
