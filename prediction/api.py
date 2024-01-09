@@ -1,15 +1,14 @@
 from fastapi import FastAPI
 
 from .prediction import get_model_prediction_for_nearest_astro_twilight
+from .constants import API_PREFIX
 
 app = FastAPI()
-PREFIX = "api"
-Y_DECIMAL_COUNT = 4
 
 
-@app.get(f"/{PREFIX}/prediction")
+@app.get(f"{API_PREFIX}/prediction")
 async def get_prediction(
-    lat: str, lon: str, astro_twilight_type: str | None = "nearest"
+    lat, lon, astro_twilight_type: str = "nearest"
 ):
     """Get model's sky brightness prediction at the latitude and longitude.
 
@@ -20,7 +19,7 @@ async def get_prediction(
     _, y, astro_twilight_iso = await get_model_prediction_for_nearest_astro_twilight(
         lat, lon, astro_twilight_type
     )
-    y = round(float(y.item()), Y_DECIMAL_COUNT)
+    y = round(float(y.item()), 4)
     return {
         "brightness_mpsas": y,
         "astro_twilight": {

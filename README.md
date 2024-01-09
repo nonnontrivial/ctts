@@ -19,7 +19,7 @@ python -m uvicorn prediction.api:app --reload
 ```
 
 ```sh
-curl "http://localhost:8000/api/prediction?lat=-30.2466&lon=-70.7494"
+curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494"
 ```
 
 ```json
@@ -31,7 +31,7 @@ curl "http://localhost:8000/api/prediction?lat=-30.2466&lon=-70.7494"
 
 ### endpoints
 
-#### _`/api/prediction`_
+#### _`/api/v1/prediction`_
 
 Gets the predicted sky brightness at (default) nearest [astronomical twilight](https://www.weather.gov/lmk/twilight-types#:~:text=Astronomical%20Twilight%3A,urban%20or%20suburban%20light%20pollution.) to provided `lat` and `lon`.
 

@@ -17,3 +17,5 @@ OPEN_METEO_BASE_URL = "https://api.open-meteo.com"
 
 SITE_NAME = "user-site"
 LOGFILE_KEY = "SKY_BRIGHTNESS_LOGFILE"
+
+API_PREFIX = "/api/v1"

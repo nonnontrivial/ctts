@@ -18,6 +18,9 @@ import requests
 import typer
 from pymongo import MongoClient, collection
 
+# from ..prediction.constants import API_PREFIX
+
+API_PREFIX="/api/v1"
 DB_NAME = "validation_data"
 COLLECTION_NAME = "api_response"
 
@@ -53,7 +56,7 @@ def get_collection(collection_name: str):
 
 def get_prediction(coordinates: t.Tuple[float, float]) -> t.Dict:
     lat, lon = coordinates
-    url = f"http://{HOST}:{PORT}/api/prediction?lat={lat}&lon={lon}"
+    url = f"http://{HOST}:{PORT}{API_PREFIX}/prediction?lat={lat}&lon={lon}"
     r = requests.get(url)
     r.raise_for_status()
     return r.json()
