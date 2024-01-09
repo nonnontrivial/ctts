@@ -6,7 +6,7 @@
 
 ## prediction > sky brightness model
 
-CTTS contains a _sky brightness model_, which can predict the sky brightness of a site.
+CTTS contains a _sky brightness model_, which can predict the sky brightness of a site. A site is a latitude and longitude at a date and time.
 
 ### running locally
 
@@ -57,6 +57,10 @@ docker build -t ctts:latest .
 ```sh
 docker run -d --name ctts -p 8000:80 ctts:latest
 ```
+
+### validation
+
+> Note: validation of the model's predictions is an ongoing process.
 
 ### running tests
 
