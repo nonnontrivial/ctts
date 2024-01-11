@@ -19,13 +19,14 @@ python -m uvicorn prediction.api:app --reload
 ```
 
 ```sh
-curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494"
+curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494&astro_twilight_type=next"
+
 ```
 
 ```json
 {
-  "brightness_mpsas": 19.9871,
-  "astro_twilight": { "iso": "2023-12-28 01:23:32.453", "type": "nearest" }
+	"sky_brightness": 22.0388,
+	"astronomical_twilight_iso": "2024-01-11 01:23:49.216"
 }
 ```
 

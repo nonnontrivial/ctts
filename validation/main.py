@@ -18,9 +18,8 @@ import requests
 import typer
 from pymongo import MongoClient, collection
 
-# from ..prediction.constants import API_PREFIX
-
 API_PREFIX="/api/v1"
+
 DB_NAME = "validation_data"
 COLLECTION_NAME = "api_response"
 
@@ -29,6 +28,9 @@ DEFAULT_LON = -70.7494
 
 HOST = "localhost"
 PORT = 8000
+
+BRIGHTNESS_KEY="sky_brightness"
+TIMESTAMP_KEY="astronomical_twilight_iso"
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s -> %(levelname)s: %(message)s"
@@ -86,8 +88,7 @@ def transcribe(collection_name: str, csv_destination: str):
     else:
         logging.info(f"found {len(items_in_collection)} items in collection {collection_name}")
 
-        BRIGHTNESS_KEY="brightness_mpsas"
-        items_in_collection = [{"y":x[BRIGHTNESS_KEY],"timestamp":x["astro_twilight"]["iso"]} for x in items_in_collection]
+        items_in_collection = [{"y":x[BRIGHTNESS_KEY],"timestamp":x[TIMESTAMP_KEY]} for x in items_in_collection]
         headers = list(items_in_collection[0].keys())
 
         csv_destination_path = Path(csv_destination)
