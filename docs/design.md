@@ -2,10 +2,9 @@
 
 ## phase one: _modeling / verification / messaging_
 
-The first phase of this is to model sky brightness and verify that the model's
-predictions make sense (while also testing a hypothetical workflow whereby a
-"user" is messaged when a site they watch is predicted to have a "good" sky
-brightness value at its nearest astronomical twilight).
+- build the model on slightly augmented GaN dataset
+- verify that model predictions make some intuitive sense
+- message a "user" when prediction at nearest astronomical twilight is above threshold in csv
 
 ### requirements
 

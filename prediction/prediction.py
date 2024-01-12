@@ -50,6 +50,7 @@ async def get_model_prediction_for_astro_twilight_type(
         cloud_cover, elevation = await meteo.get_response_for_site()
     except Exception as e:
         logging.error(f"could not get meteo data because {e}")
+
         empty = torch.empty(4,4)
         return Prediction(X=empty,y=empty,astro_twilight_iso=site_astro_twilight_iso)
     else:

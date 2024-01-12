@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import logging
+
 import numpy as np
 import pandas as pd
 import torch
@@ -10,6 +12,7 @@ from ..constants import features
 from ..nn import NeuralNetwork
 
 GAN_FILENAME = "globe_at_night.csv"
+
 HIDDEN_SIZE = 64 * 3
 OUTPUT_SIZE = 1
 FEATURES_SIZE = len(features)

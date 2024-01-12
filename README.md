@@ -4,7 +4,7 @@
 
 > The purpose of CTTS is to develop APIs that bring the night sky closer to the user.
 
-## prediction > sky brightness model
+## sky brightness model
 
 CTTS contains a _sky brightness model_, which can predict the sky brightness of a site. A site is a latitude and longitude at a date and time.
 
