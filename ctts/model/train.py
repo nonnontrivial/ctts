@@ -1,15 +1,13 @@
 from pathlib import Path
 
-import logging
-
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-from ..constants import features
-from ..nn import NeuralNetwork
+from ..prediction.constants import features
+from ..prediction.nn import NeuralNetwork
 
 GAN_FILENAME = "globe_at_night.csv"
 
@@ -17,19 +15,14 @@ HIDDEN_SIZE = 64 * 3
 OUTPUT_SIZE = 1
 FEATURES_SIZE = len(features)
 
-print("loading dataframe..")
 cwd = Path.cwd()
-df = pd.read_csv(cwd / "data" / GAN_FILENAME)
+path_to_gan_dataframe = cwd / "data" / GAN_FILENAME
+if not path_to_gan_dataframe.exists():
+    raise FileNotFoundError()
 
-device = (
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps"
-    if torch.backends.mps.is_available()
-    else "cpu"
-)
+df = pd.read_csv(path_to_gan_dataframe)
+
 torch.set_printoptions(sci_mode=False)
-
 feature_tensor = torch.tensor(df[features].values.astype(np.float32))
 feature_tensor = torch.nan_to_num(feature_tensor, nan=0.0)
 target_tensor = torch.tensor(df["SQMReading"].values.astype(np.float32)).to(
@@ -44,6 +37,13 @@ train_tensor, test_tensor = random_split(data_tensor, [train_size, test_size])
 train_dataloader = DataLoader(dataset=train_tensor, batch_size=16, shuffle=True)
 test_dataloader = DataLoader(dataset=test_tensor, batch_size=16, shuffle=True)
 
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
 model = NeuralNetwork().to(device)
 
 loss_fn = nn.HuberLoss()
@@ -89,6 +89,6 @@ if __name__ == "__main__":
 
     test_model(test_dataloader, model, loss_fn)
 
-    saved_model_path = cwd / "model.pth"
+    saved_model_path = cwd / "ctts" / "prediction" / "model.pth"
     print(f"saving to {saved_model_path}")
     torch.save(model.state_dict(), saved_model_path)

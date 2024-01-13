@@ -15,7 +15,7 @@ CTTS contains a _sky brightness model_, which can predict the sky brightness of 
 ```sh
 cd ctts
 pip install -r requirements.txt
-python -m uvicorn prediction.api:app --reload
+python -m uvicorn ctts.api:app --reload
 ```
 
 ```sh
@@ -32,11 +32,13 @@ curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494&astro_tw
 
 ### endpoints
 
+#### _`/api/v1/pollution`_
+
 #### _`/api/v1/prediction`_
 
 Gets the predicted sky brightness at (default) nearest [astronomical twilight](https://www.weather.gov/lmk/twilight-types#:~:text=Astronomical%20Twilight%3A,urban%20or%20suburban%20light%20pollution.) to provided `lat` and `lon`.
 
-Optional query param `astro_twilight_type` can be `nearest` | `next` | `previous` to denote the astronomical twilight that should be used relative to the [Time.now](https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time.now).
+Query param `astro_twilight_type` can be `nearest` | `next` | `previous` to denote the astronomical twilight that should be used relative to the [Time.now](https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time.now).
 
 #### swagger ui
 

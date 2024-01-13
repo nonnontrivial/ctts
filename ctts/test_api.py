@@ -11,12 +11,13 @@ def test_get_prediction_bad_status_without_lat_lon():
     assert r.status_code != 200
 
 def test_get_prediction_bad_status_with_bad_astro_twilight():
-    att = "bad"
-    r = client.get(f"{API_PREFIX}/prediction?lat={lat}&lon={lon}&astro_twilight_type={att}")
-    assert r.status_code == 400
+    astro_twilight_type = "bad"
+    r = client.get(f"{API_PREFIX}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}")
+    assert r.status_code == 422
 
 
 def test_get_prediction():
-    r = client.get(f"{API_PREFIX}/prediction?lat={lat}&lon={lon}")
+    astro_twilight_type = "next"
+    r = client.get(f"{API_PREFIX}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}")
     assert r.status_code == 200
     assert list(r.json().keys()) == ["sky_brightness","astronomical_twilight_iso"]
