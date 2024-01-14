@@ -41,13 +41,13 @@ class ArtificialNightSkyBrightnessMapImage:
         x = int((coords.lon+180) * width_scale)
         y = int((self.max_lat_n-coords.lat) * height_scale)
         # pdb.set_trace()
-        # window_size = 20
-        # cropped = self.image.crop((x-window_size,y-window_size,x+window_size,y+window_size))
-        # cropped.save("crop.png")
         return Pixel(x, y)
 
     def get_pixel_value(self,pixel: Pixel) -> tuple[int,int,int,int]:
-        return self.image.getpixel((pixel.x, pixel.y))
+        try:
+            return self.image.getpixel((pixel.x, pixel.y))
+        except IndexError:
+            return (0, 0, 0, 255)
 
     def get_pixel_value_at_coords(self, coords: Coords) -> tuple[int,int,int,int]:
         # see https://djlorenz.github.io/astronomy/lp2022/colors.html
