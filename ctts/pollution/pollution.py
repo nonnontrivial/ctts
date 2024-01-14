@@ -55,9 +55,3 @@ class ArtificialNightSkyBrightnessMapImage:
         pixel_value = self.get_pixel_value(pixel)
         # pdb.set_trace()
         return pixel_value
-
-# if __name__ == "__main__":
-#     (lat, lon) = (29.7756796,-95.4888013)
-#     map_image = ArtificialNightSkyBrightnessMapImage()
-#     mr = map_image.get_pixel_value_at_coords(coords=Coords(lat=lat,lon=lon))
-#     print(mr)
