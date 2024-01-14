@@ -50,6 +50,7 @@ loss_fn = nn.HuberLoss()
 learning_rate = 1e-5
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
+
 def train_loop(
     data_loader: DataLoader,
     model: NeuralNetwork,
@@ -69,6 +70,7 @@ def train_loop(
             size = len(data_loader.dataset)
             print(f"loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
 
+
 def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberLoss):
     model.eval()
     with torch.no_grad():
@@ -80,6 +82,7 @@ def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberL
             test_loss += loss.item() * X.size(0)
         avg_loss = test_loss / len(data_loader.dataset)
         print(f"avg loss in test is {avg_loss}")
+
 
 if __name__ == "__main__":
     epochs = 100

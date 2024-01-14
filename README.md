@@ -2,11 +2,12 @@
 
 ## purpose
 
-> The purpose of CTTS is to develop APIs that bring the night sky closer to the user.
+> The purpose of CTTS is to develop APIs that tap into the quality of the night sky.
 
-## sky brightness model
+## HTTP APIs
 
-CTTS contains a _sky brightness model_, which can predict the sky brightness of a site. A site is a latitude and longitude at a date and time.
+- predictive sky brightness endpoint
+- artificial sky brightness (light pollution) endpoint
 
 ### running locally
 
@@ -33,6 +34,8 @@ curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494&astro_tw
 ### endpoints
 
 #### _`/api/v1/pollution`_
+
+Gets the approximate artifical [mpsas range](https://djlorenz.github.io/astronomy/lp2022/colors.html) for a lat, lon, and datetime.
 
 #### _`/api/v1/prediction`_
 
