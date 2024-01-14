@@ -14,35 +14,50 @@ class Pixel:
     x: int
     y: int
 
-class WorldMapImage:
-    def __init__(self, path_to_map_image: Path, mode = "RGBA") -> None:
+default_path_to_map_image = Path.cwd() / "data" / "artificial_night_sky_brightness" / "world2022.png"
+image_mode = "RGBA"
+
+class ArtificialNightSkyBrightnessMapImage:
+    def __init__(self, path_to_map_image: Path = default_path_to_map_image) -> None:
         if not path_to_map_image.exists():
             raise FileNotFoundError(f"{path_to_map_image} does not exist")
-        self.image = Image.open(path_to_map_image).convert(mode)
+        self.image = Image.open(path_to_map_image).convert(image_mode)
+        # see domain column in table at https://djlorenz.github.io/astronomy/lp2022/
+        self.max_lat_n = 75
+        self.max_lat_s = 65
 
-    def get_pixel_in_image_from_coords(self,coords:Coords) -> Pixel:
-        width_scale = self.image.width / 360
-        height_scale = self.image.height / 180
-        x = int((lon+180) * width_scale)
-        y = int((90-lat) * height_scale)
-        pdb.set_trace()
-        # size = 100
-        # cropped = self.image.crop((x-size,y-size,x+size,y+size))
+    @property
+    def max_lat_degs(self):
+        return self.max_lat_n + self.max_lat_s
+
+    @property
+    def max_lon_degs(self):
+        return 180 * 2
+
+    def get_pixel_in_image_from_coords(self,coords: Coords) -> Pixel:
+        # see https://gis.stackexchange.com/a/372118
+        width_scale = self.image.width / self.max_lon_degs
+        height_scale = self.image.height / self.max_lat_degs
+        x = int((coords.lon+180) * width_scale)
+        y = int((self.max_lat_n-coords.lat) * height_scale)
+        # pdb.set_trace()
+        # window_size = 20
+        # cropped = self.image.crop((x-window_size,y-window_size,x+window_size,y+window_size))
         # cropped.save("crop.png")
-        return Pixel(x,y)
+        return Pixel(x, y)
 
-    def get_pixel_value(self,pixel:Pixel) -> int:
+    def get_pixel_value(self,pixel: Pixel) -> tuple[int,int,int,int]:
         return self.image.getpixel((pixel.x, pixel.y))
 
-class ArtificialSkyBrightnessMapImage(WorldMapImage):
-    def get_mpsas_range_at_coords(self, coords:Coords) -> int:
+    def get_pixel_value_at_coords(self, coords: Coords) -> tuple[int,int,int,int]:
+        # see https://djlorenz.github.io/astronomy/lp2022/colors.html
         pixel = self.get_pixel_in_image_from_coords(coords)
         pixel_value = self.get_pixel_value(pixel)
+        # pdb.set_trace()
         return pixel_value
 
-if __name__ == "__main__":
-    (lat, lon) = (40.730610, -73.935242)
-    path_to_image = Path.cwd().parent.parent / "data" / "artificial_night_sky_brightness" / "world2022B.png"
-    asbm = ArtificialSkyBrightnessMapImage(path_to_image)
-    mr = asbm.get_mpsas_range_at_coords(coords=Coords(lat=lat,lon=lon))
-    print(mr)
+# if __name__ == "__main__":
+#     (lat, lon) = (29.7756796,-95.4888013)
+#     map_image = ArtificialNightSkyBrightnessMapImage()
+#     mr = map_image.get_pixel_value_at_coords(coords=Coords(lat=lat,lon=lon))
+#     print(mr)

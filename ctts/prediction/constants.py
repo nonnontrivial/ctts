@@ -15,6 +15,7 @@ FEATURES_SIZE = len(features)
 ASTRO_TWILIGHT_DEGS = -18
 
 OPEN_METEO_BASE_URL = "https://api.open-meteo.com"
+MAX_OKTAS = 8
 
 MODEL_STATE_DICT_FILE_NAME = "model.pth"
 SITE_NAME = "user-site"

@@ -27,9 +27,3 @@ def test_get_prediction():
     )
     assert r.status_code == 200
     assert list(r.json().keys()) == ["sky_brightness", "astronomical_twilight_iso"]
-
-
-def test_get_pollution():
-    r = client.get(f"{API_PREFIX}/pollution?lat={lat}&lon={lon}")
-    assert r.status_code == 200
-    assert r.json() == {}

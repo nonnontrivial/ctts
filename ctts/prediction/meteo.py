@@ -1,6 +1,6 @@
 import typing as t
 
-from .constants import OPEN_METEO_BASE_URL
+from .constants import OPEN_METEO_BASE_URL, MAX_OKTAS
 from .site import Site
 from .utils import get_astro_time_hour
 
@@ -10,8 +10,6 @@ class MeteoClient:
         self.site = site
 
     async def get_response_for_site(self) -> t.Tuple[int, float]:
-        """Get cloud cover and elevation for the site, using the hour from the
-        response indicated by astronomical twilight."""
         import httpx
 
         lat, lon = self.site.latitude.value, self.site.longitude.value
@@ -32,5 +30,5 @@ class MeteoClient:
     def get_cloud_cover_as_oktas(self, cloud_cover_percentage: int):
         import numpy as np
 
-        scaled = np.interp(cloud_cover_percentage, (0, 100), (0, 8))
-        return int(scaled)
+        percentage_as_oktas = np.interp(cloud_cover_percentage, (0, 100), (0, MAX_OKTAS))
+        return int(percentage_as_oktas)
