@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 from .constants import (
-    FEATURES_SIZE,
+    num_features,
     HIDDEN_SIZE,
     OUTPUT_SIZE,
 )
@@ -12,7 +12,7 @@ class NeuralNetwork(nn.Module):
         super().__init__(*args, **kwargs)
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(FEATURES_SIZE, HIDDEN_SIZE),
+            nn.Linear(num_features, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE // 2),
             nn.ReLU(),

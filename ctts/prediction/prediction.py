@@ -11,7 +11,6 @@ from astropy.coordinates import EarthLocation
 from .constants import (
     MODEL_STATE_DICT_FILE_NAME,
     LOGFILE_KEY,
-    SITE_NAME,
 )
 from .meteo import MeteoClient
 from .nn import NeuralNetwork
@@ -42,9 +41,7 @@ async def get_model_prediction_for_astro_twilight_type(
     """
     logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
-    site = Site(
-        location=location, name=SITE_NAME, astro_twilight_type=astro_twilight_type
-    )
+    site = Site(location=location, astro_twilight_type=astro_twilight_type)
     site_astro_twilight_iso = str(site.utc_astro_twilight.iso)
     logging.debug(f"registered site {site}")
     meteo = MeteoClient(site=site)

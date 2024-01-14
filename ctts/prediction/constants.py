@@ -7,16 +7,15 @@ features = [
     "MoonAlt",
     "MoonAz",
 ]
+num_features = len(features)
 
 HIDDEN_SIZE = 64 * 3
 OUTPUT_SIZE = 1
-FEATURES_SIZE = len(features)
+MODEL_STATE_DICT_FILE_NAME = "model.pth"
 
 ASTRO_TWILIGHT_DEGS = -18
 
 OPEN_METEO_BASE_URL = "https://api.open-meteo.com"
 MAX_OKTAS = 8
 
-MODEL_STATE_DICT_FILE_NAME = "model.pth"
-SITE_NAME = "user-site"
 LOGFILE_KEY = "SKY_BRIGHTNESS_LOGFILE"
