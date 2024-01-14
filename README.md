@@ -23,7 +23,9 @@ python -m uvicorn ctts.api:app --reload
 
 #### `/api/v1/pollution`
 
-Gets the approximate artifical [RGBA pixel value](https://djlorenz.github.io/astronomy/lp2022/colors.html) for a lat and lon.
+Gets the approximate artifical sky brightness map [RGBA pixel value](https://djlorenz.github.io/astronomy/lp2022/colors.html) for a lat and lon.
+
+> Note: these values are for the year 2022
 
 ```sh
 curl "localhost:8000/api/v1/pollution?lat=40.7277478&lon=-74.0000374"
