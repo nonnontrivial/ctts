@@ -2,11 +2,12 @@
 
 ## purpose
 
-> The purpose of CTTS is to develop APIs that bring the night sky closer to the user.
+> The purpose of CTTS is to develop APIs that tap into the quality of the night sky.
 
-## sky brightness model
+## HTTP APIs
 
-CTTS contains a _sky brightness model_, which can predict the sky brightness of a site. A site is a latitude and longitude at a date and time.
+- predictive sky brightness endpoint
+- artificial sky brightness (light pollution) endpoint
 
 ### running locally
 
@@ -15,8 +16,29 @@ CTTS contains a _sky brightness model_, which can predict the sky brightness of 
 ```sh
 cd ctts
 pip install -r requirements.txt
-python -m uvicorn prediction.api:app --reload
+python -m uvicorn ctts.api:app --reload
 ```
+
+### endpoints
+
+#### `/api/v1/pollution`
+
+Gets the approximate artifical [RGBA pixel value](https://djlorenz.github.io/astronomy/lp2022/colors.html) for a lat and lon.
+
+```sh
+curl "localhost:8000/api/v1/pollution?lat=40.7277478&lon=-74.0000374"
+```
+
+```json
+{"r":255,"g":255,"b":255,"a":255}
+```
+
+#### `/api/v1/prediction`
+
+Gets the predicted sky brightness at nearest [astronomical twilight](https://www.weather.gov/lmk/twilight-types#:~:text=Astronomical%20Twilight%3A,urban%20or%20suburban%20light%20pollution.) to provided `lat` and `lon`.
+
+Query param `astro_twilight_type` can be `nearest` | `next` | `previous` to denote the astronomical twilight that should be used relative to the [Time.now](https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time.now).
+
 
 ```sh
 curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494&astro_twilight_type=next"
@@ -30,13 +52,6 @@ curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494&astro_tw
 }
 ```
 
-### endpoints
-
-#### _`/api/v1/prediction`_
-
-Gets the predicted sky brightness at (default) nearest [astronomical twilight](https://www.weather.gov/lmk/twilight-types#:~:text=Astronomical%20Twilight%3A,urban%20or%20suburban%20light%20pollution.) to provided `lat` and `lon`.
-
-Optional query param `astro_twilight_type` can be `nearest` | `next` | `previous` to denote the astronomical twilight that should be used relative to the [Time.now](https://docs.astropy.org/en/stable/api/astropy.time.Time.html#astropy.time.Time.now).
 
 #### swagger ui
 

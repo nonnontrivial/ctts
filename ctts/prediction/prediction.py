@@ -26,11 +26,13 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 
+
 @dataclass
 class Prediction:
     X: torch.Tensor
     y: torch.Tensor
     astro_twilight_iso: str
+
 
 async def get_model_prediction_for_astro_twilight_type(
     lat: float, lon: float, astro_twilight_type: str
@@ -49,10 +51,11 @@ async def get_model_prediction_for_astro_twilight_type(
     try:
         cloud_cover, elevation = await meteo.get_response_for_site()
     except Exception as e:
-        logging.error(f"could not get meteo data because {e}")
-
-        empty = torch.empty(4,4)
-        return Prediction(X=empty,y=empty,astro_twilight_iso=site_astro_twilight_iso)
+        logging.error(f"could not get meteo data: {e}")
+        empty_tensor = torch.empty(4, 4)
+        return Prediction(
+            X=empty_tensor, y=empty_tensor, astro_twilight_iso=site_astro_twilight_iso
+        )
     else:
         path_to_state_dict = Path(__file__).parent / MODEL_STATE_DICT_FILE_NAME
         model = NeuralNetwork()
@@ -74,4 +77,4 @@ async def get_model_prediction_for_astro_twilight_type(
         ).unsqueeze(0)
         with torch.no_grad():
             pred = model(X)
-            return Prediction(astro_twilight_iso=site_astro_twilight_iso,X=X,y=pred)
+            return Prediction(astro_twilight_iso=site_astro_twilight_iso, X=X, y=pred)

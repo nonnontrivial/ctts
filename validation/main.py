@@ -18,7 +18,7 @@ import requests
 import typer
 from pymongo import MongoClient, collection
 
-API_PREFIX="/api/v1"
+API_PREFIX = "/api/v1"
 
 DB_NAME = "validation_data"
 COLLECTION_NAME = "api_response"
@@ -29,8 +29,8 @@ DEFAULT_LON = -70.7494
 HOST = "localhost"
 PORT = 8000
 
-BRIGHTNESS_KEY="sky_brightness"
-TIMESTAMP_KEY="astronomical_twilight_iso"
+BRIGHTNESS_KEY = "sky_brightness"
+TIMESTAMP_KEY = "astronomical_twilight_iso"
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s -> %(levelname)s: %(message)s"
@@ -65,7 +65,9 @@ def get_prediction(coordinates: t.Tuple[float, float]) -> t.Dict:
 
 
 @app.command()
-def insert(lat: float = DEFAULT_LAT, lon: float = DEFAULT_LON, collection_name = COLLECTION_NAME):
+def insert(
+    lat: float = DEFAULT_LAT, lon: float = DEFAULT_LON, collection_name=COLLECTION_NAME
+):
     """Get prediction at site and insert into collection."""
     try:
         prediction = get_prediction((lat, lon))
@@ -77,6 +79,7 @@ def insert(lat: float = DEFAULT_LAT, lon: float = DEFAULT_LON, collection_name =
         mongo_collection.insert_one(prediction)
         logging.info("done")
 
+
 @app.command()
 def transcribe(collection_name: str, csv_destination: str):
     """Get all items in collection and write to csv."""
@@ -86,21 +89,27 @@ def transcribe(collection_name: str, csv_destination: str):
     except Exception as e:
         logging.error(f"failed to query collection {collection_name}; {e}")
     else:
-        logging.info(f"found {len(items_in_collection)} items in collection {collection_name}")
+        logging.info(
+            f"found {len(items_in_collection)} items in collection {collection_name}"
+        )
 
-        items_in_collection = [{"y":x[BRIGHTNESS_KEY],"timestamp":x[TIMESTAMP_KEY]} for x in items_in_collection]
+        items_in_collection = [
+            {"y": x[BRIGHTNESS_KEY], "timestamp": x[TIMESTAMP_KEY]}
+            for x in items_in_collection
+        ]
         headers = list(items_in_collection[0].keys())
 
         csv_destination_path = Path(csv_destination)
-        with open(csv_destination_path,"w",newline="") as file:
-            writer = csv.DictWriter(file,fieldnames=headers)
+        with open(csv_destination_path, "w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=headers)
             logging.info(f"writing to {csv_destination_path.resolve()}..")
             writer.writeheader()
             writer.writerows(items_in_collection)
             logging.info("done")
 
+
 @app.command()
-def wipe(collection_name:str):
+def wipe(collection_name: str):
     """Remove all items from a collection."""
     try:
         mongo_collection: collection.Collection = get_collection(collection_name)
@@ -111,7 +120,10 @@ def wipe(collection_name:str):
         logging.error(f"failed to remove items from collection {collection_name}; {e}")
     else:
         items_in_collection = list(mongo_collection.find({}))
-        logging.info(f"collection {collection_name} now contains {len(items_in_collection)} items")
+        logging.info(
+            f"collection {collection_name} now contains {len(items_in_collection)} items"
+        )
+
 
 if __name__ == "__main__":
     app()
