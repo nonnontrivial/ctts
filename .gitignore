@@ -5,5 +5,7 @@ __pycache__/
 *.log
 .DS_Store
 data/globe_at_night/*.csv
+data/gan_mn/*.csv
+data/gan_mn.csv
 prediction/*.csv
 validation/*.csv

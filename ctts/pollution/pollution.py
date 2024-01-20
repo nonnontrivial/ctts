@@ -14,8 +14,8 @@ class Pixel:
     x: int
     y: int
 
-default_path_to_map_image = Path.cwd() / "data" / "artificial_night_sky_brightness" / "world2022.png"
 image_mode = "RGBA"
+default_path_to_map_image = Path.cwd() / "data" / "ansb" / "world2022.png"
 
 class ArtificialNightSkyBrightnessMapImage:
     def __init__(self, path_to_map_image: Path = default_path_to_map_image) -> None:

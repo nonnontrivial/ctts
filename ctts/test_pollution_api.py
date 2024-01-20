@@ -6,7 +6,12 @@ from .constants import API_PREFIX
 client = TestClient(app)
 
 def test_get_pollution():
-    cities = {(29.7756796, -95.4888013), (40.7277478, -74.0000374)}
+    cities = {
+        (29.7756796, -95.4888013),
+        (40.7277478, -74.0000374),
+        (55.7545835, 37.6137138),
+        (39.905245, 116.4050653)
+    }
     for lat,lon in cities:
         r = client.get(f"{API_PREFIX}/pollution?lat={lat}&lon={lon}")
         assert r.status_code == 200
