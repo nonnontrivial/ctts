@@ -34,7 +34,7 @@ class ArtificialNightSkyBrightnessMapImage:
     def max_lon_degs(self):
         return 180 * 2
 
-    def get_pixel_in_image_from_coords(self,coords: Coords) -> Pixel:
+    def get_pixel_in_image_from_coords(self, coords: Coords) -> Pixel:
         # see https://gis.stackexchange.com/a/372118
         width_scale = self.image.width / self.max_lon_degs
         height_scale = self.image.height / self.max_lat_degs
@@ -43,7 +43,7 @@ class ArtificialNightSkyBrightnessMapImage:
         # pdb.set_trace()
         return Pixel(x, y)
 
-    def get_pixel_value(self,pixel: Pixel) -> tuple[int,int,int,int]:
+    def get_pixel_value(self, pixel: Pixel) -> tuple[int,int,int,int]:
         try:
             return self.image.getpixel((pixel.x, pixel.y))
         except IndexError:
