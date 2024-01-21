@@ -5,7 +5,7 @@ import typing as t
 import numpy as np
 import pandas as pd
 
-from .stations import known_stations, get_device_code_is_known_station
+from .stations import known_stations
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
 # columns that we will not be able to build up at runtime
@@ -90,4 +90,4 @@ if __name__ == "__main__":
     else:
         print(f"writing file at {gan_mn_network_data.save_path / gan_mn_network_data.output_filename} ..")
         gan_mn_network_data.write_to_disk()
-        print(f"correlations were:\n{gan_mn_network_data.correlations}")
+        print(f"correlations were:\n{gan_mn_network_data.correlations}\n\non dataframe\n{gan_mn_network_data.df.info}")
