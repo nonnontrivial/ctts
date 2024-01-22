@@ -20,11 +20,12 @@ nonconstructable_columns = [
     "device_code",
 ]
 
+gan_mn_dir = Path.cwd() / "data" / "gan_mn"
+gan_mn_dataframe_filename = "gan_mn.csv"
+
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
 
 class GaNMNData:
-    output_filename = "gan_mn.csv"
-
     def __init__(self, data_path: Path) -> None:
         records = data_path.glob("*.csv")
         gan_mn_dataframes = [pd.read_csv(record, on_bad_lines="skip") for record in records]
@@ -76,18 +77,17 @@ class GaNMNData:
         return df.corr()
 
     def write_to_disk(self) -> None:
-        self.df.to_csv(self.save_path / self.output_filename, index=False)
+        self.df.to_csv(self.save_path / gan_mn_dataframe_filename, index=False)
 
 if __name__ == "__main__":
-    data_path = Path.cwd() / "data" / "gan_mn"
-    if not data_path.exists():
-        raise FileNotFoundError(f"!missing {data_path}")
-    print(f"loading dataset at {data_path} ..")
+    if not gan_mn_dir.exists():
+        raise FileNotFoundError(f"!missing {gan_mn_dir}")
+    print(f"loading dataset at {gan_mn_dir} ..")
     try:
-        gan_mn_network_data = GaNMNData(data_path)
+        gan_mn_network_data = GaNMNData(gan_mn_dir)
     except ValueError as e:
         print(f"!failed to create dataframe: {e}")
     else:
-        print(f"writing file at {gan_mn_network_data.save_path / gan_mn_network_data.output_filename} ..")
+        print(f"writing file at {gan_mn_network_data.save_path / gan_mn_dataframe_filename} ..")
         gan_mn_network_data.write_to_disk()
         print(f"correlations were:\n{gan_mn_network_data.correlations}\n\non dataframe\n{gan_mn_network_data.df.info}")
