@@ -8,26 +8,25 @@ import pandas as pd
 from .stations import known_stations
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
-# columns that we will not be able to build up at runtime
-nonconstructable_columns = [
-    "id",
-    "created",
-    "received_adjusted",
-    "sqmle_serial_number",
-    "sensor_frequency",
-    "sensor_period_count",
-    "sensor_period_second",
-    "device_code",
-]
-
 gan_mn_dir = Path.cwd() / "data" / "gan_mn"
 gan_mn_dataframe_filename = "gan_mn.csv"
 
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
 
 class GaNMNData:
-    def __init__(self, data_path: Path) -> None:
-        records = data_path.glob("*.csv")
+    # columns that we will not be able to build up at runtime
+    nonconstructable_columns = [
+        "id",
+        "created",
+        "received_adjusted",
+        "sqmle_serial_number",
+        "sensor_frequency",
+        "sensor_period_count",
+        "sensor_period_second",
+        "device_code",
+    ]
+    def __init__(self, dataset_path: Path) -> None:
+        records = dataset_path.glob("*.csv")
         gan_mn_dataframes = [pd.read_csv(record, on_bad_lines="skip") for record in records]
         df = pd.concat(gan_mn_dataframes, ignore_index=True)
         df = self._sanitize_df(df)
@@ -35,9 +34,9 @@ class GaNMNData:
         df["lat"] = df.apply(self._get_lat_at_row, axis=1)
         df["lon"] = df.apply(self._get_lon_at_row, axis=1)
         df["ansb"] = df.apply(self._get_artificial_light_pollution_at_row, axis=1)
-        df = df.drop(columns=nonconstructable_columns)
+        df = df.drop(columns=self.nonconstructable_columns)
         self.df = df
-        self.save_path = data_path.parent
+        self.save_path = dataset_path.parent
 
     def _sanitize_df(self, gan_mn_frame: pd.DataFrame) -> pd.DataFrame:
         df = gan_mn_frame[gan_mn_frame["nsb"] > 0.00]
@@ -84,10 +83,10 @@ if __name__ == "__main__":
         raise FileNotFoundError(f"!missing {gan_mn_dir}")
     print(f"loading dataset at {gan_mn_dir} ..")
     try:
-        gan_mn_network_data = GaNMNData(gan_mn_dir)
+        gan_mn_data = GaNMNData(gan_mn_dir)
     except ValueError as e:
         print(f"!failed to create dataframe: {e}")
     else:
-        print(f"writing file at {gan_mn_network_data.save_path / gan_mn_dataframe_filename} ..")
-        gan_mn_network_data.write_to_disk()
-        print(f"correlations were:\n{gan_mn_network_data.correlations}\n\non dataframe\n{gan_mn_network_data.df.info}")
+        print(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
+        gan_mn_data.write_to_disk()
+        print(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{gan_mn_data.df.info}")

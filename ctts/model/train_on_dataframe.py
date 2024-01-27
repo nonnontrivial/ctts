@@ -1,45 +1,51 @@
 import pdb
-from typing import Any
+from typing import Tuple,Any
 from pathlib import Path
 
-import numpy as np
-from tinygrad import Tensor, nn
-from tinygrad.nn.optim import SGD
-from tinygrad.nn.state import get_parameters
+import pandas as pd
+import torch
+from torch import nn
+from torch.utils.data import DataLoader,Dataset,random_split
 
 from .build_dataframe import gan_mn_dir, gan_mn_dataframe_filename
 
-class TinyNet:
-    def __init__(self) -> None:
-        self.l1 = nn.Linear(784,128,bias=False)
-        self.l2 = nn.Linear(128,1,bias=False)
-    def __call__(self, x:Tensor) -> Tensor:
-        x = self.l1(x)
-        x = x.leakyrelu()
-        x = self.l2(x)
-        return x
+class GaNMNDataset(Dataset):
+    features = [
+        "temperature",
+        "hour_sin",
+        "hour_cos",
+        "lat",
+        "lon",
+        "ansb",
+    ]
+    label = "nsb"
+    def __init__(self, df: pd.DataFrame) -> None:
+        super().__init__()
+        self.data = df
 
-net = TinyNet()
-opt = SGD(get_parameters(net), lr=3e-4)
+    def __len__(self):
+        return len(self.data)
 
-X_train = Tensor.full(shape=(100, 6),fill_value=2)
-y_train = Tensor.arange(start=0,stop=10,step=1)
+    def __getitem__(self, idx: int) -> Tuple[Any,Any]:
+        features = torch.tensor(self.data[self.features].values, dtype=torch.float32)
+        label = torch.tensor(self.data[self.label], dtype=torch.float32)
+        return features, label
 
-X_test = Tensor.full(shape=(100, 6),fill_value=2)
-y_test = Tensor.arange(start=0,stop=10,step=1)
+def get_train_test_split_size(dataset_size: int) -> Tuple[int,int]:
+    train_size = int(0.8*dataset_size)
+    test_size = dataset_size - train_size
+    return train_size,test_size
 
-def main() -> None:
+def train_model() -> None:
     path_to_dataframe_file = gan_mn_dir.parent / gan_mn_dataframe_filename
-    if not path_to_dataframe_file.exists():
-        raise FileNotFoundError(f"!no dataframe file at {path_to_dataframe_file}")
-    with Tensor.train():
-        for step in range(1000):
-            samp = np.random.randint(0,2,size=(64))
-            pdb.set_trace()
-            # batch = Tensor(X_train[samp], requires_grad=True)
-            # labels = Tensor(Y_train)
-            if step % 100 == 0:
-                pass
+    df = pd.read_csv(path_to_dataframe_file)
+    dataset = GaNMNDataset(df=df)
+
+    train_dataset,test_dataset=random_split(dataset,get_train_test_split_size(len(dataset)))
+
+    for X, y in train_dataset:
+        pdb.set_trace()
 
 if __name__ == "__main__":
-    main()
+    torch.set_printoptions(sci_mode=False)
+    train_model()

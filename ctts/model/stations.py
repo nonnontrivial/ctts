@@ -1,14 +1,6 @@
 from datetime import datetime
 from dataclasses import dataclass
 
-@dataclass
-class Station:
-    lat: float
-    lon: float
-    code: str
-    organization: str
-    date_of_first_operation: datetime
-
 # see http://globeatnight-network.org/global-at-night-monitoring-network.html
 known_stations = {
     "TAM": (25.0958186, 121.515783),
