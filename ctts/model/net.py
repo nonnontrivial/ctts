@@ -1,15 +1,12 @@
-import torch.nn as nn
+import torch
+from torch import nn
 
-from .constants import (
-    num_features,
-    HIDDEN_SIZE,
-    OUTPUT_SIZE,
-)
+from .constants import HIDDEN_SIZE, OUTPUT_SIZE
 
-
-class NeuralNetwork(nn.Module):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+class LinearNet(nn.Module):
+    def __init__(self, num_features: int) -> None:
+        super().__init__()
+        # pdb.set_trace()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(num_features, HIDDEN_SIZE),
@@ -19,7 +16,6 @@ class NeuralNetwork(nn.Module):
             nn.Linear(HIDDEN_SIZE // 2, OUTPUT_SIZE),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
         x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
+        return self.linear_relu_stack(x)
