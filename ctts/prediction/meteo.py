@@ -9,7 +9,7 @@ class MeteoClient:
     def __init__(self, site: Site) -> None:
         self.site = site
 
-    async def get_response_for_site(self) -> t.Tuple[int, float]:
+    async def get_response_for_site(self) -> t.Tuple[float, int, float]:
         import httpx
 
         lat, lon = self.site.latitude.value, self.site.longitude.value
@@ -19,10 +19,14 @@ class MeteoClient:
             )
             r.raise_for_status()
             res_json = r.json()
+            # pdb.set_trace()
+
             idx = self.get_hourly_index_of_astro_twilight()
-            cloud_cover = res_json["hourly"]["cloud_cover"][idx]
+            hourly_values = res_json["hourly"]
+            temperature = hourly_values["temperature_2m"][idx]
+            cloud_cover = hourly_values["cloud_cover"][idx]
             cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
-            return cloud_cover, float(res_json["elevation"])
+            return temperature, cloud_cover, float(res_json["elevation"])
 
     def get_hourly_index_of_astro_twilight(self) -> int:
         return get_astro_time_hour(self.site.utc_astro_twilight)

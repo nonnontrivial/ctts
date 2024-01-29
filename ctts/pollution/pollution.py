@@ -4,10 +4,7 @@ from pathlib import Path
 
 from PIL import Image
 
-@dataclass
-class Coords:
-    lat: float
-    lon: float
+from .utils import Coords
 
 @dataclass
 class Pixel:
@@ -49,7 +46,7 @@ class ArtificialNightSkyBrightnessMapImage:
         except IndexError:
             return (0, 0, 0, 255)
 
-    def get_pixel_value_at_coords(self, coords: Coords) -> tuple[int,int,int,int]:
+    def get_pixel_values_at_coords(self, coords: Coords) -> tuple[int,int,int,int]:
         # see https://djlorenz.github.io/astronomy/lp2022/colors.html
         pixel = self.get_pixel_in_image_from_coords(coords)
         pixel_value = self.get_pixel_value(pixel)

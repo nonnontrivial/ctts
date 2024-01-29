@@ -5,13 +5,16 @@ import typing as t
 import numpy as np
 import pandas as pd
 
+from .constants import HOURS_IN_DAY
 from .stations import known_stations
+from ..pollution.utils import get_luminance_for_color_channels, to_linear
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
 gan_mn_dir = Path.cwd() / "data" / "gan_mn"
 gan_mn_dataframe_filename = "gan_mn.csv"
 
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
+
 
 class GaNMNData:
     # columns that we will not be able to build up at runtime
@@ -47,9 +50,8 @@ class GaNMNData:
         # see https://www.kaggle.com/code/avanwyk/encoding-cyclical-features-for-deep-learning
         df = gan_mn_frame
         df["received_utc"] = pd.to_datetime(df["received_utc"])
-        hours_in_day = 24.
-        df["hour_sin"] = np.sin(2*np.pi*df["received_utc"].dt.hour/hours_in_day)
-        df["hour_cos"] = np.cos(2*np.pi*df["received_utc"].dt.hour/hours_in_day)
+        df["hour_sin"] = np.sin(2*np.pi*df["received_utc"].dt.hour/HOURS_IN_DAY)
+        df["hour_cos"] = np.cos(2*np.pi*df["received_utc"].dt.hour/HOURS_IN_DAY)
         return df.reset_index()
 
     def _get_lat_at_row(self, row: pd.Series):
@@ -61,13 +63,10 @@ class GaNMNData:
         return known_stations[device_code][1]
 
     def _get_artificial_light_pollution_at_row(self, row: pd.Series):
-        # see https://stackoverflow.com/a/56678483
-        def to_linear(color_channel_value: float) -> float:
-            return color_channel_value / 12.92 if color_channel_value <= 0.04045 else ((color_channel_value+0.055)/1.055)**2.4
         lat, lon = row["lat"], row["lon"]
-        r, g, b, _ = ansb_map_image.get_pixel_value_at_coords(Coords(float(lat), float(lon)))
+        r, g, b, _ = ansb_map_image.get_pixel_values_at_coords(Coords(float(lat), float(lon)))
         vR, vG, vB = r/255, g/255, b/255
-        luminance = 0.2126 * to_linear(vR) + 0.7152 * to_linear(vG) + 0.0722 * to_linear(vB)
+        luminance = get_luminance_for_color_channels(vR, vG, vB)
         return luminance
 
     @property
