@@ -29,9 +29,10 @@ class GaNMNData:
         "device_code",
     ]
     def __init__(self, dataset_path: Path) -> None:
-        records = dataset_path.glob("*.csv")
-        gan_mn_dataframes = [pd.read_csv(record, on_bad_lines="skip") for record in records]
-        df = pd.concat(gan_mn_dataframes, ignore_index=True)
+        dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
+        print(f"preparing to process {len(dfs)} records")
+        df = pd.concat(dfs, ignore_index=True)
+        print(f"done joining dataframe")
         df = self._sanitize_df(df)
         df = self._encode_dates_in_df(df)
         df["lat"] = df.apply(self._get_lat_at_row, axis=1)
