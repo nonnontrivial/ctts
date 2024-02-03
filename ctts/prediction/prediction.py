@@ -47,8 +47,7 @@ async def get_model_prediction_for_astro_twilight_type(
     logging.debug(f"registered site {site}")
     try:
         meteo = MeteoClient(site=site)
-        temperature, cloud_cover, elevation = await meteo.get_response_for_site()
-
+        temperature, _, _ = await meteo.get_response_for_site()
         ansb_map_image = ArtificialNightSkyBrightnessMapImage()
         r, g, b, _ = ansb_map_image.get_pixel_values_at_coords(Coords(float(lat), float(lon)))
         vR, vG, vB = r/255, g/255, b/255

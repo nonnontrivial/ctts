@@ -17,14 +17,11 @@ def create_prediction_response(prediction: PredictionResponse) -> t.Dict[str, t.
     return {
         "nsb": y,
         "nat": prediction.astro_twilight_iso,
-        "model": {},
     }
 
 
 @app.get(f"{API_PREFIX}/prediction")
-async def get_prediction(
-    lat, lon, astro_twilight_type: t.Literal["next", "nearest", "previous"]
-):
+async def get_prediction(lat, lon, astro_twilight_type: t.Literal["next", "nearest", "previous"]):
     """Get sky brightness prediction at `lat` and `lon` for an `astro_twilight_type`.
 
     `astro_twilight_type` is which astronomical twilight should be used relative

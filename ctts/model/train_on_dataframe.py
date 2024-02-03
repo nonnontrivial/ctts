@@ -60,7 +60,7 @@ def train_model(path: Path) -> Dict[str, Any]:
             loss = loss_fn(output.squeeze(), y)
             loss.backward()
             optimizer.step()
-            if batch % 100 == 0:
+            if batch % 1000 == 0:
                 loss, current = loss.item(), (batch + 1) * len(X)
                 train_dataset_size = len(train_dataset)
                 print(f"loss: {loss:>7f} [{current:>5d}/{train_dataset_size:>5d}]")

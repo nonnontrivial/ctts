@@ -31,5 +31,4 @@ def test_get_prediction():
     res_json = r.json()
     assert res_json["nat"] is not None
     assert res_json["nsb"] is not None
-    assert res_json["model"] is not None
     assert r.status_code == 200

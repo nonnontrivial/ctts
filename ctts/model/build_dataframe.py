@@ -1,4 +1,4 @@
-import pdb
+# import pdb
 from pathlib import Path
 import typing as t
 
@@ -30,20 +30,26 @@ class GaNMNData:
     ]
     def __init__(self, dataset_path: Path) -> None:
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
-        print(f"preparing to process {len(dfs)} records")
+        print(f"preparing to process {len(dfs)} dataframes..")
         df = pd.concat(dfs, ignore_index=True)
-        print(f"done joining dataframe")
+        print(f"sanitizing..")
         df = self._sanitize_df(df)
+        print(f"encoding dates..")
         df = self._encode_dates_in_df(df)
+        print(f"applying coordinate data to stations..")
         df["lat"] = df.apply(self._get_lat_at_row, axis=1)
         df["lon"] = df.apply(self._get_lon_at_row, axis=1)
+        print(f"applying ansb..")
         df["ansb"] = df.apply(self._get_artificial_light_pollution_at_row, axis=1)
+        print(f"dropping nonconstructable columns..")
         df = df.drop(columns=self.nonconstructable_columns)
         self.df = df
         self.save_path = dataset_path.parent
 
     def _sanitize_df(self, gan_mn_frame: pd.DataFrame) -> pd.DataFrame:
-        df = gan_mn_frame[gan_mn_frame["nsb"] > 0.00]
+        # see "What is the range of the Sky Quality Meters" section of http://www.unihedron.com/projects/darksky/faqsqm.php
+        df = gan_mn_frame[gan_mn_frame["nsb"] > 7.00]
+        df = gan_mn_frame[gan_mn_frame["nsb"] < 23.0]
         df = gan_mn_frame[gan_mn_frame["device_code"].isin(known_stations)]
         return df.reset_index()
 
@@ -86,6 +92,8 @@ if __name__ == "__main__":
         gan_mn_data = GaNMNData(gan_mn_dir)
     except ValueError as e:
         print(f"!failed to create dataframe: {e}")
+    except KeyboardInterrupt as e:
+        print(f"\npress ctrl-c again to exit..")
     else:
         print(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
         gan_mn_data.write_to_disk()
