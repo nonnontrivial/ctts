@@ -88,7 +88,13 @@ path_to_state_dict = gan_mn_dir.parent / "model.pth"
 
 if __name__ == "__main__":
     torch.set_printoptions(sci_mode=False)
-    state_dict = train_model(path=gan_mn_dir.parent / gan_mn_dataframe_filename)
-    print(f"saving state dict to {path_to_state_dict}")
-    torch.save(state_dict, path_to_state_dict)
-    print(f"wrote {path_to_state_dict.stat().st_size} bytes to {path_to_state_dict}")
+    try:
+        state_dict = train_model(path=gan_mn_dir.parent / gan_mn_dataframe_filename)
+        print(f"saving state dict to {path_to_state_dict}")
+        torch.save(state_dict, path_to_state_dict)
+    except KeyboardInterrupt as e:
+        print(f"\npress ctrl-c again to exit..")
+    except Exception as e:
+        print(f"failed to train model: {e}")
+    else:
+        print(f"wrote {path_to_state_dict.stat().st_size} bytes to {path_to_state_dict}")
