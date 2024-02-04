@@ -8,7 +8,6 @@ import torch
 import astropy.units as u
 from astropy.coordinates import EarthLocation
 
-from .constants import  LOGFILE_KEY
 from .meteo import MeteoClient
 from .site import Site
 
@@ -17,12 +16,8 @@ from ..model.train_on_dataframe import path_to_state_dict, features, get_device
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from ..pollution.utils import get_luminance_for_color_channels
 
-logfile_name = os.getenv(LOGFILE_KEY)
-path_to_logfile = (Path.home() / logfile_name) if logfile_name else None
-
 logging.basicConfig(
     format="%(asctime)s -> %(levelname)s: %(message)s",
-    filename=path_to_logfile if bool(path_to_logfile) else None,
     encoding="utf-8",
     level=logging.DEBUG,
 )

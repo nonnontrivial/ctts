@@ -19,7 +19,6 @@ class MeteoClient:
             )
             r.raise_for_status()
             res_json = r.json()
-            # pdb.set_trace()
 
             idx = self.get_hourly_index_of_astro_twilight()
             hourly_values = res_json["hourly"]
