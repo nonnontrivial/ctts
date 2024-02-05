@@ -25,7 +25,7 @@ features = [
 def get_train_test_split_size(dataset_size: int) -> Tuple[int,int]:
     train_size = int(0.8*dataset_size)
     test_size = dataset_size - train_size
-    return train_size,test_size
+    return train_size, test_size
 
 def get_device():
     return "cuda" if torch.cuda.is_available() else "cpu"
@@ -60,7 +60,7 @@ def train_model(path: Path) -> Dict[str, Any]:
             loss = loss_fn(output.squeeze(), y)
             loss.backward()
             optimizer.step()
-            if batch % 1000 == 0:
+            if batch % 1e4 == 0:
                 loss, current = loss.item(), (batch + 1) * len(X)
                 train_dataset_size = len(train_dataset)
                 print(f"loss: {loss:>7f} [{current:>5d}/{train_dataset_size:>5d}]")
