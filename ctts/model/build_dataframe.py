@@ -1,11 +1,13 @@
+import pdb
 from pathlib import Path
 import typing as t
 
 import numpy as np
+import httpx
 import pandas as pd
 
 from .constants import HOURS_IN_DAY
-from .stations import known_stations
+from .stations import Station, known_stations
 from ..pollution.utils import get_luminance_for_color_channels, to_linear
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
@@ -40,6 +42,7 @@ class GaNMNData:
         df["lon"] = df.apply(self._get_lon_at_row, axis=1)
         print(f"applying ansb..")
         df["ansb"] = df.apply(self._get_artificial_light_pollution_at_row, axis=1)
+        df["cloud"] = df.apply(self._get_cloud_cover_at_row, axis=1)
         print(f"dropping nonconstructable columns..")
         df = df.drop(columns=self.nonconstructable_columns)
         self.df = df
@@ -50,6 +53,7 @@ class GaNMNData:
         df = gan_mn_frame[gan_mn_frame["nsb"] > 7.00]
         df = gan_mn_frame[gan_mn_frame["nsb"] < 23.0]
         df = gan_mn_frame[gan_mn_frame["device_code"].isin(known_stations)]
+        df = df.iloc[:100]
         return df.reset_index()
 
     def _encode_dates_in_df(self, gan_mn_frame: pd.DataFrame) -> pd.DataFrame:
@@ -68,12 +72,19 @@ class GaNMNData:
         device_code = str(row["device_code"])
         return known_stations[device_code][1]
 
+    def _get_cloud_cover_at_row(self, row: pd.Series):
+        device_code: t.Any = row["device_code"]
+        station = Station(device_code)
+        utc: t.Any = row["received_utc"]
+        return station.get_cloud_cover(utc)
+
     def _get_artificial_light_pollution_at_row(self, row: pd.Series):
         lat, lon = row["lat"], row["lon"]
         r, g, b, _ = ansb_map_image.get_pixel_values_at_coords(Coords(float(lat), float(lon)))
         vR, vG, vB = r/255, g/255, b/255
         luminance = get_luminance_for_color_channels(vR, vG, vB)
         return luminance
+
 
     @property
     def correlations(self):

@@ -1,5 +1,12 @@
+import pdb
+import typing as t
 from datetime import datetime
 from dataclasses import dataclass
+
+import pandas as pd
+import httpx
+
+from ..prediction.constants import OPEN_METEO_HISTORICAL_BASE_URL,open_meteo_time_format
 
 # see http://globeatnight-network.org/global-at-night-monitoring-network.html
 known_stations = {
@@ -84,3 +91,29 @@ known_stations = {
     # "Jub": (),
     # "KO": ()
 }
+
+class Station:
+    def __init__(self, device_code: str) -> None:
+        try:
+            lat, lon = known_stations[device_code]
+            self.lat = lat
+            self.lon = lon
+        except Exception as e:
+           raise ValueError("no known station with device code")
+
+    def _scale_cloud_cover(self, cloud_cover_percentage: int) -> int:
+        return 0
+
+    def get_cloud_cover(self, received_utc: pd.Timestamp) -> int:
+        start_date = received_utc.strftime(open_meteo_time_format)
+        one_day: t.Any = pd.Timedelta(days=1)
+        end_date = (received_utc + one_day).strftime(open_meteo_time_format)
+        url = f"{OPEN_METEO_HISTORICAL_BASE_URL}/v1/era5?latitude={self.lat}&longitude={self.lon}&start_date={start_date}&end_date={end_date}&hourly=cloud_cover"
+        res = httpx.get(url)
+        cloud_cover = res.json()["hourly"]["cloud_cover"][received_utc.hour]
+        # pdb.set_trace()
+        return 0
+
+    @property
+    def elevation(self):
+        pass

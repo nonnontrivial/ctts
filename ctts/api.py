@@ -38,7 +38,8 @@ async def get_prediction(lat, lon, astro_twilight_type: t.Literal["next", "neare
 async def get_artificial_light_pollution(lat, lon):
     """Get artificial light pollution at lat and lon.
 
-    Map data is from 2022: https://djlorenz.github.io/astronomy/lp2022/
+    Map data is from 2022.
+    See https://djlorenz.github.io/astronomy/lp2022/
     """
     try:
         lat, lon = float(lat), float(lon)
