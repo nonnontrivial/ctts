@@ -34,7 +34,7 @@ class GaNMNData:
         print(f"preparing to process {len(dfs)} dataframes..")
         df = pd.concat(dfs, ignore_index=True)
         print(f"sanitizing..")
-        df = self._sanitize_df(df)
+        df = self._sanitize_df(df.iloc[:100])
         print(f"encoding dates..")
         df = self._encode_dates_in_df(df)
         print(f"applying coordinate data to stations..")
@@ -42,6 +42,7 @@ class GaNMNData:
         df["lon"] = df.apply(self._get_lon_at_row, axis=1)
         print(f"applying ansb..")
         df["ansb"] = df.apply(self._get_artificial_light_pollution_at_row, axis=1)
+        print(f"applying cloud cover..")
         df["cloud"] = df.apply(self._get_cloud_cover_at_row, axis=1)
         print(f"dropping nonconstructable columns..")
         df = df.drop(columns=self.nonconstructable_columns)
@@ -53,7 +54,6 @@ class GaNMNData:
         df = gan_mn_frame[gan_mn_frame["nsb"] > 7.00]
         df = gan_mn_frame[gan_mn_frame["nsb"] < 23.0]
         df = gan_mn_frame[gan_mn_frame["device_code"].isin(known_stations)]
-        df = df.iloc[:100]
         return df.reset_index()
 
     def _encode_dates_in_df(self, gan_mn_frame: pd.DataFrame) -> pd.DataFrame:
