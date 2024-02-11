@@ -8,6 +8,7 @@ import pandas as pd
 
 from .constants import HOURS_IN_DAY
 from .stations import Station, known_stations
+
 from ..pollution.utils import get_luminance_for_color_channels, to_linear
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
@@ -31,10 +32,11 @@ class GaNMNData:
     ]
     def __init__(self, dataset_path: Path) -> None:
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
-        print(f"preparing to process {len(dfs)} dataframes..")
+        print(f"preparing to process {len(dfs)} dataframe(s)..")
         df = pd.concat(dfs, ignore_index=True)
-        print(f"sanitizing..")
-        df = self._sanitize_df(df.iloc[:100])
+        print(f"sanitizing dataframe with {len(df)} rows..")
+        df = df.iloc[:100]
+        df = self._sanitize_df(df)
         print(f"encoding dates..")
         df = self._encode_dates_in_df(df)
         print(f"applying coordinate data to stations..")
@@ -44,6 +46,8 @@ class GaNMNData:
         df["ansb"] = df.apply(self._get_artificial_light_pollution_at_row, axis=1)
         print(f"applying cloud cover..")
         df["cloud"] = df.apply(self._get_cloud_cover_at_row, axis=1)
+        print(f"applying elevation..")
+        df["elevation"] = df.apply(self._get_elevation_at_row, axis=1)
         print(f"dropping nonconstructable columns..")
         df = df.drop(columns=self.nonconstructable_columns)
         self.df = df
@@ -76,7 +80,27 @@ class GaNMNData:
         device_code: t.Any = row["device_code"]
         station = Station(device_code)
         utc: t.Any = row["received_utc"]
-        return station.get_cloud_cover(utc)
+        try:
+            cloud_cover = station.get_cloud_cover(utc)
+            print(f"cloud cover at {station} was {cloud_cover}")
+            return cloud_cover
+        except (httpx.ReadTimeout, httpx.ConnectError) as e:
+            print(f"timed out when attempting to get cloud cover: {e}")
+            return 0.
+        except Exception as e:
+            print(f"could not get cloud cover: {e}")
+            return 0.
+
+    def _get_elevation_at_row(self, row: pd.Series):
+        device_code: t.Any = row["device_code"]
+        station = Station(device_code)
+        try:
+            elevation = station.elevation
+            print(f"elevation at {station} is {elevation}")
+            return elevation
+        except Exception as e:
+            print(f"failed to apply elevation to {station}")
+            return 0.
 
     def _get_artificial_light_pollution_at_row(self, row: pd.Series):
         lat, lon = row["lat"], row["lon"]
@@ -88,8 +112,7 @@ class GaNMNData:
 
     @property
     def correlations(self):
-        df = self.df.select_dtypes(include=["int64", "float64"])
-        return df.corr()
+        return self.df.corr()
 
     def write_to_disk(self) -> None:
         self.df.to_csv(self.save_path / gan_mn_dataframe_filename, index=False)
@@ -107,4 +130,5 @@ if __name__ == "__main__":
     else:
         print(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
         gan_mn_data.write_to_disk()
-        print(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{gan_mn_data.df.info}")
+        info = gan_mn_data.df.head()
+        print(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{info}")
