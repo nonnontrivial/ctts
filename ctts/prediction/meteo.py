@@ -27,7 +27,8 @@ class MeteoClient:
             temperature = hourly_values["temperature_2m"][idx]
             cloud_cover = hourly_values["cloud_cover"][idx]
             cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
-            return temperature, cloud_cover, float(res_json["elevation"])
+            elevation = float(res_json["elevation"])
+            return temperature, cloud_cover, elevation
 
     def get_hourly_index_of_astro_twilight(self) -> int:
         return get_astro_time_hour(self.site.utc_astro_twilight)

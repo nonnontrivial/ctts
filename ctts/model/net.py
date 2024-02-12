@@ -6,7 +6,6 @@ from .constants import HIDDEN_SIZE, OUTPUT_SIZE
 class LinearNet(nn.Module):
     def __init__(self, num_features: int) -> None:
         super().__init__()
-        # pdb.set_trace()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(num_features, HIDDEN_SIZE),

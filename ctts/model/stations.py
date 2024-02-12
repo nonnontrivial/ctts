@@ -123,7 +123,6 @@ class Station:
 
     def get_cloud_cover(self, received_utc: pd.Timestamp) -> int:
         one_day: t.Any = pd.Timedelta(days=1)
-
         start_date = received_utc.strftime(open_meteo_time_format)
         end_date = (received_utc + one_day).strftime(open_meteo_time_format)
         res = httpx.get(self.open_meteo_historical_base_url, params={
@@ -138,6 +137,22 @@ class Station:
         cloud_cover = res.json()["hourly"]["cloud_cover_mid"][received_utc.hour]
         cloud_cover_as_oktas = self._scale_cloud_cover(cloud_cover)
         return cloud_cover_as_oktas
+
+    def get_temperature(self, received_utc: pd.Timestamp) -> float:
+        one_day: t.Any = pd.Timedelta(days=1)
+        start_date = received_utc.strftime(open_meteo_time_format)
+        end_date = (received_utc + one_day).strftime(open_meteo_time_format)
+        res = httpx.get(self.open_meteo_historical_base_url, params={
+            "latitude": self.lat,
+            "longitude": self.lon,
+            "start_date": start_date,
+            "end_date": end_date,
+            "hourly": "temperature_2m",
+            "models": OpenMeteoModels.ERA5_LAND.value
+        })
+        res.raise_for_status()
+        temperature = res.json()["hourly"]["temperature_2m"][received_utc.hour]
+        return temperature if temperature is not None else 0.
 
 
     @property

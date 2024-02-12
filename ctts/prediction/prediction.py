@@ -8,11 +8,13 @@ import torch
 import astropy.units as u
 from astropy.coordinates import EarthLocation
 
+from ctts.model.build_dataframe import Features
+
 from .meteo import MeteoClient
 from .site import Site
 
 from ..model.net import LinearNet
-from ..model.train_on_dataframe import path_to_state_dict, features, get_device
+from ..model.train_on_dataframe import path_to_state_dict, get_device
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from ..pollution.utils import get_luminance_for_color_channels
 
@@ -42,7 +44,7 @@ async def get_model_prediction_for_astro_twilight_type(
     logging.debug(f"registered site {site}")
     try:
         meteo = MeteoClient(site=site)
-        temperature, _, _ = await meteo.get_response_for_site()
+        temperature, cloud_cover, elevation = await meteo.get_response_for_site()
         ansb_map_image = ArtificialNightSkyBrightnessMapImage()
         r, g, b, _ = ansb_map_image.get_pixel_values_at_coords(Coords(float(lat), float(lon)))
         vR, vG, vB = r/255, g/255, b/255
@@ -56,18 +58,21 @@ async def get_model_prediction_for_astro_twilight_type(
         )
     else:
         site_astro_twilight_iso = str(site.utc_astro_twilight.iso)
-        model = LinearNet(len(features))
+        num_features = len(list(f for f in Features))
+        model = LinearNet(num_features)
         model.load_state_dict(torch.load(path_to_state_dict))
         model.eval()
         torch.set_printoptions(sci_mode=False)
         X = torch.tensor(
             [
-                temperature,
                 site.hour_sin,
                 site.hour_cos,
                 site.latitude.value,
                 site.longitude.value,
                 luminance,
+                cloud_cover,
+                temperature,
+                elevation,
             ],
             dtype=torch.float32,
         ).unsqueeze(0)

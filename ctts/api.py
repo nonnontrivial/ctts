@@ -31,7 +31,7 @@ async def get_prediction(lat, lon, astro_twilight_type: t.Literal["next", "neare
         prediction = await get_model_prediction_for_astro_twilight_type(lat, lon, astro_twilight_type)
         return create_prediction_response(prediction)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"error: {e}")
+        raise HTTPException(status_code=500, detail=f"error: {e}")
 
 
 @app.get(f"{API_PREFIX}/pollution")
@@ -48,4 +48,4 @@ async def get_artificial_light_pollution(lat, lon):
         keys = ("r", "g", "b", "a")
         return {k: v for k, v in zip(keys, pixel_rgba)}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"error: {e}")
+        raise HTTPException(status_code=500, detail=f"error: {e}")

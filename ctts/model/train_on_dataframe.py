@@ -1,4 +1,5 @@
 import pdb
+from enum import Enum
 from dataclasses import dataclass
 from typing import Tuple, Any, Dict
 from pathlib import Path
@@ -9,18 +10,10 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader,Dataset, Subset, TensorDataset, random_split
 
-from .build_dataframe import gan_mn_dir, gan_mn_dataframe_filename
+from .build_dataframe import Features, gan_mn_dir, gan_mn_dataframe_filename
 from .net import LinearNet
 
 label = "nsb"
-features = [
-    "temperature",
-    "hour_sin",
-    "hour_cos",
-    "lat",
-    "lon",
-    "ansb",
-]
 
 def get_train_test_split_size(dataset_size: int) -> Tuple[int,int]:
     train_size = int(0.8*dataset_size)
@@ -32,23 +25,24 @@ def get_device():
 
 
 def get_datasets(df:pd.DataFrame) -> Tuple[Any, Any]:
-    feature_tensor = torch.tensor(df[features].values.astype(np.float32))
+    # pdb.set_trace()
+    feature_tensor = torch.tensor(df[list(f.value for f in Features)].values.astype(np.float32))
     feature_tensor = torch.nan_to_num(feature_tensor, nan=0.0)
     target_tensor = torch.tensor(df[label].values.astype(np.float32)).to(torch.float32)
     dataset = TensorDataset(feature_tensor, target_tensor)
     train_dataset, test_dataset = random_split(dataset, get_train_test_split_size(len(dataset)))
     return train_dataset, test_dataset
 
-def train_model(path: Path) -> Dict[str, Any]:
-    print(f"loading dataset at {path}")
-
-    df = pd.read_csv(path)
+def train_model_at_path(csv_path: Path) -> Dict[str, Any]:
+    print(f"loading dataset at {csv_path}")
+    df = pd.read_csv(csv_path)
 
     train_dataset, test_dataset = get_datasets(df)
     train_dataloader = DataLoader(dataset=train_dataset, batch_size=6, shuffle=True)
     test_dataloader = DataLoader(dataset=test_dataset, batch_size=6, shuffle=True)
 
-    model = LinearNet(num_features=len(features)).to(get_device())
+    num_features = len(list(f.value for f in Features))
+    model = LinearNet(num_features=num_features).to(get_device())
     loss_fn = nn.HuberLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
 
@@ -89,7 +83,7 @@ path_to_state_dict = gan_mn_dir.parent / "model.pth"
 if __name__ == "__main__":
     torch.set_printoptions(sci_mode=False)
     try:
-        state_dict = train_model(path=gan_mn_dir.parent / gan_mn_dataframe_filename)
+        state_dict = train_model_at_path(csv_path=gan_mn_dir.parent / gan_mn_dataframe_filename)
         print(f"saving state dict to {path_to_state_dict}")
         torch.save(state_dict, path_to_state_dict)
     except KeyboardInterrupt as e:
