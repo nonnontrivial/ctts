@@ -32,16 +32,14 @@ class PredictionResponse:
     astro_twilight_iso: str
 
 
-async def get_model_prediction_for_astro_twilight_type(
+async def get_sky_brightness_prediction(
     lat: float, lon: float, astro_twilight_type: str
 ) -> PredictionResponse:
     """Get the sky brightness prediction for an astronomical twilight relative
     to the provided latitude and longitude.
     """
-    logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
     site = Site(location=location, astro_twilight_type=astro_twilight_type)
-    logging.debug(f"registered site {site}")
     try:
         meteo = MeteoClient(site=site)
         temperature, cloud_cover, elevation = await meteo.get_response_for_site()

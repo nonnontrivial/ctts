@@ -6,7 +6,7 @@ from .constants import API_PREFIX
 from .pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from .prediction.prediction import (
     PredictionResponse,
-    get_model_prediction_for_astro_twilight_type,
+    get_sky_brightness_prediction,
 )
 
 app = FastAPI()
@@ -28,7 +28,7 @@ async def get_prediction(lat, lon, astro_twilight_type: t.Literal["next", "neare
 
     try:
         lat, lon = float(lat), float(lon)
-        prediction = await get_model_prediction_for_astro_twilight_type(lat, lon, astro_twilight_type)
+        prediction = await get_sky_brightness_prediction(lat, lon, astro_twilight_type)
         return create_prediction_response(prediction)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {e}")
@@ -43,9 +43,9 @@ async def get_artificial_light_pollution(lat, lon):
     """
     try:
         lat, lon = float(lat), float(lon)
-        map_image = ArtificialNightSkyBrightnessMapImage()
-        pixel_rgba = map_image.get_pixel_values_at_coords(coords=Coords(lat, lon))
-        keys = ("r", "g", "b", "a")
-        return {k: v for k, v in zip(keys, pixel_rgba)}
+        ansb_map_image = ArtificialNightSkyBrightnessMapImage()
+        pixel_rgba = ansb_map_image.get_pixel_values_at_coords(coords=Coords(lat, lon))
+        color_channels = ("r", "g", "b", "a")
+        return {k: v for k, v in zip(color_channels, pixel_rgba)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error: {e}")
