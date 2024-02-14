@@ -1,25 +1,6 @@
 # CTTS
 
-> closer to the stars
-
-## how to build
-
-### 1. write csv to disk
-
-```sh
-```
-
-### 2. train pytorch model on saved csv
-
-```sh
-```
-
-## [HTTP APIs](#api.md)
-
-- artificial sky brightness (light pollution)
-- predictive sky brightness
-
-### running locally
+> Closer To The Stars
 
 > Note: tested on python 3.11
 

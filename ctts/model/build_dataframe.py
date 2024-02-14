@@ -51,11 +51,11 @@ class GaNMNData:
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
         print(f"preparing to process {len(dfs)} dataframe(s)..")
         df = pd.concat(dfs, ignore_index=True)
-        df = df.iloc[:10000]
         print(f"sanitizing dataframe with {len(df)} rows..")
         df = self._sanitize_df(df)
         print(f"encoding dates for {len(df)} rows..")
         df = self._encode_dates_in_df(df)
+
         print(f"applying coordinate data to stations..")
         df[Features.LAT.value] = df.apply(self._get_lat_at_row, axis=1)
         df[Features.LON.value] = df.apply(self._get_lon_at_row, axis=1)
