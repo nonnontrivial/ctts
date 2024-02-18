@@ -1,5 +1,4 @@
 import typing as t
-import pdb
 from fastapi import FastAPI, HTTPException
 
 from .constants import API_PREFIX
@@ -13,13 +12,18 @@ app = FastAPI()
 
 
 @app.get(f"{API_PREFIX}/prediction")
-async def get_prediction(lat, lon, astro_twilight_type: t.Literal["next", "nearest", "previous"]):
+async def get_prediction(
+    lat, lon, astro_twilight_type: t.Literal["next", "nearest", "previous"]
+):
     """Get sky brightness prediction at `lat` and `lon` for an `astro_twilight_type`.
 
     `astro_twilight_type` is which astronomical twilight should be used relative
     to the current time: next, nearest, or previous.
     """
-    def create_prediction_response(prediction: PredictionResponse) -> t.Dict[str, t.Any]:
+
+    def create_prediction_response(
+        prediction: PredictionResponse,
+    ) -> t.Dict[str, t.Any]:
         y = round(float(prediction.y.item()), 4)
         return {
             "nsb": y,

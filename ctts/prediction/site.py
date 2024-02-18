@@ -53,12 +53,12 @@ class Site(Observer):
     @property
     def hour_sin(self):
         hour_of_astro_twilight = get_astro_time_hour(self.utc_astro_twilight)
-        return np.sin(2*np.pi*hour_of_astro_twilight / HOURS_IN_DAY)
+        return np.sin(2 * np.pi * hour_of_astro_twilight / HOURS_IN_DAY)
 
     @property
     def hour_cos(self):
         hour_of_astro_twilight = get_astro_time_hour(self.utc_astro_twilight)
-        return np.cos(2*np.pi*hour_of_astro_twilight / HOURS_IN_DAY)
+        return np.cos(2 * np.pi * hour_of_astro_twilight / HOURS_IN_DAY)
 
     # @property
     # def moon_alt(self):

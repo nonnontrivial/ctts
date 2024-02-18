@@ -1,8 +1,5 @@
 import logging
-import os
-import typing as t
 from dataclasses import dataclass
-from pathlib import Path
 
 import torch
 import astropy.units as u
@@ -14,7 +11,7 @@ from .meteo import MeteoClient
 from .site import Site
 
 from ..model.net import LinearNet
-from ..model.train_on_dataframe import path_to_state_dict, get_device
+from ..model.train_on_dataframe import path_to_state_dict
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from ..pollution.utils import get_luminance_for_color_channels
 

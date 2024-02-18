@@ -9,7 +9,11 @@ import numpy as np
 import pandas as pd
 import httpx
 
-from ..prediction.constants import MAX_OKTAS, OPEN_METEO_HISTORICAL_BASE_URL, open_meteo_time_format
+from ..prediction.constants import (
+    MAX_OKTAS,
+    OPEN_METEO_HISTORICAL_BASE_URL,
+    open_meteo_time_format,
+)
 
 # see http://globeatnight-network.org/global-at-night-monitoring-network.html
 known_stations = {
@@ -99,9 +103,11 @@ open_meteo_api_protocol = "http"
 open_meteo_api_host = os.getenv("OPEN_METEO_API_HOST", "0.0.0.0")
 open_meteo_api_port = int(os.getenv("OPEN_METEO_API_PORT", 8080))
 
+
 class OpenMeteoModels(Enum):
     ERA5_LAND = "era5_land"
     ERA5 = "era5"
+
 
 class Station:
     open_meteo_historical_base_url = f"{open_meteo_api_protocol}://{open_meteo_api_host}:{open_meteo_api_port}/v1/archive"
@@ -113,7 +119,7 @@ class Station:
             self.lon = lon
             self.device_code = device_code
         except Exception as e:
-           raise ValueError("no known station with device code")
+            raise ValueError("no known station with device code")
 
     def __str__(self) -> str:
         return f"Station(device_code={self.device_code})"
@@ -125,14 +131,17 @@ class Station:
         one_day: t.Any = pd.Timedelta(days=1)
         start_date = received_utc.strftime(open_meteo_time_format)
         end_date = (received_utc + one_day).strftime(open_meteo_time_format)
-        res = httpx.get(self.open_meteo_historical_base_url, params={
-            "latitude": self.lat,
-            "longitude": self.lon,
-            "start_date": start_date,
-            "end_date": end_date,
-            "hourly": "cloud_cover_mid",
-            "models": OpenMeteoModels.ERA5.value
-        })
+        res = httpx.get(
+            self.open_meteo_historical_base_url,
+            params={
+                "latitude": self.lat,
+                "longitude": self.lon,
+                "start_date": start_date,
+                "end_date": end_date,
+                "hourly": "cloud_cover_mid",
+                "models": OpenMeteoModels.ERA5.value,
+            },
+        )
         res.raise_for_status()
         cloud_cover = res.json()["hourly"]["cloud_cover_mid"][received_utc.hour]
         cloud_cover_as_oktas = self._scale_cloud_cover(cloud_cover)
@@ -142,25 +151,30 @@ class Station:
         one_day: t.Any = pd.Timedelta(days=1)
         start_date = received_utc.strftime(open_meteo_time_format)
         end_date = (received_utc + one_day).strftime(open_meteo_time_format)
-        res = httpx.get(self.open_meteo_historical_base_url, params={
-            "latitude": self.lat,
-            "longitude": self.lon,
-            "start_date": start_date,
-            "end_date": end_date,
-            "hourly": "temperature_2m",
-            "models": OpenMeteoModels.ERA5_LAND.value
-        })
+        res = httpx.get(
+            self.open_meteo_historical_base_url,
+            params={
+                "latitude": self.lat,
+                "longitude": self.lon,
+                "start_date": start_date,
+                "end_date": end_date,
+                "hourly": "temperature_2m",
+                "models": OpenMeteoModels.ERA5_LAND.value,
+            },
+        )
         res.raise_for_status()
         temperature = res.json()["hourly"]["temperature_2m"][received_utc.hour]
-        return temperature if temperature is not None else 0.
-
+        return temperature if temperature is not None else 0.0
 
     @property
     def elevation(self) -> float:
-        res = httpx.get(self.open_meteo_historical_base_url, params={
-            "latitude": self.lat,
-            "longitude": self.lon,
-            "models": OpenMeteoModels.ERA5_LAND.value
-        })
+        res = httpx.get(
+            self.open_meteo_historical_base_url,
+            params={
+                "latitude": self.lat,
+                "longitude": self.lon,
+                "models": OpenMeteoModels.ERA5_LAND.value,
+            },
+        )
         res.raise_for_status()
         return res.json()["elevation"]

@@ -36,5 +36,7 @@ class MeteoClient:
     def get_cloud_cover_as_oktas(self, cloud_cover_percentage: int):
         import numpy as np
 
-        percentage_as_oktas = np.interp(cloud_cover_percentage, (0, 100), (0, MAX_OKTAS))
+        percentage_as_oktas = np.interp(
+            cloud_cover_percentage, (0, 100), (0, MAX_OKTAS)
+        )
         return int(percentage_as_oktas)

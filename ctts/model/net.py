@@ -3,6 +3,7 @@ from torch import nn
 
 from .constants import HIDDEN_SIZE, OUTPUT_SIZE
 
+
 class LinearNet(nn.Module):
     def __init__(self, num_features: int) -> None:
         super().__init__()
