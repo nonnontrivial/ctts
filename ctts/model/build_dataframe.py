@@ -1,6 +1,7 @@
 from pathlib import Path
 from enum import Enum
 import typing as t
+import logging
 
 import numpy as np
 import httpx
@@ -12,11 +13,16 @@ from .stations import Station, known_stations
 from ..pollution.utils import get_luminance_for_color_channels
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
+logging.basicConfig(
+    format="%(asctime)s -> %(levelname)s: %(message)s",
+    encoding="utf-8",
+    level=logging.INFO,
+)
+
 gan_mn_dir = Path.cwd() / "data" / "gan_mn"
 gan_mn_dataframe_filename = "gan_mn.csv"
 
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
-
 
 class Features(Enum):
     HOUR_SIN = "hour_sin"
@@ -35,9 +41,6 @@ class GaNMNData:
     Includes methods to supplement the hosted data with columns from open meteo,
     in order to improve model.
     """
-    # temporary row limit
-    row_limit = 100000
-
     # The columns that we will not be able to build up at runtime.
     # `temperature` is reconstructed with the result from open meteo.
     nonconstructable_columns = [
@@ -53,30 +56,24 @@ class GaNMNData:
 
     def __init__(self, dataset_path: Path) -> None:
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
-        print(f"preparing to process {len(dfs)} dataframe(s)..")
         df = pd.concat(dfs, ignore_index=True)
-        df = df.iloc[:self.row_limit]
-        print(f"sanitizing dataframe with {len(df)} rows..")
 
+        logging.info(f"processing {len(df['device_code'].unique())} unique stations..")
         df = self._sanitize_df(df)
-        print(f"encoding dates for {len(df)} rows..")
+        logging.info("encoding dates..")
         df = self._encode_dates_in_df(df)
-
-        print("applying coordinate data to stations..")
         df[Features.LAT.value] = df.apply(self._get_lat_at_row, axis=1)
         df[Features.LON.value] = df.apply(self._get_lon_at_row, axis=1)
-        print("applying ansb..")
         df[Features.ANSB.value] = df.apply(
             self._get_artificial_light_pollution_at_row, axis=1
         )
-        print("applying cloud cover..")
+        logging.info("applying cloud cover..")
         df[Features.CLOUD.value] = df.apply(self._get_cloud_cover_at_row, axis=1)
-        print("applying temperature..")
+        logging.info("applying temperature..")
         df[Features.TEMP.value] = df.apply(self._get_temperature_at_row, axis=1)
-        print("applying elevation..")
+        logging.info("applying elevation..")
         df[Features.ELEV.value] = df.apply(self._get_elevation_at_row, axis=1)
 
-        print("dropping nonconstructable columns..")
         df = df.drop(columns=self.nonconstructable_columns)
 
         self.df = df
@@ -114,13 +111,13 @@ class GaNMNData:
         utc: t.Any = row["received_utc"]
         try:
             cloud_cover = station.get_cloud_cover(utc)
-            print(f"cloud cover at {station} was {cloud_cover} ({row.name})")
+            logging.info(f"cloud cover at {station} was {cloud_cover} ({row.name})")
             return cloud_cover
         except (httpx.ReadTimeout, httpx.ConnectError) as e:
-            print(f"timed out when attempting to get cloud cover: {e}")
+            logging.error(f"timed out when attempting to get cloud cover: {e}")
             return 0.0
         except Exception as e:
-            print(f"could not get cloud cover: {e}")
+            logging.error(f"could not get cloud cover: {e}")
             return 0.0
 
     def _get_temperature_at_row(self, row: pd.Series):
@@ -129,13 +126,13 @@ class GaNMNData:
         utc: t.Any = row["received_utc"]
         try:
             temperature = station.get_temperature(utc)
-            print(f"temperature at {station} was {temperature}")
+            logging.info(f"temperature at {station} was {temperature} ({row.name})")
             return temperature
         except (httpx.ReadTimeout, httpx.ConnectError) as e:
-            print(f"timed out when attempting to get temperature: {e}")
+            logging.error(f"timed out when attempting to get temperature: {e}")
             return 0.0
         except Exception as e:
-            print(f"could not get temperature: {e}")
+            logging.error(f"could not get temperature: {e}")
             return 0.0
 
     def _get_elevation_at_row(self, row: pd.Series):
@@ -143,10 +140,10 @@ class GaNMNData:
         station = Station(device_code)
         try:
             elevation = station.elevation
-            print(f"elevation at {station} is {elevation}")
+            logging.info(f"elevation at {station} is {elevation} ({row.name})")
             return elevation
         except Exception:
-            print(f"failed to apply elevation to {station}")
+            logging.error(f"failed to apply elevation to {station}")
             return 0.0
 
     def _get_artificial_light_pollution_at_row(self, row: pd.Series):
@@ -169,15 +166,15 @@ class GaNMNData:
 if __name__ == "__main__":
     if not gan_mn_dir.exists():
         raise FileNotFoundError(f"!missing {gan_mn_dir}")
-    print(f"loading dataset at {gan_mn_dir} ..")
+    logging.info(f"loading dataset at {gan_mn_dir} ..")
     try:
         gan_mn_data = GaNMNData(gan_mn_dir)
     except ValueError as e:
-        print(f"!failed to create dataframe: {e}")
+        logging.info(f"!failed to create dataframe: {e}")
     except KeyboardInterrupt:
-        print("\npress ctrl-c again to exit..")
+        logging.info("\npress ctrl-c again to exit..")
     else:
-        print(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
+        logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
         gan_mn_data.write_to_disk()
         info = gan_mn_data.df.head()
-        print(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{info}")
+        logging.info(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{info}")
