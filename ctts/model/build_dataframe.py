@@ -62,11 +62,14 @@ class GaNMNData:
         df = self._sanitize_df(df)
         logging.info("encoding dates..")
         df = self._encode_dates_in_df(df)
+
         df[Features.LAT.value] = df.apply(self._get_lat_at_row, axis=1)
         df[Features.LON.value] = df.apply(self._get_lon_at_row, axis=1)
+        logging.info("applying ansb..")
         df[Features.ANSB.value] = df.apply(
             self._get_artificial_light_pollution_at_row, axis=1
         )
+
         logging.info("applying cloud cover..")
         df[Features.CLOUD.value] = df.apply(self._get_cloud_cover_at_row, axis=1)
         logging.info("applying temperature..")

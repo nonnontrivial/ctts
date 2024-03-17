@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 import pytest
 
-from .api import app
-from .constants import API_PREFIX
+from ..api import app
+from ..constants import API_PREFIX
 
 client = TestClient(app)
 
