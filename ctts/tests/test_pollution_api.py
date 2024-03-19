@@ -1,8 +1,7 @@
 from fastapi.testclient import TestClient
 import pytest
 
-from ..api import app
-from ..constants import API_PREFIX
+from ..api import app,prefix
 
 client = TestClient(app)
 
@@ -26,7 +25,7 @@ max_value = {x: max_channel_value for x in keys}
     ],
 )
 def test_get_pollution(lat, lon, value):
-    r = client.get(f"{API_PREFIX}/pollution?lat={lat}&lon={lon}")
+    r = client.get(f"{prefix}/pollution?lat={lat}&lon={lon}")
     assert r.status_code == 200
     assert r.json() == value
 
@@ -34,12 +33,12 @@ def test_get_pollution(lat, lon, value):
 def test_get_pollution_out_of_bounds():
     out_of_bounds_coords = {(76.0, -74.0), (-65.0, -74.0)}
     for lat, lon in out_of_bounds_coords:
-        r = client.get(f"{API_PREFIX}/pollution?lat={lat}&lon={lon}")
+        r = client.get(f"{prefix}/pollution?lat={lat}&lon={lon}")
         assert r.status_code == 200
         assert r.json() == {"r": 0, "g": 0, "b": 0, "a": 255}
 
 
 def test_get_pollution_without_lat_lon():
-    r = client.get(f"{API_PREFIX}/pollution")
+    r = client.get(f"{prefix}/pollution")
     assert r.status_code != 200
     assert "detail" in r.json()

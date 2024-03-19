@@ -1,13 +1,12 @@
 from fastapi.testclient import TestClient
 
-from ..api import app
-from ..constants import API_PREFIX
+from ..api import app,prefix
 
 client = TestClient(app)
 
 
 def test_get_prediction_bad_status_without_lat_lon():
-    r = client.get(f"{API_PREFIX}/prediction")
+    r = client.get(f"{prefix}/prediction")
     assert "detail" in r.json()
     assert r.status_code != 200
 
@@ -16,7 +15,7 @@ def test_get_prediction_bad_status_with_bad_astro_twilight():
     astro_twilight_type = "bad"
     lat, lon = (-30.2466, -70.7494)
     r = client.get(
-        f"{API_PREFIX}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}"
+        f"{prefix}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}"
     )
     assert "detail" in r.json()
     assert r.status_code == 422
@@ -26,7 +25,7 @@ def test_get_prediction():
     astro_twilight_type = "nearest"
     lat, lon = (-30.2466, -70.7494)
     r = client.get(
-        f"{API_PREFIX}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}"
+        f"{prefix}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}"
     )
     res_json = r.json()
     assert res_json["nat"] is not None
