@@ -7,7 +7,7 @@ client = TestClient(app)
 
 
 max_channel_value = 255
-keys = ["r", "g", "b", "a"]
+keys = {"r", "g", "b", "a"}
 max_value = {x: max_channel_value for x in keys}
 
 

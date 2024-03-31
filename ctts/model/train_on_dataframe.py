@@ -1,19 +1,22 @@
-import pdb
-from enum import Enum
-from dataclasses import dataclass
 from typing import Tuple, Any, Dict
 from pathlib import Path
+from configparser import ConfigParser
 
 import numpy as np
 import pandas as pd
 import torch
 from torch import nn
-from torch.utils.data import DataLoader, Dataset, Subset, TensorDataset, random_split
+from torch.utils.data import DataLoader, TensorDataset, random_split
 
 from .build_dataframe import Features, gan_mn_dir, gan_mn_dataframe_filename
 from .net import LinearNet
 
-label = "nsb"
+current_file = Path(__file__)
+config = ConfigParser()
+config.read(current_file.parent / "config.ini")
+
+label = config.get("train", "label")
+num_epochs = config.getint("train", "epochs")
 
 
 def get_train_test_split_size(dataset_size: int) -> Tuple[int, int]:
@@ -27,7 +30,6 @@ def get_device():
 
 
 def get_datasets(df: pd.DataFrame) -> Tuple[Any, Any]:
-    # pdb.set_trace()
     feature_tensor = torch.tensor(
         df[list(f.value for f in Features)].values.astype(np.float32)
     )
@@ -40,9 +42,9 @@ def get_datasets(df: pd.DataFrame) -> Tuple[Any, Any]:
     return train_dataset, test_dataset
 
 
-def train_model_at_path(csv_path: Path) -> Dict[str, Any]:
-    print(f"loading dataset at {csv_path}")
-    df = pd.read_csv(csv_path)
+def train_model_at_path(path_to_dataset: Path) -> Dict[str, Any]:
+    print(f"loading dataset at {path_to_dataset}")
+    df = pd.read_csv(path_to_dataset)
 
     train_dataset, test_dataset = get_datasets(df)
     train_dataloader = DataLoader(dataset=train_dataset, batch_size=6, shuffle=True)
@@ -77,7 +79,6 @@ def train_model_at_path(csv_path: Path) -> Dict[str, Any]:
             avg_loss = test_loss / len(test_dataset)
             print(f"avg test loss: {avg_loss}")
 
-    num_epochs = 5
     for t in range(num_epochs):
         print(f"epoch {t+1}/{num_epochs}")
         train()
@@ -91,12 +92,12 @@ if __name__ == "__main__":
     torch.set_printoptions(sci_mode=False)
     try:
         state_dict = train_model_at_path(
-            csv_path=gan_mn_dir.parent / gan_mn_dataframe_filename
+            path_to_dataset=gan_mn_dir.parent / gan_mn_dataframe_filename
         )
         print(f"saving state dict to {path_to_state_dict}")
         torch.save(state_dict, path_to_state_dict)
-    except KeyboardInterrupt as e:
-        print(f"\npress ctrl-c again to exit..")
+    except KeyboardInterrupt:
+        print("\npress ctrl-c again to exit..")
     except Exception as e:
         print(f"failed to train model: {e}")
     else:

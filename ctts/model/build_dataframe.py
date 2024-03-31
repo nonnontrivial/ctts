@@ -1,5 +1,6 @@
 from pathlib import Path
 from enum import Enum
+from configparser import ConfigParser
 import typing as t
 import logging
 
@@ -19,8 +20,12 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
+current_file = Path(__file__)
+config = ConfigParser()
+config.read(current_file.parent / "config.ini")
+
 gan_mn_dir = Path.cwd() / "data" / "gan_mn"
-gan_mn_dataframe_filename = "gan_mn.csv"
+gan_mn_dataframe_filename = config.get("build", "gan_mn_dataframe_filename")
 
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
 
@@ -57,15 +62,18 @@ class GaNMNData:
     def __init__(self, dataset_path: Path) -> None:
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
         df = pd.concat(dfs, ignore_index=True)
+        # df = df.iloc[:10]
+        # pdb.set_trace()
 
         logging.info(f"processing {len(df['device_code'].unique())} unique stations..")
         df = self._sanitize_df(df)
+
         logging.info("encoding dates..")
         df = self._encode_dates_in_df(df)
 
         df[Features.LAT.value] = df.apply(self._get_lat_at_row, axis=1)
         df[Features.LON.value] = df.apply(self._get_lon_at_row, axis=1)
-        logging.info("applying ansb..")
+        logging.info("applying artificial night sky brightness values..")
         df[Features.ANSB.value] = df.apply(
             self._get_artificial_light_pollution_at_row, axis=1
         )
@@ -83,7 +91,11 @@ class GaNMNData:
         self.save_path = dataset_path.parent
 
     def _sanitize_df(self, gan_frame: pd.DataFrame) -> pd.DataFrame:
-        # see "What is the range of the Sky Quality Meters" section of http://www.unihedron.com/projects/darksky/faqsqm.php
+        """ensure rows have valid night sky brightness value and are for a station
+        with coordinates.
+
+        see "What is the range of the Sky Quality Meters" section of http://www.unihedron.com/projects/darksky/faqsqm.php
+        """
         df: t.Any = gan_frame[gan_frame["nsb"] > 7.0]
         df = df[df["device_code"].isin(known_stations)]
         return df.reset_index()
@@ -114,7 +126,7 @@ class GaNMNData:
         utc: t.Any = row["received_utc"]
         try:
             cloud_cover = station.get_cloud_cover(utc)
-            logging.info(f"cloud cover at {station} was {cloud_cover} ({row.name})")
+            logging.info(f"cloud cover at {station} was {cloud_cover} (row {row.name})")
             return cloud_cover
         except (httpx.ReadTimeout, httpx.ConnectError) as e:
             logging.error(f"timed out when attempting to get cloud cover: {e}")
@@ -129,7 +141,7 @@ class GaNMNData:
         utc: t.Any = row["received_utc"]
         try:
             temperature = station.get_temperature(utc)
-            logging.info(f"temperature at {station} was {temperature} ({row.name})")
+            logging.info(f"temperature at {station} was {temperature} (row {row.name})")
             return temperature
         except (httpx.ReadTimeout, httpx.ConnectError) as e:
             logging.error(f"timed out when attempting to get temperature: {e}")
@@ -143,7 +155,7 @@ class GaNMNData:
         station = Station(device_code)
         try:
             elevation = station.elevation
-            logging.info(f"elevation at {station} is {elevation} ({row.name})")
+            logging.info(f"elevation at {station} is {elevation} (row {row.name})")
             return elevation
         except Exception:
             logging.error(f"failed to apply elevation to {station}")
@@ -169,15 +181,17 @@ class GaNMNData:
 if __name__ == "__main__":
     if not gan_mn_dir.exists():
         raise FileNotFoundError(f"!missing {gan_mn_dir}")
+
     logging.info(f"loading dataset at {gan_mn_dir} ..")
     try:
         gan_mn_data = GaNMNData(gan_mn_dir)
+
+        logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
+        gan_mn_data.write_to_disk()
     except ValueError as e:
         logging.info(f"!failed to create dataframe: {e}")
     except KeyboardInterrupt:
         logging.info("\npress ctrl-c again to exit..")
     else:
-        logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
-        gan_mn_data.write_to_disk()
         info = gan_mn_data.df.head()
         logging.info(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{info}")
