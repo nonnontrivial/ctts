@@ -14,18 +14,19 @@ from .stations import Station, known_stations
 from ..pollution.utils import get_luminance_for_color_channels
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
-logging.basicConfig(
-    format="%(asctime)s -> %(levelname)s: %(message)s",
-    encoding="utf-8",
-    level=logging.INFO,
-)
-
 current_file = Path(__file__)
 config = ConfigParser()
 config.read(current_file.parent / "config.ini")
 
 gan_mn_dir = Path.cwd() / "data" / "gan_mn"
 gan_mn_dataframe_filename = config.get("build", "gan_mn_dataframe_filename")
+log_level = config.getint("log", "level")
+
+logging.basicConfig(
+    format="%(asctime)s -> %(levelname)s: %(message)s",
+    encoding="utf-8",
+    level=log_level,
+)
 
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
 
@@ -43,8 +44,8 @@ class Features(Enum):
 class GaNMNData:
     """Dataframe of the Globe at Night Monitoring Network dataset.
 
-    Includes methods to supplement the hosted data with columns from open meteo,
-    in order to improve model.
+    Includes methods to supplement the publicly hosted data with columns from
+    open meteo, in order to improve model accuracy.
     """
     # The columns that we will not be able to build up at runtime.
     # `temperature` is reconstructed with the result from open meteo.
