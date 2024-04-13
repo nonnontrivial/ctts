@@ -14,10 +14,11 @@ ansb_map_image = ArtificialNightSkyBrightnessMapImage()
 async def get_prediction(
     lat, lon, astro_twilight_type: t.Literal["next", "nearest", "previous"]
 ):
-    """Get sky brightness prediction at `lat` and `lon` for an `astro_twilight_type`.
+    """Get night sky brightness prediction at `lat` and `lon` for an
+    `astro_twilight_type` as dictionary.
 
-    `astro_twilight_type` is which astronomical twilight should be used relative
-    to the current time: next, nearest, or previous.
+    `astro_twilight_type` query param is which astronomical twilight should be used
+    relative to the current time: next, nearest, or previous.
     """
 
     def create_prediction_response(
@@ -39,10 +40,10 @@ async def get_prediction(
 
 @router.get("/pollution")
 async def get_artificial_light_pollution(lat, lon):
-    """Get artificial light pollution at lat and lon.
+    """Get artificial light pollution at lat and lon as key,value pairs across
+    color channels rgba.
 
-    Map data is from 2022.
-    See https://djlorenz.github.io/astronomy/lp2022/
+    Note that map data is from 2022. See https://djlorenz.github.io/astronomy/lp2022/
     """
     try:
         lat, lon = float(lat), float(lon)
