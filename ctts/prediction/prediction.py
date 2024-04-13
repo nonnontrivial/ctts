@@ -37,6 +37,7 @@ async def get_sky_brightness_prediction(
     """
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
     site = Site(location=location, astro_twilight_type=astro_twilight_type)
+
     try:
         meteo = MeteoClient(site=site)
         temperature, cloud_cover, elevation = await meteo.get_response_for_site()

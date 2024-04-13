@@ -1,0 +1,207 @@
+"""
+Script to build (and write to csv) GaN MN data frame.
+
+>>> python -m ctts.model.build
+"""
+
+from pathlib import Path
+from enum import Enum
+from configparser import ConfigParser
+import sys
+import typing as t
+import logging
+
+import numpy as np
+import httpx
+import pandas as pd
+
+from .constants import HOURS_IN_DAY
+from .stations import Station, known_stations
+
+from ..pollution.utils import get_luminance_for_color_channels
+from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
+
+current_file = Path(__file__)
+config = ConfigParser()
+config.read(current_file.parent / "config.ini")
+
+gan_mn_dir = Path.cwd() / "data" / "gan_mn"
+gan_mn_dataframe_filename = config.get("file", "gan_mn_dataframe_filename")
+log_level = config.getint("log", "level")
+
+logging.basicConfig(
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    encoding="utf-8",
+    level=log_level,
+)
+
+ansb_map_image = ArtificialNightSkyBrightnessMapImage()
+
+class Features(Enum):
+    HOUR_SIN = "hour_sin"
+    HOUR_COS = "hour_cos"
+    LAT = "lat"
+    LON = "lon"
+    ANSB = "ansb"
+    CLOUD = "cloud"
+    TEMP = "temperature"
+    ELEV = "elevation"
+
+
+class GaNMNData:
+    """Dataframe of the Globe at Night Monitoring Network dataset.
+
+    Includes methods to supplement the publicly hosted data with columns from
+    open meteo, in order to improve model accuracy.
+    """
+    # The columns that we will not be able to build up at runtime.
+    # `temperature` is reconstructed with the result from open meteo.
+    nonconstructable_columns = [
+        "id",
+        "created",
+        "received_adjusted",
+        "sqmle_serial_number",
+        "sensor_frequency",
+        "sensor_period_count",
+        "sensor_period_second",
+        "device_code",
+    ]
+
+    def __init__(self, dataset_path: Path) -> None:
+        dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
+        df = pd.concat(dfs, ignore_index=True)
+        # df = df.iloc[:10]
+        # pdb.set_trace()
+
+        logging.info(f"processing {len(df['device_code'].unique())} unique stations..")
+        df = self._sanitize_df(df)
+
+        logging.info("encoding dates..")
+        df = self._encode_dates_in_df(df)
+
+        df[Features.LAT.value] = df.apply(self._get_lat_at_row, axis=1)
+        df[Features.LON.value] = df.apply(self._get_lon_at_row, axis=1)
+        logging.info("applying artificial night sky brightness values..")
+        df[Features.ANSB.value] = df.apply(
+            self._get_artificial_light_pollution_at_row, axis=1
+        )
+
+        logging.info("applying cloud cover..")
+        df[Features.CLOUD.value] = df.apply(self._get_cloud_cover_at_row, axis=1)
+        logging.info("applying temperature..")
+        df[Features.TEMP.value] = df.apply(self._get_temperature_at_row, axis=1)
+        logging.info("applying elevation..")
+        df[Features.ELEV.value] = df.apply(self._get_elevation_at_row, axis=1)
+
+        df = df.drop(columns=self.nonconstructable_columns)
+
+        self.df = df
+        self.save_path = dataset_path.parent
+
+    def _sanitize_df(self, gan_frame: pd.DataFrame) -> pd.DataFrame:
+        """ensure rows have valid night sky brightness value and are for a station
+        with coordinates.
+
+        see "What is the range of the Sky Quality Meters" section of http://www.unihedron.com/projects/darksky/faqsqm.php
+        """
+        df: t.Any = gan_frame[gan_frame["nsb"] > 7.0]
+        df = df[df["device_code"].isin(known_stations)]
+        return df.reset_index()
+
+    def _encode_dates_in_df(self, gan_mn_frame: pd.DataFrame) -> pd.DataFrame:
+        # see https://www.kaggle.com/code/avanwyk/encoding-cyclical-features-for-deep-learning
+        df = gan_mn_frame
+        df["received_utc"] = pd.to_datetime(df["received_utc"])
+        df[Features.HOUR_SIN.value] = np.sin(
+            2 * np.pi * df["received_utc"].dt.hour / HOURS_IN_DAY
+        )
+        df[Features.HOUR_COS.value] = np.cos(
+            2 * np.pi * df["received_utc"].dt.hour / HOURS_IN_DAY
+        )
+        return df.reset_index()
+
+    def _get_lat_at_row(self, row: pd.Series):
+        device_code = str(row["device_code"])
+        return known_stations[device_code][0]
+
+    def _get_lon_at_row(self, row: pd.Series):
+        device_code = str(row["device_code"])
+        return known_stations[device_code][1]
+
+    def _get_cloud_cover_at_row(self, row: pd.Series):
+        device_code: t.Any = row["device_code"]
+        station = Station(device_code)
+        utc: t.Any = row["received_utc"]
+        try:
+            cloud_cover = station.get_cloud_cover(utc)
+            logging.info(f"cloud cover at {station} was {cloud_cover} (row {row.name})")
+            return cloud_cover
+        except (httpx.ReadTimeout, httpx.ConnectError) as e:
+            logging.error(f"timed out when attempting to get cloud cover: {e}")
+            return 0.0
+        except Exception as e:
+            logging.error(f"could not get cloud cover: {e}")
+            return 0.0
+
+    def _get_temperature_at_row(self, row: pd.Series):
+        device_code: t.Any = row["device_code"]
+        station = Station(device_code)
+        utc: t.Any = row["received_utc"]
+        try:
+            temperature = station.get_temperature(utc)
+            logging.info(f"temperature at {station} was {temperature} (row {row.name})")
+            return temperature
+        except (httpx.ReadTimeout, httpx.ConnectError) as e:
+            logging.error(f"timed out when attempting to get temperature: {e}")
+            return 0.0
+        except Exception as e:
+            logging.error(f"could not get temperature: {e}")
+            return 0.0
+
+    def _get_elevation_at_row(self, row: pd.Series):
+        device_code: t.Any = row["device_code"]
+        station = Station(device_code)
+        try:
+            elevation = station.elevation
+            logging.info(f"elevation at {station} is {elevation} (row {row.name})")
+            return elevation
+        except Exception:
+            logging.error(f"failed to apply elevation to {station}")
+            return 0.0
+
+    def _get_artificial_light_pollution_at_row(self, row: pd.Series):
+        lat, lon = row[Features.LAT.value], row[Features.LON.value]
+        r, g, b, _ = ansb_map_image.get_pixel_values_at_coords(
+            Coords(float(lat), float(lon))
+        )
+        vR, vG, vB = r / 255, g / 255, b / 255
+        luminance = get_luminance_for_color_channels(vR, vG, vB)
+        return luminance
+
+    @property
+    def correlations(self):
+        return self.df.corr()
+
+    def write_to_disk(self) -> None:
+        self.df.to_csv(self.save_path / gan_mn_dataframe_filename, index=False)
+
+
+if __name__ == "__main__":
+    if not gan_mn_dir.exists():
+        raise FileNotFoundError(f"missing {gan_mn_dir}")
+
+    logging.info(f"loading dataset at {gan_mn_dir} ..")
+    try:
+        gan_mn_data = GaNMNData(gan_mn_dir)
+
+        logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
+        gan_mn_data.write_to_disk()
+    except ValueError as e:
+        logging.info(f"!failed to create dataframe: {e}")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        logging.info("\npress ctrl-c again to exit..")
+        sys.exit(1)
+    else:
+        info = gan_mn_data.df.head()
+        logging.info(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{info}")
