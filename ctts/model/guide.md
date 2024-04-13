@@ -1,7 +1,21 @@
 # sky brightness model dataframe guide
 
+predictive sky brightess happens through a model trained on augmented publicly
+available data.
+
+the data is stored in a tarball in this repo (`gan_mn.tar.gz`).
+
+there are _3 main commands_ used to get the model in a state where it can
+deliver predictions. they should usually be run in order.
+
+they are:
+
+- `python -m data.unpack` for unpacking the tarball mentioned above
+- `python -m ctts.model.build` for augmenting the csv data from unpacked tarball
+- `python -m ctts.model.train` for training the model on the csv from build step
+
 > note: `config.ini` can be adjusted to tweak number of epochs in training
-> as well as the training .csv output filename (default value is used in this guide)
+> as well as the training .csv output filename (default values are used in this guide)
 
 ## 0. load training data
 
