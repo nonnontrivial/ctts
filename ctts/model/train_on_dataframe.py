@@ -1,3 +1,9 @@
+"""
+Script to train the model on the dataframe saved from (built) dataframe.
+
+>>> python -m ctts.model.train_on_dataframe
+"""
+
 from typing import Tuple, Any, Dict
 from pathlib import Path
 from configparser import ConfigParser
@@ -87,6 +93,7 @@ def train_model_at_path(path_to_dataset: Path) -> Dict[str, Any]:
 
 
 path_to_state_dict = gan_mn_dir.parent / "model.pth"
+
 
 if __name__ == "__main__":
     torch.set_printoptions(sci_mode=False)

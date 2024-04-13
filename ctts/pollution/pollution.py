@@ -6,22 +6,29 @@ from PIL import Image
 from .utils import Coords
 
 
+image_mode = "RGBA"
+
+ctts_root_path = Path(__file__).parent.parent.parent
+default_path_to_map_image = ctts_root_path / "data" / "ansb" / "world2022.png"
+
 @dataclass
 class Pixel:
     x: int
     y: int
 
 
-image_mode = "RGBA"
-default_path_to_map_image = Path.cwd() / "data" / "ansb" / "world2022.png"
-
-
 class ArtificialNightSkyBrightnessMapImage:
+    """
+    Makes an image of global artificial night sky brigtness (using equirectangular
+    projection) queryable for pixel values by lat,lon
+    """
     def __init__(self, path_to_map_image: Path = default_path_to_map_image) -> None:
         if not path_to_map_image.exists():
             raise FileNotFoundError(f"{path_to_map_image} does not exist")
+
         self.image = Image.open(path_to_map_image).convert(image_mode)
-        # see domain column in table at https://djlorenz.github.io/astronomy/lp2022/
+        # for more on these limits, see domain column in table at
+        # https://djlorenz.github.io/astronomy/lp2022/
         self.max_lat_n = 75
         self.max_lat_s = 65
 
@@ -39,7 +46,6 @@ class ArtificialNightSkyBrightnessMapImage:
         height_scale = self.image.height / self.max_lat_degs
         x = int((coords.lon + 180) * width_scale)
         y = int((self.max_lat_n - coords.lat) * height_scale)
-        # pdb.set_trace()
         return Pixel(x, y)
 
     def get_pixel_value(self, pixel: Pixel) -> tuple[int, int, int, int]:
@@ -52,5 +58,4 @@ class ArtificialNightSkyBrightnessMapImage:
         # see https://djlorenz.github.io/astronomy/lp2022/colors.html
         pixel = self.get_pixel_in_image_from_coords(coords)
         pixel_value = self.get_pixel_value(pixel)
-        # pdb.set_trace()
         return pixel_value

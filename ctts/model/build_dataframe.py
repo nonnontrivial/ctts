@@ -1,3 +1,9 @@
+"""
+Script to build (and write to csv) GaN MN data frame.
+
+>>> python -m ctts.model.build_dataframe
+"""
+
 from pathlib import Path
 from enum import Enum
 from configparser import ConfigParser
@@ -181,7 +187,7 @@ class GaNMNData:
 
 if __name__ == "__main__":
     if not gan_mn_dir.exists():
-        raise FileNotFoundError(f"!missing {gan_mn_dir}")
+        raise FileNotFoundError(f"missing {gan_mn_dir}")
 
     logging.info(f"loading dataset at {gan_mn_dir} ..")
     try:
