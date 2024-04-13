@@ -11,7 +11,7 @@ from pathlib import Path
 tar_location = Path(__file__).parent / "gan_mn.tar.gz"
 extraction_path = Path(__file__).parent
 
-def cleanup():
+def cleanup_extraction_dir():
     for f in (extraction_path / "gan_mn").glob("._*"):
         f.unlink()
 
@@ -20,10 +20,11 @@ if __name__ == "__main__":
         if not extraction_path.exists():
             raise FileNotFoundError(f"{extraction_path} does not exist")
 
+        print(f"extracting gan mn data in {tar_location} to {extraction_path / 'gan_mn'}")
         with tarfile.open(tar_location, "r:gz") as tar:
             tar.extractall(extraction_path)
 
-        cleanup()
+        cleanup_extraction_dir()
     except Exception as e:
         print(e)
         sys.exit(1)

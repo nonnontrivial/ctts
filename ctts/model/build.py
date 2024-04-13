@@ -187,20 +187,21 @@ class GaNMNData:
 
 
 if __name__ == "__main__":
-    if not gan_mn_dir.exists():
-        raise FileNotFoundError(f"missing {gan_mn_dir}")
+    logging.info(f"loading csvs within {gan_mn_dir} ..")
 
-    logging.info(f"loading dataset at {gan_mn_dir} ..")
     try:
+        if not gan_mn_dir.exists():
+            raise FileNotFoundError(f"missing {gan_mn_dir}")
+
         gan_mn_data = GaNMNData(gan_mn_dir)
 
         logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
         gan_mn_data.write_to_disk()
     except ValueError as e:
-        logging.info(f"!failed to create dataframe: {e}")
+        logging.info(f"failed to create dataframe because {e}")
         sys.exit(1)
-    except KeyboardInterrupt:
-        logging.info("\npress ctrl-c again to exit..")
+    except Exception as e:
+        logging.info(f"could not build because {e}")
         sys.exit(1)
     else:
         info = gan_mn_data.df.head()
