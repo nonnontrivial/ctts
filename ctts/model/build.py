@@ -7,6 +7,7 @@ Script to build (and write to csv) GaN MN data frame.
 from pathlib import Path
 from enum import Enum
 from configparser import ConfigParser
+import argparse
 import sys
 import typing as t
 import logging
@@ -21,11 +22,12 @@ from .stations import Station, known_stations
 from ..pollution.utils import get_luminance_for_color_channels
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 
+gan_mn_dir = Path.cwd() / "data" / "gan_mn"
+
 current_file = Path(__file__)
 config = ConfigParser()
 config.read(current_file.parent / "config.ini")
 
-gan_mn_dir = Path.cwd() / "data" / "gan_mn"
 gan_mn_dataframe_filename = config.get("file", "gan_mn_dataframe_filename")
 log_level = config.getint("log", "level")
 
@@ -49,11 +51,10 @@ class Features(Enum):
 
 
 class GaNMNData:
-    """Dataframe of the Globe at Night Monitoring Network dataset.
-
-    Includes methods to supplement the publicly hosted data with columns from
-    open meteo, in order to improve model accuracy.
     """
+    Carries (augmented) dataframe of the Globe at Night Monitoring Network dataset.
+    """
+
     # The columns that we will not be able to build up at runtime.
     # `temperature` is reconstructed with the result from open meteo.
     nonconstructable_columns = [
@@ -68,19 +69,27 @@ class GaNMNData:
     ]
 
     def __init__(self, dataset_path: Path) -> None:
+        logging.info(f"reading {len(list(dataset_path.iterdir()))} files..")
+
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
+        # bring everything into single dataframe
         df = pd.concat(dfs, ignore_index=True)
         # df = df.iloc[:10]
         # pdb.set_trace()
 
-        logging.info(f"processing {len(df['device_code'].unique())} unique stations..")
+        logging.info("preparing dataset..")
         df = self._sanitize_df(df)
+
+        self.num_rows = df.shape[0]
+        logging.info(f"using {self.num_rows} rows with {len(df['device_code'].unique())} unique stations..")
 
         logging.info("encoding dates..")
         df = self._encode_dates_in_df(df)
 
+        logging.info("applying coordinates..")
         df[Features.LAT.value] = df.apply(self._get_lat_at_row, axis=1)
         df[Features.LON.value] = df.apply(self._get_lon_at_row, axis=1)
+
         logging.info("applying artificial night sky brightness values..")
         df[Features.ANSB.value] = df.apply(
             self._get_artificial_light_pollution_at_row, axis=1
@@ -88,11 +97,14 @@ class GaNMNData:
 
         logging.info("applying cloud cover..")
         df[Features.CLOUD.value] = df.apply(self._get_cloud_cover_at_row, axis=1)
+
         logging.info("applying temperature..")
         df[Features.TEMP.value] = df.apply(self._get_temperature_at_row, axis=1)
+
         logging.info("applying elevation..")
         df[Features.ELEV.value] = df.apply(self._get_elevation_at_row, axis=1)
 
+        logging.info("cleaning up..")
         df = df.drop(columns=self.nonconstructable_columns)
 
         self.df = df
@@ -128,13 +140,17 @@ class GaNMNData:
         device_code = str(row["device_code"])
         return known_stations[device_code][1]
 
-    def _get_cloud_cover_at_row(self, row: pd.Series):
+    def _get_station_at_row(self, row: pd.Series):
         device_code: t.Any = row["device_code"]
-        station = Station(device_code)
-        utc: t.Any = row["received_utc"]
+        return Station(device_code)
+
+    def _get_cloud_cover_at_row(self, row: pd.Series):
         try:
+            station = self._get_station_at_row(row)
+
+            utc: t.Any = row["received_utc"]
             cloud_cover = station.get_cloud_cover(utc)
-            logging.info(f"cloud cover at {station} was {cloud_cover} (row {row.name})")
+            logging.info(f"[{row.name}/{self.num_rows}] cloud cover at {station} was {cloud_cover}")
             return cloud_cover
         except (httpx.ReadTimeout, httpx.ConnectError) as e:
             logging.error(f"timed out when attempting to get cloud cover: {e}")
@@ -144,12 +160,12 @@ class GaNMNData:
             return 0.0
 
     def _get_temperature_at_row(self, row: pd.Series):
-        device_code: t.Any = row["device_code"]
-        station = Station(device_code)
-        utc: t.Any = row["received_utc"]
         try:
+            station = self._get_station_at_row(row)
+
+            utc: t.Any = row["received_utc"]
             temperature = station.get_temperature(utc)
-            logging.info(f"temperature at {station} was {temperature} (row {row.name})")
+            logging.info(f"[{row.name}/{self.num_rows}] temperature at {station} was {temperature}")
             return temperature
         except (httpx.ReadTimeout, httpx.ConnectError) as e:
             logging.error(f"timed out when attempting to get temperature: {e}")
@@ -159,11 +175,10 @@ class GaNMNData:
             return 0.0
 
     def _get_elevation_at_row(self, row: pd.Series):
-        device_code: t.Any = row["device_code"]
-        station = Station(device_code)
         try:
+            station = self._get_station_at_row(row)
             elevation = station.elevation
-            logging.info(f"elevation at {station} is {elevation} (row {row.name})")
+            logging.info(f"[{row.name}/{self.num_rows}] elevation at {station} is {elevation}")
             return elevation
         except Exception:
             logging.error(f"failed to apply elevation to {station}")
@@ -187,16 +202,24 @@ class GaNMNData:
 
 
 if __name__ == "__main__":
-    logging.info(f"loading csvs within {gan_mn_dir} ..")
+    logging.info(f"running build on csv files within {gan_mn_dir} ..")
+
+    parser = argparse.ArgumentParser(prog="build", description="dataframe writing tool")
+    parser.add_argument("--verbose", action="store_true", help="verbose mode")
+    parser.add_argument("--progress", action="store_true", help="show progress")
+    args = parser.parse_args()
+
 
     try:
         if not gan_mn_dir.exists():
-            raise FileNotFoundError(f"missing {gan_mn_dir}")
+            raise FileNotFoundError(f"{gan_mn_dir} does not exist")
 
         gan_mn_data = GaNMNData(gan_mn_dir)
 
-        logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
+        if args.verbose:
+            logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
         gan_mn_data.write_to_disk()
+        info = gan_mn_data.df.head()
     except ValueError as e:
         logging.info(f"failed to create dataframe because {e}")
         sys.exit(1)
@@ -204,5 +227,4 @@ if __name__ == "__main__":
         logging.info(f"could not build because {e}")
         sys.exit(1)
     else:
-        info = gan_mn_data.df.head()
         logging.info(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{info}")

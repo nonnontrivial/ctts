@@ -1,9 +1,6 @@
-import pdb
 import os
 from enum import Enum
 import typing as t
-from datetime import datetime
-from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -11,7 +8,6 @@ import httpx
 
 from ..prediction.constants import (
     MAX_OKTAS,
-    OPEN_METEO_HISTORICAL_BASE_URL,
     open_meteo_time_format,
 )
 
@@ -118,7 +114,7 @@ class Station:
             self.lat = lat
             self.lon = lon
             self.device_code = device_code
-        except Exception as e:
+        except Exception:
             raise ValueError("no known station with device code")
 
     def __str__(self) -> str:
