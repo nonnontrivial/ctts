@@ -1,4 +1,4 @@
-# sky brightness model dataframe guide
+# guide
 
 predictive sky brightess happens through a model trained on augmented publicly
 available data.

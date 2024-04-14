@@ -37,8 +37,6 @@ logging.basicConfig(
     level=log_level,
 )
 
-ansb_map_image = ArtificialNightSkyBrightnessMapImage()
-
 class GaNMNData:
     """
     Carries (augmented) dataframe of the Globe at Night Monitoring Network dataset.
@@ -59,6 +57,9 @@ class GaNMNData:
 
     def __init__(self, dataset_path: Path) -> None:
         logging.info(f"concatenating {len(list(dataset_path.iterdir()))} files..")
+
+        self.save_path = dataset_path.parent
+        self.ansb_map_image = ArtificialNightSkyBrightnessMapImage()
 
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
         # bring everything into single dataframe
@@ -97,7 +98,6 @@ class GaNMNData:
         df = df.drop(columns=self.nonconstructable_columns)
 
         self.df = df
-        self.save_path = dataset_path.parent
 
     def _sanitize_df(self, gan_frame: pd.DataFrame) -> pd.DataFrame:
         """ensure rows have valid night sky brightness value and are for a station
@@ -175,7 +175,7 @@ class GaNMNData:
 
     def _get_artificial_light_pollution_at_row(self, row: pd.Series):
         lat, lon = row[Features.LAT.value], row[Features.LON.value]
-        r, g, b, _ = ansb_map_image.get_pixel_values_at_coords(
+        r, g, b, _ = self.ansb_map_image.get_pixel_values_at_coords(
             Coords(float(lat), float(lon))
         )
         vR, vG, vB = r / 255, g / 255, b / 255
@@ -187,6 +187,7 @@ class GaNMNData:
         return self.df.corr()
 
     def write_to_disk(self) -> None:
+        """write the data frame to disk at the save path"""
         self.df.to_csv(self.save_path / gan_mn_dataframe_filename, index=False)
 
 
@@ -207,6 +208,7 @@ if __name__ == "__main__":
 
         if args.verbose:
             logging.info(f"writing file at {gan_mn_data.save_path / gan_mn_dataframe_filename} ..")
+
         gan_mn_data.write_to_disk()
         info = gan_mn_data.df.head()
     except ValueError as e:
