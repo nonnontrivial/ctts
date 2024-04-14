@@ -40,6 +40,10 @@ logging.basicConfig(
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
 
 class Features(Enum):
+    """
+    Columns to be used in feature vector
+    """
+
     HOUR_SIN = "hour_sin"
     HOUR_COS = "hour_cos"
     LAT = "lat"
@@ -55,7 +59,7 @@ class GaNMNData:
     Carries (augmented) dataframe of the Globe at Night Monitoring Network dataset.
     """
 
-    # The columns that we will not be able to build up at runtime.
+    # The columns that we will not be able to build up during prediction request.
     # `temperature` is reconstructed with the result from open meteo.
     nonconstructable_columns = [
         "id",
@@ -69,7 +73,7 @@ class GaNMNData:
     ]
 
     def __init__(self, dataset_path: Path) -> None:
-        logging.info(f"reading {len(list(dataset_path.iterdir()))} files..")
+        logging.info(f"concatenating {len(list(dataset_path.iterdir()))} files..")
 
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
         # bring everything into single dataframe
@@ -156,7 +160,7 @@ class GaNMNData:
             logging.error(f"timed out when attempting to get cloud cover: {e}")
             return 0.0
         except Exception as e:
-            logging.error(f"could not get cloud cover: {e}")
+            logging.error(f"could not get cloud cover because {e}")
             return 0.0
 
     def _get_temperature_at_row(self, row: pd.Series):
@@ -171,7 +175,7 @@ class GaNMNData:
             logging.error(f"timed out when attempting to get temperature: {e}")
             return 0.0
         except Exception as e:
-            logging.error(f"could not get temperature: {e}")
+            logging.error(f"could not get temperature because {e}")
             return 0.0
 
     def _get_elevation_at_row(self, row: pd.Series):
@@ -180,8 +184,8 @@ class GaNMNData:
             elevation = station.elevation
             logging.info(f"[{row.name}/{self.num_rows}] elevation at {station} is {elevation}")
             return elevation
-        except Exception:
-            logging.error(f"failed to apply elevation to {station}")
+        except Exception as e:
+            logging.error(f"could not apply elevation because {e}")
             return 0.0
 
     def _get_artificial_light_pollution_at_row(self, row: pd.Series):
@@ -221,10 +225,10 @@ if __name__ == "__main__":
         gan_mn_data.write_to_disk()
         info = gan_mn_data.df.head()
     except ValueError as e:
-        logging.info(f"failed to create dataframe because {e}")
+        logging.error(f"failed to create dataframe because {e}")
         sys.exit(1)
     except Exception as e:
-        logging.info(f"could not build because {e}")
+        logging.error(f"could not build because {e}")
         sys.exit(1)
     else:
         logging.info(f"correlations were:\n{gan_mn_data.correlations}\n\non dataframe\n{info}")
