@@ -5,13 +5,12 @@ import torch
 import astropy.units as u
 from astropy.coordinates import EarthLocation
 
-from ctts.model.build_dataframe import Features
-
 from .meteo import MeteoClient
 from .site import Site
 
+from ..model.features import Features
 from ..model.net import LinearNet
-from ..model.train_on_dataframe import path_to_state_dict
+from ..model.train import path_to_state_dict
 from ..pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from ..pollution.utils import get_luminance_for_color_channels
 

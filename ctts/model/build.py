@@ -5,7 +5,6 @@ Script to build (and write to csv) GaN MN data frame.
 """
 
 from pathlib import Path
-from enum import Enum
 from configparser import ConfigParser
 import argparse
 import sys
@@ -16,6 +15,7 @@ import numpy as np
 import httpx
 import pandas as pd
 
+from .features import Features
 from .constants import HOURS_IN_DAY
 from .stations import Station, known_stations
 
@@ -38,21 +38,6 @@ logging.basicConfig(
 )
 
 ansb_map_image = ArtificialNightSkyBrightnessMapImage()
-
-class Features(Enum):
-    """
-    Columns to be used in feature vector
-    """
-
-    HOUR_SIN = "hour_sin"
-    HOUR_COS = "hour_cos"
-    LAT = "lat"
-    LON = "lon"
-    ANSB = "ansb"
-    CLOUD = "cloud"
-    TEMP = "temperature"
-    ELEV = "elevation"
-
 
 class GaNMNData:
     """

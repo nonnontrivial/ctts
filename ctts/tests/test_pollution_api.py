@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 import pytest
 
-from ..api import app,prefix
+from ..api import app, prefix
 
 client = TestClient(app)
 
@@ -24,7 +24,7 @@ max_value = {x: max_channel_value for x in keys}
         (-23.5505, -46.6333, max_value),
     ],
 )
-def test_get_pollution(lat, lon, value):
+def test_get_pollution_at_city(lat, lon, value):
     r = client.get(f"{prefix}/pollution?lat={lat}&lon={lon}")
     assert r.status_code == 200
     assert r.json() == value
