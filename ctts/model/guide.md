@@ -3,8 +3,6 @@
 predictive sky brightess happens through a model trained on augmented publicly
 available data.
 
-the data is stored in a tarball in this repo (`gan_mn.tar.gz`).
-
 there are _3 main commands_ used to get the model in a state where it can
 deliver predictions. they should usually be run in order.
 
