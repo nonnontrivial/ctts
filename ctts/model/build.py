@@ -65,6 +65,12 @@ class GaNMNDatasetWriter(DataframeBuilder):
         "device_code",
     ]
 
+    def __init__(self, dataset_path: Path) -> None:
+        logging.info(f"concatenating {len(list(dataset_path.iterdir()))} file(s)..")
+
+        self.ansb_map_image = ArtificialNightSkyBrightnessMapImage()
+        self.df = self.collate(dataset_path)
+
     def collate(self, dataset_path: Path):
         dfs = [pd.read_csv(f) for f in dataset_path.glob("*.csv")]
         df = pd.concat(dfs, ignore_index=True)
@@ -75,7 +81,7 @@ class GaNMNDatasetWriter(DataframeBuilder):
         df = self._sanitize_df(self.df)
 
         self.num_rows = df.shape[0]
-        logging.info(f"using {self.num_rows} rows with {len(df['device_code'].unique())} unique stations..")
+        logging.info(f"augmenting over {self.num_rows} rows with {len(df['device_code'].unique())} unique stations..")
 
         logging.info("encoding dates..")
         df = self._encode_dates_in_df(df)
@@ -101,14 +107,6 @@ class GaNMNDatasetWriter(DataframeBuilder):
         logging.info("cleaning up..")
         df = df.drop(columns=self.nonconstructable_columns)
         self.df = df
-
-    def __init__(self, dataset_path: Path) -> None:
-        logging.info(f"concatenating {len(list(dataset_path.iterdir()))} files..")
-
-        self.save_path = dataset_path.parent
-        self.ansb_map_image = ArtificialNightSkyBrightnessMapImage()
-
-        self.df = self.collate(dataset_path)
 
 
     def _sanitize_df(self, gan_frame: pd.DataFrame) -> pd.DataFrame:
@@ -194,37 +192,27 @@ class GaNMNDatasetWriter(DataframeBuilder):
         luminance = get_luminance_for_color_channels(vR, vG, vB)
         return luminance
 
-    @property
-    def correlations(self):
-        return self.df.corr()
-
-    def write_to_disk(self) -> None:
-        """write the data frame to disk at the save path"""
-
+    def write_to_disk(self, save_path: Path) -> None:
         if self.df is None:
             raise ValueError("no dataframe")
-
-        self.df.to_csv(self.save_path / gan_mn_dataframe_filename, index=False)
+        self.df.to_csv(save_path, index=False)
 
 
 if __name__ == "__main__":
     logging.info(f"running build on csv files within {gan_mn_dir} ..")
 
     parser = argparse.ArgumentParser(prog="build", description="dataframe writing tool")
-    parser.add_argument("--verbose", action="store_true", help="verbose mode")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose mode")
     args = parser.parse_args()
-
 
     try:
         if not gan_mn_dir.exists():
             raise FileNotFoundError(f"{gan_mn_dir} does not exist")
 
         gan_mn_writer = GaNMNDatasetWriter(gan_mn_dir)
-        gan_mn_writer.build()
 
-        if args.verbose:
-            logging.info(f"writing file at {gan_mn_writer.save_path / gan_mn_dataframe_filename} ..")
-        gan_mn_writer.write_to_disk()
+        gan_mn_writer.build()
+        gan_mn_writer.write_to_disk(gan_mn_dir.parent / gan_mn_dataframe_filename)
     except ValueError as e:
         logging.error(f"failed to create dataframe because {e}")
         sys.exit(1)
@@ -232,4 +220,4 @@ if __name__ == "__main__":
         logging.error(f"could not build because {e}")
         sys.exit(1)
     else:
-        logging.info(f"correlations were:\n{gan_mn_writer.correlations}")
+        logging.info(f"correlations were:\n{gan_mn_writer.df.correlations}")
