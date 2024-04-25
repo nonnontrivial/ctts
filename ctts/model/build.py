@@ -16,8 +16,8 @@ import numpy as np
 import httpx
 import pandas as pd
 
-from .features import Features
 from .constants import HOURS_IN_DAY
+from .features import Features
 from .stations import Station, known_stations
 
 from ..pollution.utils import get_luminance_for_color_channels
@@ -38,18 +38,19 @@ logging.basicConfig(
     level=log_level,
 )
 
-class DataframeBuilder(ABC):
+class DatasetTransformer(ABC):
     @abstractmethod
     def collate(self, dataset_path: Path) -> pd.DataFrame:
         pass
 
     @abstractmethod
-    def build(self):
+    def apply_columns(self):
         pass
 
-class GaNMNDatasetWriter(DataframeBuilder):
+class GaNMNDatasetWriter(DatasetTransformer):
     """
-    Carries (augmented) dataframe of the Globe at Night Monitoring Network dataset.
+    Builds and writes data from Globe at Night Monitoring Network dataset -
+    modified to have additional columns suitable for sky brightness model.
     """
 
     # The columns that we will not be able to build up during prediction request.
@@ -66,7 +67,8 @@ class GaNMNDatasetWriter(DataframeBuilder):
     ]
 
     def __init__(self, dataset_path: Path) -> None:
-        logging.info(f"concatenating {len(list(dataset_path.iterdir()))} file(s)..")
+        for dir in dataset_path.iterdir():
+            logging.info(f"concatenating {dir.absolute()}")
 
         self.ansb_map_image = ArtificialNightSkyBrightnessMapImage()
         self.df = self.collate(dataset_path)
@@ -76,12 +78,12 @@ class GaNMNDatasetWriter(DataframeBuilder):
         df = pd.concat(dfs, ignore_index=True)
         return df
 
-    def build(self):
+    def apply_columns(self):
         logging.info("preparing dataset..")
         df = self._sanitize_df(self.df)
 
         self.num_rows = df.shape[0]
-        logging.info(f"augmenting over {self.num_rows} rows with {len(df['device_code'].unique())} unique stations..")
+        logging.info(f"rebuilding {self.num_rows} rows with {len(df['device_code'].unique())} unique stations..")
 
         logging.info("encoding dates..")
         df = self._encode_dates_in_df(df)
@@ -209,10 +211,11 @@ if __name__ == "__main__":
         if not gan_mn_dir.exists():
             raise FileNotFoundError(f"{gan_mn_dir} does not exist")
 
+        csv_save_path = gan_mn_dir.parent / gan_mn_dataframe_filename
         gan_mn_writer = GaNMNDatasetWriter(gan_mn_dir)
 
-        gan_mn_writer.build()
-        gan_mn_writer.write_to_disk(gan_mn_dir.parent / gan_mn_dataframe_filename)
+        gan_mn_writer.apply_columns()
+        gan_mn_writer.write_to_disk(csv_save_path)
     except ValueError as e:
         logging.error(f"failed to create dataframe because {e}")
         sys.exit(1)
@@ -220,4 +223,4 @@ if __name__ == "__main__":
         logging.error(f"could not build because {e}")
         sys.exit(1)
     else:
-        logging.info(f"correlations were:\n{gan_mn_writer.df.correlations}")
+        logging.info(f"wrote {csv_save_path.stat().st_size} bytes to {csv_save_path.absolute()}")

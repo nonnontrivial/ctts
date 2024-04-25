@@ -106,11 +106,10 @@ def train_model_at_path(path_to_dataset: Path) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
+    logging.info("beginning training")
     torch.set_printoptions(sci_mode=False)
     try:
-        state_dict = train_model_at_path(
-            path_to_dataset=gan_mn_dir.parent / gan_mn_dataframe_filename
-        )
+        state_dict = train_model_at_path(path_to_dataset=gan_mn_dir.parent / gan_mn_dataframe_filename)
         torch.save(state_dict, path_to_state_dict)
     except Exception as e:
         logging.error(f"failed to train model because {e}")
