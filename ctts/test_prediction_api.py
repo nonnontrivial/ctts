@@ -1,10 +1,11 @@
 from fastapi.testclient import TestClient
 
 from .api import app
-from .constants import API_PREFIX
 
 client = TestClient(app)
 lat, lon = (-30.2466, -70.7494)
+
+API_PREFIX = "/api/v1"
 
 
 def test_get_prediction_bad_status_without_lat_lon():
@@ -12,18 +13,9 @@ def test_get_prediction_bad_status_without_lat_lon():
     assert r.status_code != 200
 
 
-def test_get_prediction_bad_status_with_bad_astro_twilight():
-    astro_twilight_type = "bad"
-    r = client.get(
-        f"{API_PREFIX}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}"
-    )
-    assert r.status_code == 422
-
-
 def test_get_prediction():
-    astro_twilight_type = "next"
     r = client.get(
-        f"{API_PREFIX}/prediction?lat={lat}&lon={lon}&astro_twilight_type={astro_twilight_type}"
+        f"{API_PREFIX}/prediction?lat={lat}&lon={lon}"
     )
     assert r.status_code == 200
-    assert list(r.json().keys()) == ["sky_brightness", "astronomical_twilight_iso"]
+    assert list(r.json().keys()) == ["sky_brightness"]
