@@ -85,12 +85,14 @@ def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberL
 
 if __name__ == "__main__":
     epochs = 100
+    saved_model_path = cwd / "ctts" / "prediction" / "model.pth"
+    print(f"starting training with {epochs} epochs, and saving state dict to {saved_model_path}")
+
     for t in range(epochs):
         print(f"epoch {t+1}")
         train_loop(train_dataloader, model, loss_fn, optimizer)
 
     test_model(test_dataloader, model, loss_fn)
 
-    saved_model_path = cwd / "ctts" / "prediction" / "model.pth"
     print(f"saving to {saved_model_path}")
     torch.save(model.state_dict(), saved_model_path)

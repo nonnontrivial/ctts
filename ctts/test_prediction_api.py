@@ -13,7 +13,6 @@ def test_get_prediction_bad_status_without_lat_lon():
     assert r.status_code != 200
 
 
-
 def test_get_prediction():
     r = client.get(
         f"{API_PREFIX}/prediction?lat={lat}&lon={lon}"

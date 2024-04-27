@@ -1,6 +1,5 @@
 import logging
 import os
-import typing as t
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -12,12 +11,13 @@ from .constants import (
     MODEL_STATE_DICT_FILE_NAME,
     LOGFILE_KEY,
 )
-from .meteo import MeteoClient
+from .meteo import OpenMeteoClient
 from .nn import NeuralNetwork
-from .site import Site
+from .observer_site import ObserverSite
 
 logfile_name = os.getenv(LOGFILE_KEY)
 path_to_logfile = (Path.home() / logfile_name) if logfile_name else None
+
 logging.basicConfig(
     format="%(asctime)s -> %(levelname)s: %(message)s",
     filename=path_to_logfile if bool(path_to_logfile) else None,
@@ -30,35 +30,29 @@ logging.basicConfig(
 class Prediction:
     X: torch.Tensor
     y: torch.Tensor
-    astro_twilight_iso: str
 
 
-async def get_model_prediction_for_astro_twilight_type(
-    lat: float, lon: float, astro_twilight_type: str
-) -> Prediction:
-    """Get the sky brightness prediction for an astronomical twilight relative
-    to the provided latitude and longitude.
-    """
+async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
+    """Predict sky brightness at utcnow for the lat and lon"""
+
     logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
-    site = Site(location=location, astro_twilight_type=astro_twilight_type)
-    site_astro_twilight_iso = str(site.utc_astro_twilight.iso)
-    logging.debug(f"registered site {site}")
-    meteo = MeteoClient(site=site)
+
+    site = ObserverSite(location=location)
+    meteo_client = OpenMeteoClient(site=site)
     try:
-        cloud_cover, elevation = await meteo.get_response_for_site()
-    except Exception as e:
-        logging.error(f"could not get meteo data: {e}")
-        empty_tensor = torch.empty(4, 4)
-        return Prediction(
-            X=empty_tensor, y=empty_tensor, astro_twilight_iso=site_astro_twilight_iso
-        )
-    else:
-        path_to_state_dict = Path(__file__).parent / MODEL_STATE_DICT_FILE_NAME
+        cloud_cover, elevation = await meteo_client.get_values_at_site()
+
         model = NeuralNetwork()
+
+        path_to_state_dict = Path(__file__).parent / MODEL_STATE_DICT_FILE_NAME
         model.load_state_dict(torch.load(path_to_state_dict))
         model.eval()
-
+    except Exception as e:
+        logging.error(f"failed to predict because {e}")
+        empty_tensor = torch.empty(4, 4)
+        return Prediction(X=empty_tensor, y=empty_tensor)
+    else:
         torch.set_printoptions(sci_mode=False)
         X = torch.tensor(
             [
@@ -73,5 +67,5 @@ async def get_model_prediction_for_astro_twilight_type(
             dtype=torch.float32,
         ).unsqueeze(0)
         with torch.no_grad():
-            pred = model(X)
-            return Prediction(astro_twilight_iso=site_astro_twilight_iso, X=X, y=pred)
+            predicted_y = model(X)
+            return Prediction(X=X, y=predicted_y)

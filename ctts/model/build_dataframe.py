@@ -1,11 +1,10 @@
-import pdb
 from pathlib import Path
-import typing as t
 
 import numpy as np
 import pandas as pd
 
 hours_in_day = 24.
+
 # columns that we will not be able to build up at runtime
 nonconstructable_columns = [
     "id",
@@ -17,6 +16,7 @@ nonconstructable_columns = [
     "sensor_period_second",
     "device_code",
 ]
+
 
 class GaNMonitoringNetworkData:
     output_filename = "gan_mn.csv"
@@ -40,12 +40,13 @@ class GaNMonitoringNetworkData:
         df = gan_mn_frame
         df["received_utc"] = pd.to_datetime(df["received_utc"])
         df["date"] = df["received_utc"].astype(int) // 1e9
-        df["hour_sin"] = np.sin(2*np.pi*df["received_utc"].dt.hour/hours_in_day)
-        df["hour_cos"] = np.cos(2*np.pi*df["received_utc"].dt.hour/hours_in_day)
+        df["hour_sin"] = np.sin(2 * np.pi * df["received_utc"].dt.hour / hours_in_day)
+        df["hour_cos"] = np.cos(2 * np.pi * df["received_utc"].dt.hour / hours_in_day)
         return df.reset_index()
 
     def write_to_disk(self) -> None:
         self.df.to_csv(self.save_path / self.output_filename, index=False)
+
 
 if __name__ == "__main__":
     data_path = Path.cwd() / "data" / "gan_mn"
