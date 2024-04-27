@@ -1,7 +1,8 @@
 import typing as t
-from fastapi import FastAPI, HTTPException
+from dataclasses import dataclass, asdict
 
-from .constants import API_PREFIX
+from fastapi import FastAPI, HTTPException, APIRouter
+
 from .pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from .prediction.prediction import (
     Prediction,
@@ -9,43 +10,46 @@ from .prediction.prediction import (
 )
 
 app = FastAPI()
+main_router = APIRouter(prefix="/api/v1")
 
 
-def create_prediction_response(prediction: Prediction) -> t.Dict:
-    y = round(float(prediction.y.item()), 4)
-    return {
-        "sky_brightness": y,
-        "astronomical_twilight_iso": prediction.astro_twilight_iso,
-    }
+@dataclass
+class PredictionResponse:
+    sky_brightness: float
 
 
-@app.get(f"{API_PREFIX}/prediction")
-async def get_prediction(
-    lat, lon, astro_twilight_type: t.Literal["next", "nearest", "previous"]
-):
-    """Get sky brightness prediction at `lat` and `lon` for an `astro_twilight_type`.
-
-    `astro_twilight_type` is which astronomical twilight should be used relative
-    to the current time: next, nearest, or previous.
+@main_router.get("/prediction")
+async def get_prediction(lat, lon):
+    """Get sky brightness prediction at `lat` and `lon`
     """
+
+    def create_prediction_response(prediction: Prediction) -> PredictionResponse:
+        y = round(float(prediction.y.item()), 4)
+        return PredictionResponse(sky_brightness=y)
+
     try:
         lat, lon = float(lat), float(lon)
         prediction = await get_model_prediction_for_astro_twilight_type(
-            lat, lon, astro_twilight_type
+            lat, lon, "next"
         )
-        return create_prediction_response(prediction)
+        return asdict(create_prediction_response(prediction))
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"something went wrong: {e}")
+        raise HTTPException(status_code=500, detail=f"could not get prediction because {e}")
 
 
-@app.get(f"{API_PREFIX}/pollution")
+@main_router.get("/pollution")
 async def get_artificial_light_pollution(lat, lon):
-    """Get artificial light pollution at lat and lon.
+    """Get artificial light pollution at lat and lon (for the year 2022).
 
-    Map data is from 2022: https://djlorenz.github.io/astronomy/lp2022/
+    Source: https://djlorenz.github.io/astronomy/lp2022/
     """
-    lat, lon = float(lat), float(lon)
-    map_image = ArtificialNightSkyBrightnessMapImage()
-    pixel_rgba = map_image.get_pixel_value_at_coords(coords=Coords(lat, lon))
-    keys = ("r", "g", "b", "a")
-    return {k: v for k, v in zip(keys, pixel_rgba)}
+    try:
+        lat, lon = float(lat), float(lon)
+        map_image = ArtificialNightSkyBrightnessMapImage()
+        pixel_rgba = map_image.get_pixel_value_at_coords(coords=Coords(lat, lon))
+        keys = ("r", "g", "b", "a")
+        return {k: v for k, v in zip(keys, pixel_rgba)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"could not get light pollution because {e}")
+
+app.include_router(main_router)

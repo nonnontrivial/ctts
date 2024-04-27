@@ -1,4 +1,5 @@
 from pathlib import Path
+from configparser import ConfigParser
 
 import numpy as np
 import pandas as pd
@@ -9,14 +10,13 @@ from torch.utils.data import DataLoader, TensorDataset, random_split
 from ..prediction.constants import features
 from ..prediction.nn import NeuralNetwork
 
-GAN_FILENAME = "globe_at_night.csv"
-
-HIDDEN_SIZE = 64 * 3
-OUTPUT_SIZE = 1
-FEATURES_SIZE = len(features)
+features_size = len(features)
+parser = ConfigParser()
 
 cwd = Path.cwd()
-path_to_gan_dataframe = cwd / "data" / GAN_FILENAME
+gan_csv_filename = "globe_at_night.csv"
+
+path_to_gan_dataframe = cwd / "data" / gan_csv_filename
 if not path_to_gan_dataframe.exists():
     raise FileNotFoundError()
 
@@ -67,12 +67,13 @@ def train_loop(
         optimizer.step()
         if batch % 100 == 0:
             loss, current = loss.item(), (batch + 1) * len(X)
-            size = len(data_loader.dataset)
-            print(f"loss: {loss:>7f} [{current:>5d}/{size:>5d}]")
+            # size = len(data_loader.dataset)
+            print(f"loss: {loss:>7f} [{current:>5d}]")
 
 
 def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberLoss):
     model.eval()
+
     with torch.no_grad():
         test_loss = 0
         for batch, (X, y) in enumerate(data_loader):
@@ -80,8 +81,6 @@ def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberL
             print(f"prediction at {batch} was {pred} for {X} ")
             loss = loss_fn(pred.squeeze(), y)
             test_loss += loss.item() * X.size(0)
-        avg_loss = test_loss / len(data_loader.dataset)
-        print(f"avg loss in test is {avg_loss}")
 
 
 if __name__ == "__main__":
