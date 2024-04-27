@@ -12,7 +12,6 @@ APIs that tap into the quality of the night sky.
 > Note: tested on python 3.11
 
 ```sh
-cd ctts
 pip install -r requirements.txt
 python -m uvicorn ctts.api:app --reload
 ```
@@ -42,7 +41,7 @@ curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494"
 
 ```json
 {
-	"sky_brightness": 22.0388,
+	"sky_brightness": 22.0388
 }
 ```
 
