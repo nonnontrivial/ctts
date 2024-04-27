@@ -1,7 +1,7 @@
 features = [
     "Latitude",
     "Longitude",
-    "Elevation(m)",
+    "Elevation",
     "CloudCover",
     "UTTimeHour",
     "MoonAlt",
@@ -13,7 +13,7 @@ HIDDEN_SIZE = 64 * 3
 OUTPUT_SIZE = 1
 MODEL_STATE_DICT_FILE_NAME = "model.pth"
 
-ASTRO_TWILIGHT_DEGS = -18
+# ASTRO_TWILIGHT_DEGS = -18
 
 OPEN_METEO_BASE_URL = "https://api.open-meteo.com"
 MAX_OKTAS = 8

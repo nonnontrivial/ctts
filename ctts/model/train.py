@@ -11,12 +11,15 @@ from ..prediction.constants import features
 from ..prediction.nn import NeuralNetwork
 
 features_size = len(features)
-parser = ConfigParser()
+
+config = ConfigParser()
+config.read("config.ini")
+# csv_filename = config.get("csv", "filename")
 
 cwd = Path.cwd()
-gan_csv_filename = "globe_at_night.csv"
+csv_filename = "globe_at_night.csv"
 
-path_to_gan_dataframe = cwd / "data" / gan_csv_filename
+path_to_gan_dataframe = cwd / "data" / csv_filename
 if not path_to_gan_dataframe.exists():
     raise FileNotFoundError()
 
@@ -78,7 +81,7 @@ def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberL
         test_loss = 0
         for batch, (X, y) in enumerate(data_loader):
             pred = model(X)
-            print(f"prediction at {batch} was {pred} for {X} ")
+            print(f"prediction at batch {batch} was {pred} for {X} ")
             loss = loss_fn(pred.squeeze(), y)
             test_loss += loss.item() * X.size(0)
 

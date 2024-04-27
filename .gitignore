@@ -3,10 +3,12 @@
 __pycache__/
 .pytest_cache
 .env
+
 *.log
 .DS_Store
+
+# csv files from public globe at night dataset
 data/globe_at_night/*.csv
-data/gan_mn/*.csv
-data/gan_mn.csv
+
 prediction/*.csv
 validation/*.csv
