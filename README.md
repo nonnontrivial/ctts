@@ -20,7 +20,6 @@ pip install -r requirements.txt
 python -m uvicorn ctts.api:app --reload
 ```
 
-
 - artificial sky brightness (light pollution)
 - predictive sky brightness
 
@@ -28,19 +27,25 @@ python -m uvicorn ctts.api:app --reload
 
 #### `/api/v1/pollution`
 
-Gets the approximate artificial sky brightness map [RGBA pixel value](https://djlorenz.github.io/astronomy/lp2022/colors.html) for a lat and lon (for the year 2022).
+Gets the approximate artificial sky brightness
+map [RGBA pixel value](https://djlorenz.github.io/astronomy/lp2022/colors.html) for a lat and lon (for the year 2022).
 
 ```sh
 curl "localhost:8000/api/v1/pollution?lat=40.7277478&lon=-74.0000374"
 ```
 
 ```json
-{"r":255,"g":255,"b":255,"a":255}
+{
+  "r": 255,
+  "g": 255,
+  "b": 255,
+  "a": 255
+}
 ```
 
 #### `/api/v1/prediction`
 
-Gets the predicted sky brightness at `lat` and `lon`.
+Gets the predicted sky brightness at `lat` and `lon` for the current time.
 
 ```sh
 curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494"
@@ -49,12 +54,11 @@ curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494"
 
 ```json
 {
-	"sky_brightness": 22.0388
+  "sky_brightness": 22.0388
 }
 ```
 
-
-#### swagger ui
+### swagger ui
 
 Open the [ui](http://localhost:8000/docs) in a browser.
 
