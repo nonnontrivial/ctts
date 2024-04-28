@@ -2,12 +2,16 @@
 
 APIs that tap into the quality of the night sky.
 
+## Building and training the sky brightness model
+
+> Note that `globe_at_night.tar.gz` will need to unpacked into `./data/globe_at_night`
+
+- `python -m ctts.model.build` to write the csv that the model trains on
+- `python -m ctts.model.train` to train on the data in the csv
+
 ## HTTP APIs
 
-- artificial sky brightness (light pollution)
-- predictive sky brightness
-
-### running locally
+### how to run locally
 
 > Note: tested on python 3.11
 
@@ -15,6 +19,10 @@ APIs that tap into the quality of the night sky.
 pip install -r requirements.txt
 python -m uvicorn ctts.api:app --reload
 ```
+
+
+- artificial sky brightness (light pollution)
+- predictive sky brightness
 
 ### endpoints
 
@@ -50,39 +58,3 @@ curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494"
 
 Open the [ui](http://localhost:8000/docs) in a browser.
 
-### running with docker
-
-> Note: image size is on the order of 5.13GB
-
-- build the image
-
-```sh
-cd ctts
-docker build -t ctts:latest .
-```
-
-- run the container
-
-```sh
-docker run -d --name ctts -p 8000:80 ctts:latest
-```
-
-### validation
-
-> Note: validation of the model's predictions is an ongoing process.
-
-### running tests
-
-```sh
-cd ctts
-python -m pytest
-```
-
-### env
-
-Location of logfile can be controlled by setting `SKY_BRIGHTNESS_LOGFILE` to
-some filename (in the home directory).
-
-```sh
-export SKY_BRIGHTNESS_LOGFILE=ctts.log
-```

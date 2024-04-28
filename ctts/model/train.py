@@ -13,13 +13,16 @@ from ..prediction.nn import NeuralNetwork
 features_size = len(features)
 
 config = ConfigParser()
-config.read("config.ini")
-# csv_filename = config.get("csv", "filename")
+config.read(Path(__file__).parent / "config.ini")
+
+csv_filename = config.get("csv", "filename")
+epochs = config.getint("train", "epochs")
 
 cwd = Path.cwd()
-csv_filename = "globe_at_night.csv"
+saved_model_path = cwd / "ctts" / "prediction" / "model.pth"
 
-path_to_gan_dataframe = cwd / "data" / csv_filename
+path_to_data_dir = Path(__file__).parent.parent.parent / "data"
+path_to_gan_dataframe = path_to_data_dir / csv_filename
 if not path_to_gan_dataframe.exists():
     raise FileNotFoundError()
 
@@ -87,12 +90,10 @@ def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberL
 
 
 if __name__ == "__main__":
-    epochs = 100
-    saved_model_path = cwd / "ctts" / "prediction" / "model.pth"
     print(f"starting training with {epochs} epochs, and saving state dict to {saved_model_path}")
 
-    for t in range(epochs):
-        print(f"epoch {t+1}")
+    for epoch in range(epochs):
+        print(f"epoch {epoch + 1}")
         train_loop(train_dataloader, model, loss_fn, optimizer)
 
     test_model(test_dataloader, model, loss_fn)

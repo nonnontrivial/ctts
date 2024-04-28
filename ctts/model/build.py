@@ -9,7 +9,7 @@ from astropy.coordinates import EarthLocation
 from astropy.time import Time
 
 config = ConfigParser()
-config.read("config.ini")
+config.read(Path(__file__).parent / "config.ini")
 
 max_sqm = config.getint("sqm", "max")
 min_sqm = config.getint("sqm", "min")

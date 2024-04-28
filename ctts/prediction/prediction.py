@@ -11,7 +11,7 @@ from .constants import (
     MODEL_STATE_DICT_FILE_NAME,
     LOGFILE_KEY,
 )
-from .meteo import OpenMeteoClient
+from .open_meteo_client import OpenMeteoClient
 from .nn import NeuralNetwork
 from .observer_site import ObserverSite
 
