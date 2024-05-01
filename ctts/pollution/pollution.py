@@ -17,7 +17,9 @@ class Pixel:
 
 
 image_mode = "RGBA"
-default_path_to_map_image = Path.cwd() / "data" / "map" / "world2022.png"
+
+path_to_data_dir = Path(__file__).parent.parent / "data"
+default_path_to_map_image = path_to_data_dir / "map" / "world2022.png"
 
 
 class ArtificialNightSkyBrightnessMapImage:
@@ -44,7 +46,6 @@ class ArtificialNightSkyBrightnessMapImage:
         height_scale = self.image.height / self.max_lat_degs
         x = int((coords.lon + 180) * width_scale)
         y = int((self.max_lat_n - coords.lat) * height_scale)
-        # pdb.set_trace()
         return Pixel(x, y)
 
     def get_pixel_value(self, pixel: Pixel) -> tuple[int, int, int, int]:

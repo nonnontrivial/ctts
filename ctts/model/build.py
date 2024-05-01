@@ -16,7 +16,7 @@ min_sqm = config.getint("sqm", "min")
 
 csv_filename = config.get("csv", "filename")
 
-path_to_data_dir = Path(__file__).parent.parent.parent / "data"
+path_to_data_dir = Path(__file__).parent.parent / "data"
 path_to_preprocessed_csvs = path_to_data_dir / "globe_at_night"
 csvs = path_to_preprocessed_csvs.glob("*.csv")
 

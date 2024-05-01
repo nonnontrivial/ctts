@@ -21,7 +21,7 @@ epochs = config.getint("train", "epochs")
 cwd = Path.cwd()
 saved_model_path = cwd / "ctts" / "prediction" / "model.pth"
 
-path_to_data_dir = Path(__file__).parent.parent.parent / "data"
+path_to_data_dir = Path(__file__).parent.parent / "data"
 path_to_gan_dataframe = path_to_data_dir / csv_filename
 if not path_to_gan_dataframe.exists():
     raise FileNotFoundError()
