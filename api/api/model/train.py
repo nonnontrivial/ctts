@@ -27,6 +27,7 @@ if not path_to_gan_dataframe.exists():
     raise FileNotFoundError()
 
 df = pd.read_csv(path_to_gan_dataframe)
+print(f"read csv with {len(df)} rows")
 
 torch.set_printoptions(sci_mode=False)
 feature_tensor = torch.tensor(df[features].values.astype(np.float32))

@@ -2,10 +2,8 @@
 
 ## Building and training the sky brightness model
 
-> Note that `globe_at_night.tar.gz` will need to unpacked into `./data/globe_at_night`
-
-- `python -m ctts.model.build` to write the csv that the model trains on
-- `python -m ctts.model.train` to train on the data in the csv
+- `python -m api.model.build` to write the csv that the model trains on
+- `python -m api.model.train` to train on the data in the csv
 
 ## HTTP APIs
 
@@ -15,7 +13,7 @@
 
 ```sh
 pip install -r requirements.txt
-python -m uvicorn ctts.api:app --reload
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 - artificial sky brightness (light pollution)
