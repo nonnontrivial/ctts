@@ -3,6 +3,8 @@ services:
     build: ./api
     ports:
       - "8000:8000"
+    environment:
+      API_VERSION: "v1"
   rabbitmq:
     image: "rabbitmq:management"
     ports:

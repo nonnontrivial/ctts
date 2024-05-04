@@ -1,4 +1,5 @@
 from dataclasses import dataclass, asdict
+import os
 
 from fastapi import FastAPI, HTTPException, APIRouter
 
@@ -8,13 +9,15 @@ from .prediction.prediction import (
     predict_sky_brightness,
 )
 
+api_version = os.getenv("API_VERSION", "v1")
+
 app = FastAPI()
-main_router = APIRouter(prefix="/api/v1")
+main_router = APIRouter(prefix=f"/api/{api_version}")
 
 
 @dataclass
 class PredictionResponse:
-    # magnitudes per square arcsecond
+    """carries sky brightness in mpsas"""
     sky_brightness: float
 
 
