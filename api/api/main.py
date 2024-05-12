@@ -17,7 +17,7 @@ main_router = APIRouter(prefix=f"/api/{api_version}")
 
 @dataclass
 class PredictionResponse:
-    """carries sky brightness in mpsas"""
+    """response with sky brightness in magnitudes per square arcsecond"""
     sky_brightness: float
 
 
