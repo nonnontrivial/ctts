@@ -1,11 +1,6 @@
 version: "3"
+
 services:
-  api:
-    build: ./api
-    ports:
-      - "8000:8000"
-    environment:
-      API_VERSION: "v1"
   rabbitmq:
     image: "rabbitmq:management"
     ports:
@@ -19,6 +14,25 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
+
+  openmeteo:
+    image: "ghcr.io/open-meteo/open-meteo"
+    ports:
+      - "8080:8080"
+    volumes:
+      - open-meteo-data:/app/data
+
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    environment:
+      API_VERSION: "v1"
+      OPEN_METEO_HOST: "openmeteo"
+    restart: on-failure
+    depends_on:
+      - openmeteo
+
   cpp:
     build: ./cpp
     environment:
@@ -31,4 +45,8 @@ services:
       - api
     links:
       - rabbitmq
+
+volumes:
+  open-meteo-data:
+    external: true
     
