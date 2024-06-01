@@ -11,6 +11,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     environment:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
@@ -33,8 +34,8 @@ services:
     depends_on:
       - openmeteo
 
-  # cpp:
-  #   build: ./cpp
+  # pp:
+  #   build: ./pp
   #   environment:
   #     API_VERSION: "v1"
   #     API_HOST: "api"
