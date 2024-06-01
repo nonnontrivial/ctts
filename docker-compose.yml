@@ -33,18 +33,18 @@ services:
     depends_on:
       - openmeteo
 
-  cpp:
-    build: ./cpp
-    environment:
-      API_VERSION: "v1"
-      API_HOST: "api"
-      RABBITMQ_HOST: "rabbitmq"
-    restart: on-failure
-    depends_on:
-      - rabbitmq
-      - api
-    links:
-      - rabbitmq
+  # cpp:
+  #   build: ./cpp
+  #   environment:
+  #     API_VERSION: "v1"
+  #     API_HOST: "api"
+  #     RABBITMQ_HOST: "rabbitmq"
+  #   restart: on-failure
+  #   depends_on:
+  #     - rabbitmq
+  #     - api
+  #   links:
+  #     - rabbitmq
 
 volumes:
   open-meteo-data:

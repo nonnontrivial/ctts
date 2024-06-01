@@ -7,13 +7,11 @@ import astropy.units as u
 import torch
 from astropy.coordinates import EarthLocation
 
-from .constants import (
-    MODEL_STATE_DICT_FILE_NAME,
-    LOGFILE_KEY,
-)
-from .open_meteo_client import OpenMeteoClient
-from .nn import NeuralNetwork
+from api.prediction.meteo.open_meteo_client import OpenMeteoClient
+from api.prediction.net.nn import NeuralNetwork
 from .observer_site import ObserverSite
+from .constants import LOGFILE_KEY
+from .config import model_state_dict_file_name
 
 logfile_name = os.getenv(LOGFILE_KEY)
 path_to_logfile = (Path.home() / logfile_name) if logfile_name else None
@@ -26,6 +24,10 @@ logging.basicConfig(
 )
 
 
+def get_path_to_state_dict():
+    return Path(__file__).parent / model_state_dict_file_name
+
+
 @dataclass
 class Prediction:
     X: torch.Tensor
@@ -33,27 +35,30 @@ class Prediction:
 
 
 async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
-    """Predict sky brightness at utcnow for the lat and lon"""
+    """Predict sky brightness at utcnow for given lat and lon"""
 
-    logging.debug(f"registering site at {lat},{lon}")
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
 
     site = ObserverSite(location=location)
     meteo_client = OpenMeteoClient(site=site)
+
     try:
         cloud_cover, elevation = await meteo_client.get_values_at_site()
+        logging.debug(f"meteo_client response at {lat},{lon} is {cloud_cover}o, {elevation}m")
 
         model = NeuralNetwork()
 
-        path_to_state_dict = Path(__file__).parent / MODEL_STATE_DICT_FILE_NAME
+        path_to_state_dict = get_path_to_state_dict()
+        logging.debug(f"loading state dict at {path_to_state_dict}")
         model.load_state_dict(torch.load(path_to_state_dict))
         model.eval()
     except Exception as e:
-        logging.error(f"failed to predict because {e}")
-        empty_tensor = torch.empty(4, 4)
-        return Prediction(X=empty_tensor, y=empty_tensor)
+        import traceback
+        logging.error(traceback.format_exc())
+        raise ValueError(f"{e}")
     else:
         torch.set_printoptions(sci_mode=False)
+
         X = torch.tensor(
             [
                 site.latitude.value,
@@ -66,6 +71,7 @@ async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
             ],
             dtype=torch.float32,
         ).unsqueeze(0)
+        logging.debug(f"X vector for site is {X}")
         with torch.no_grad():
             predicted_y = model(X)
             return Prediction(X=X, y=predicted_y)

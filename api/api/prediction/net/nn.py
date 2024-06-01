@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from .constants import (
+from ..constants import (
     num_features,
     HIDDEN_SIZE,
     OUTPUT_SIZE,

@@ -12,15 +12,18 @@ log = logging.getLogger(__name__)
 
 
 async def main():
+    """continuously request predictions for cells, and publish responses as available"""
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
     channel = connection.channel()
     channel.queue_declare(queue=prediction_queue)
 
+    cell_coords = get_res_zero_cell_coords()[:5]
+    log.info(f"producing predictions for {len(cell_coords)} resolution zero cells")
+
     async with httpx.AsyncClient() as client:
         while True:
-            cells = get_res_zero_cell_coords()
-            log.info(f"found {len(cells)} resolution zero cells")
-            tasks = [predict_on_cell(client, coords, channel) for coords in cells[:10]]
+            tasks = [predict_on_cell(client, coords, channel) for coords in cell_coords]
             await asyncio.gather(*tasks)
             await asyncio.sleep(1)
 

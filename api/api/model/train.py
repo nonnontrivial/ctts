@@ -8,7 +8,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
 from ..prediction.constants import features
-from ..prediction.nn import NeuralNetwork
+from api.prediction.net.nn import NeuralNetwork
 
 features_size = len(features)
 

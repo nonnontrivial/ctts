@@ -1,16 +1,15 @@
-import logging
 import typing as t
 
-from .config import open_meteo_host, open_meteo_port
-from .constants import MAX_OKTAS
-from .observer_site import ObserverSite
-from .utils import get_astro_time_hour
+from ..config import open_meteo_host, open_meteo_port
+from ..observer_site import ObserverSite
+from ..utils import get_astro_time_hour
+from .constants import MAX_OKTAS, PROTOCOL
 
 
 class OpenMeteoClient:
     def __init__(self, site: ObserverSite) -> None:
         self.site = site
-        self.url_base = f"http://{open_meteo_host}:{open_meteo_port}"
+        self.url_base = f"{PROTOCOL}://{open_meteo_host}:{open_meteo_port}"
 
     async def get_values_at_site(self) -> t.Tuple[int, float]:
         """get cloudcover and elevation values for the observer site"""
@@ -45,5 +44,5 @@ class OpenMeteoClient:
         """convert percentage to integer oktas value (eights of sky covered)"""
         import numpy as np
 
-        percentage_as_oktas = np.interp(cloud_cover_percentage, (0, 100), (0, MAX_OKTAS))
-        return int(percentage_as_oktas)
+        percentage_as_oktas = int(np.interp(cloud_cover_percentage, (0, 100), (0, MAX_OKTAS)))
+        return percentage_as_oktas
