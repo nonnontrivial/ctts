@@ -1,13 +1,12 @@
 from typing import Tuple
 from dataclasses import asdict
 from datetime import datetime
-import asyncio
 import logging
 
 from pika.channel import Channel
 import httpx
 
-from .config import api_protocol, api_host, api_port, api_version, sleep_interval
+from .config import api_protocol, api_host, api_port, api_version, prediction_queue
 from .message import PredictionMessage
 
 log = logging.getLogger(__name__)
@@ -37,13 +36,8 @@ async def predict_on_cell(client: httpx.AsyncClient, coords: Tuple[float, float]
         message_body = asdict(prediction_message)
 
         log.info(f"publishing prediction message {message_body}")
-
-        # FIXME exchange, routing key
-        channel.basic_publish(exchange="", routing_key="test", body=json.dumps(message_body))
+        channel.basic_publish(exchange="", routing_key=prediction_queue, body=json.dumps(message_body))
     except httpx.HTTPStatusError as e:
         log.error(f"got bad status from api server {e}")
     except Exception as e:
         log.error(f"could not publish prediction at {coords} because {e}")
-    finally:
-        # await asyncio.sleep(sleep_interval)
-        pass

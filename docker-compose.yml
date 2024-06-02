@@ -40,6 +40,7 @@ services:
   #     API_VERSION: "v1"
   #     API_HOST: "api"
   #     RABBITMQ_HOST: "rabbitmq"
+  #     SLEEP_INTERVAL: "0.5"
   #   restart: on-failure
   #   depends_on:
   #     - rabbitmq
