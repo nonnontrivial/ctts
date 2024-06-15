@@ -17,7 +17,6 @@ prediction_endpoint_url = f"{api_protocol}://{api_host}:{api_port}/api/{api_vers
 async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: float, lon: float) -> PredictionMessage:
     res = await client.get(prediction_endpoint_url, params={"lat": lat, "lon": lon})
     res.raise_for_status()
-
     data = res.json()
     return PredictionMessage(
         lat=lat,
@@ -28,6 +27,7 @@ async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: flo
 
 
 async def predict_on_cell(client: httpx.AsyncClient, coords: Tuple[float, float], channel: Channel):
+    """retrieve and publish a sky brightness prediction at coords"""
     import json
 
     try:
@@ -35,7 +35,7 @@ async def predict_on_cell(client: httpx.AsyncClient, coords: Tuple[float, float]
         prediction_message = await get_prediction_message_for_lat_lon(client, lat, lon)
         message_body = asdict(prediction_message)
 
-        log.info(f"publishing prediction message {message_body}")
+        log.info(f"publishing prediction message {message_body} with routing key {prediction_queue}")
         channel.basic_publish(exchange="", routing_key=prediction_queue, body=json.dumps(message_body))
     except httpx.HTTPStatusError as e:
         log.error(f"got bad status from api server {e}")

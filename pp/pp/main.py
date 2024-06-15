@@ -16,7 +16,7 @@ async def main():
     """initializes process of getting sky brightness predictions for h3 cells;
     publishing them to prediction queue as available.
 
-    with 122 res 0 cells on current machine, this setup will publish at a rate of 1.4m/s
+    n.b. with 122 res 0 cells on current machine, this setup will publish at a rate of 1.4m/s
     """
 
     connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
@@ -24,13 +24,14 @@ async def main():
     channel.queue_declare(queue=prediction_queue)
 
     all_h3_cell_coords = get_res_zero_cell_coords()
+
     log.info(f"using {len(all_h3_cell_coords)} resolution zero cells")
 
     async with httpx.AsyncClient() as client:
         while True:
             try:
-                for coords in all_h3_cell_coords:
-                    await asyncio.create_task(predict_on_cell(client, coords, channel))
+                for cell_coordinates in all_h3_cell_coords:
+                    await asyncio.create_task(predict_on_cell(client, cell_coordinates, channel))
                     await asyncio.sleep(sleep_interval)
             except Exception as e:
                 log.error(f"could not continue publishing because {e}")
