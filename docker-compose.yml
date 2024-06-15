@@ -34,6 +34,15 @@ services:
     depends_on:
       - openmeteo
 
+  # sr:
+  #   build: ./sr
+  #   environment:
+  #     OPEN_METEO_HOST: "openmeteo"
+  #   restart: on-failure
+  #   depends_on:
+  #     - openmeteo
+
+
   # pp:
   #   build: ./pp
   #   environment:

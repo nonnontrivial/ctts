@@ -37,12 +37,16 @@ class OpenMeteoClient:
             return cloud_cover, elevation
 
     def get_hourly_index_of_site_time(self) -> int:
-        """pull out the relevant slice in the meteo data"""
+        """pull out the relevant index in the meteo data"""
         return get_astro_time_hour(self.site.utc_time)
 
     def get_cloud_cover_as_oktas(self, cloud_cover_percentage: int):
-        """convert percentage to integer oktas value (eights of sky covered)"""
+        """convert cloud cover percentage to oktas (eights of sky covered)"""
         import numpy as np
+        import math
+
+        if cloud_cover_percentage is None or math.isnan(cloud_cover_percentage):
+            raise ValueError("cloud cover percentage is not a number. is open meteo volume up to date?")
 
         percentage_as_oktas = int(np.interp(cloud_cover_percentage, (0, 100), (0, MAX_OKTAS)))
         return percentage_as_oktas
