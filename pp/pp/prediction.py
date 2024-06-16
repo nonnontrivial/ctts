@@ -20,8 +20,8 @@ async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: flo
     res.raise_for_status()
 
     data = res.json()
-    if mpsas := data.get("sky_brightness", None) is None:
-        raise ValueError("no sky brightness reading in response")
+    if (mpsas := data.get("sky_brightness", None)) is None:
+        raise ValueError("no sky brightness reading in api response")
 
     return PredictionMessage(
         lat=lat,
