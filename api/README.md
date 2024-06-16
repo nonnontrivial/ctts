@@ -39,12 +39,12 @@ curl "localhost:8000/api/v1/pollution?lat=40.7277478&lon=-74.0000374"
 }
 ```
 
-#### `/api/v1/prediction`
+#### `/api/v1/predict`
 
 Gets the predicted sky brightness at `lat` and `lon` for the current time.
 
 ```sh
-curl "http://localhost:8000/api/v1/prediction?lat=-30.2466&lon=-70.7494"
+curl "http://localhost:8000/api/v1/predict?lat=-30.2466&lon=-70.7494"
 
 ```
 

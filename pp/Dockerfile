@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
 COPY . .
 
-CMD python -m cpp.main
+CMD python -m pp.main

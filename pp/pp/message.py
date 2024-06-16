@@ -3,7 +3,9 @@ from dataclasses import dataclass
 
 @dataclass
 class PredictionMessage:
-    time_of: str
+    utc: str
     lat: float
     lon: float
-    sky_brightness_mpsas: float
+    # magnitudes per square arc second
+    mpsas: float
+    h3_id: str

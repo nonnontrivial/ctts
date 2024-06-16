@@ -29,33 +29,26 @@ services:
       - "8000:8000"
     environment:
       API_VERSION: "v1"
+      LOG_LEVEL: 30
       OPEN_METEO_HOST: "openmeteo"
+      OPEN_METEO_PORT: 8080
     restart: on-failure
     depends_on:
       - openmeteo
 
-  # sr:
-  #   build: ./sr
-  #   environment:
-  #     OPEN_METEO_HOST: "openmeteo"
-  #   restart: on-failure
-  #   depends_on:
-  #     - openmeteo
-
-
-  # pp:
-  #   build: ./pp
-  #   environment:
-  #     API_VERSION: "v1"
-  #     API_HOST: "api"
-  #     RABBITMQ_HOST: "rabbitmq"
-  #     SLEEP_INTERVAL: "0.5"
-  #   restart: on-failure
-  #   depends_on:
-  #     - rabbitmq
-  #     - api
-  #   links:
-  #     - rabbitmq
+  pp:
+    build: ./pp
+    environment:
+      API_VERSION: "v1"
+      API_HOST: "api"
+      RABBITMQ_HOST: "rabbitmq"
+      SLEEP_INTERVAL: "0.5"
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - api
+    links:
+      - rabbitmq
 
 volumes:
   open-meteo-data:

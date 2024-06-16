@@ -3,6 +3,7 @@ import asyncio
 
 import httpx
 import pika
+from pika.exceptions import AMQPConnectionError
 
 from .prediction import predict_on_cell
 from .cells import get_res_zero_cell_coords
@@ -19,23 +20,32 @@ async def main():
     n.b. with 122 res 0 cells on current machine, this setup will publish at a rate of 1.4m/s
     """
 
-    connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
-    channel = connection.channel()
-    channel.queue_declare(queue=prediction_queue)
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
+    except AMQPConnectionError as e:
+        import sys
+        log.error("could not form amqp connection!")
+        log.warning("exiting")
+        sys.exit(1)
+    except Exception as e:
+        log.error(f"could not start process because {e}")
+    else:
+        channel = connection.channel()
+        channel.queue_declare(queue=prediction_queue)
 
-    all_h3_cell_coords = get_res_zero_cell_coords()
+        all_h3_cell_coords = get_res_zero_cell_coords()
 
-    log.info(f"using {len(all_h3_cell_coords)} resolution zero cells")
+        log.info(f"using {len(all_h3_cell_coords)} resolution zero cells")
 
-    async with httpx.AsyncClient() as client:
-        while True:
-            try:
-                for cell_coordinates in all_h3_cell_coords:
-                    await asyncio.create_task(predict_on_cell(client, cell_coordinates, channel))
-                    await asyncio.sleep(sleep_interval)
-            except Exception as e:
-                log.error(f"could not continue publishing because {e}")
-                channel.close()
+        async with httpx.AsyncClient() as client:
+            while True:
+                try:
+                    for cell_coordinates in all_h3_cell_coords:
+                        await asyncio.create_task(predict_on_cell(client, cell_coordinates, channel))
+                        await asyncio.sleep(sleep_interval)
+                except Exception as e:
+                    log.error(f"could not continue publishing because {e}")
+                    channel.close()
 
 
 if __name__ == "__main__":

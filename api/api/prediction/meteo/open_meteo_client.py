@@ -12,16 +12,17 @@ class OpenMeteoClient:
         self.url_base = f"{PROTOCOL}://{open_meteo_host}:{open_meteo_port}"
 
     async def get_values_at_site(self) -> t.Tuple[int, float]:
-        """get cloudcover and elevation values for the observer site"""
+        """ask the instance of open meteo for cloud cover and elevation values for the observer site"""
         import httpx
 
         lat, lon = self.site.latitude.value, self.site.longitude.value
 
         async with httpx.AsyncClient() as client:
+            model = "ecmwf_ifs04"
             params = {
                 "latitude": lat,
                 "longitude": lon,
-                "models": "ecmwf_ifs04",
+                "models": model,
                 "hourly": "temperature_2m,cloud_cover"
             }
             r = await client.get(f"{self.url_base}/v1/forecast", params=params)

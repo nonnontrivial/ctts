@@ -1,8 +1,9 @@
 from dataclasses import asdict
+import logging
 
 from fastapi import FastAPI, HTTPException, APIRouter
 
-from .config import api_version
+from .config import api_version, log_level
 from .models import PredictionResponse
 from .pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from .prediction.prediction import (
@@ -10,6 +11,7 @@ from .prediction.prediction import (
     predict_sky_brightness,
 )
 
+logging.basicConfig(level=log_level)
 app = FastAPI()
 main_router = APIRouter(prefix=f"/api/{api_version}")
 
