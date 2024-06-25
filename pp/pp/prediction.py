@@ -31,6 +31,9 @@ async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: flo
     )
 
 
+# message_store = {}
+
+
 async def predict_on_cell_coords(client: httpx.AsyncClient, coords: Tuple[float, float], channel: Channel):
     """retrieve and publish a sky brightness prediction at coords for the h3 cell"""
     import json
@@ -38,11 +41,15 @@ async def predict_on_cell_coords(client: httpx.AsyncClient, coords: Tuple[float,
     try:
         lat, lon = coords
 
-        prediction_message = await get_prediction_message_for_lat_lon(client, lat, lon)
-        message_body = asdict(prediction_message)
-
-        log.info(f"publishing prediction message {message_body} with routing key {prediction_queue}")
+        m = await get_prediction_message_for_lat_lon(client, lat, lon)
+        message_body = asdict(m)
         channel.basic_publish(exchange="", routing_key=prediction_queue, body=json.dumps(message_body))
+
+        # keep track of how many messages are published for each cell
+        # message_store[m.h3_id] = message_store.get(m.h3_id, 0) + 1
+        # with open("data.json", "w") as f:
+        #     json.dump(message_store, f, indent=4)
+
     except httpx.HTTPStatusError as e:
         log.error(f"got bad status from api server {e}")
     except Exception as e:

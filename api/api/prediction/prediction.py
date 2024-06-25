@@ -12,6 +12,7 @@ from api.prediction.net.nn import NeuralNetwork
 from .observer_site import ObserverSite
 from .constants import LOGFILE_KEY
 from .config import model_state_dict_file_name
+from ..config import log_level
 
 logfile_name = os.getenv(LOGFILE_KEY)
 path_to_logfile = (Path.home() / logfile_name) if logfile_name else None
@@ -20,7 +21,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     filename=path_to_logfile if bool(path_to_logfile) else None,
     encoding="utf-8",
-    level=logging.DEBUG,
+    level=log_level,
 )
 
 

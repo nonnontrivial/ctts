@@ -27,7 +27,7 @@ async def main():
     except AMQPConnectionError as e:
         import sys
 
-        log.error(f"could not form amqp connection {e}")
+        log.error(f"could not form amqp connection; has rabbitmq started?")
         log.warning("exiting")
         sys.exit(1)
     except Exception as e:

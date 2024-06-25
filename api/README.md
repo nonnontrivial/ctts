@@ -1,5 +1,7 @@
 # api
 
+api server for sky brightness.
+
 ## Building and training the sky brightness model
 
 - `python -m api.model.build` to write the csv that the model trains on
