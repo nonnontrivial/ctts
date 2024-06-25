@@ -18,7 +18,6 @@ prediction_endpoint_url = f"{api_protocol}://{api_host}:{api_port}/api/{api_vers
 async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: float, lon: float) -> PredictionMessage:
     res = await client.get(prediction_endpoint_url, params={"lat": lat, "lon": lon})
     res.raise_for_status()
-
     data = res.json()
     if (mpsas := data.get("sky_brightness", None)) is None:
         raise ValueError("no sky brightness reading in api response")
@@ -32,7 +31,7 @@ async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: flo
     )
 
 
-async def predict_on_cell(client: httpx.AsyncClient, coords: Tuple[float, float], channel: Channel):
+async def predict_on_cell_coords(client: httpx.AsyncClient, coords: Tuple[float, float], channel: Channel):
     """retrieve and publish a sky brightness prediction at coords for the h3 cell"""
     import json
 

@@ -8,4 +8,5 @@ class PredictionMessage:
     lon: float
     # magnitudes per square arc second
     mpsas: float
+    # id of the h3 cell
     h3_id: str
