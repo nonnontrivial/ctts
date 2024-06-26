@@ -15,11 +15,8 @@ api server for sky brightness.
 
 ```sh
 pip install -r requirements.txt
-python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+python -m api.main
 ```
-
-- artificial sky brightness (light pollution)
-- predictive sky brightness
 
 ### endpoints
 
