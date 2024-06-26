@@ -1,9 +1,10 @@
 from dataclasses import asdict
 import logging
 
+import uvicorn
 from fastapi import FastAPI, HTTPException, APIRouter
 
-from .config import api_version, log_level
+from .config import api_version, log_level, service_port
 from .models import PredictionResponse
 from .pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from .prediction.prediction import (
@@ -11,7 +12,16 @@ from .prediction.prediction import (
     predict_sky_brightness,
 )
 
-logging.basicConfig(level=log_level)
+log_format = "%(asctime)s [%(levelname)s] %(message)s"
+logging.basicConfig(level=log_level, format=log_format)
+
+
+def get_log_config():
+    config = uvicorn.config.LOGGING_CONFIG
+    config["formatters"]["access"]["fmt"] = log_format
+    return config
+
+
 app = FastAPI()
 main_router = APIRouter(prefix=f"/api/{api_version}")
 
@@ -49,3 +59,6 @@ async def get_artificial_light_pollution(lat, lon):
 
 
 app.include_router(main_router)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=service_port, log_config=get_log_config())

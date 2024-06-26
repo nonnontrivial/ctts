@@ -16,33 +16,38 @@ prediction_endpoint_url = f"{api_protocol}://{api_host}:{api_port}/api/{api_vers
 
 
 async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: float, lon: float) -> PredictionMessage:
+    """create the object that will get published to rabbitmq"""
     res = await client.get(prediction_endpoint_url, params={"lat": lat, "lon": lon})
     res.raise_for_status()
+
     data = res.json()
     if (mpsas := data.get("sky_brightness", None)) is None:
         raise ValueError("no sky brightness reading in api response")
 
-    return PredictionMessage(
+    message = PredictionMessage(
         lat=lat,
         lon=lon,
         h3_id=h3.geo_to_h3(lat, lon, 0),
         utc=datetime.utcnow().isoformat(),
         mpsas=mpsas,
     )
+    return message
 
 
 # message_store = {}
 
 
-async def predict_on_cell_coords(client: httpx.AsyncClient, coords: Tuple[float, float], channel: Channel):
+async def predict_on_cell_coords(client: httpx.AsyncClient, h3_coords: Tuple[float, float], channel: Channel):
     """retrieve and publish a sky brightness prediction at coords for the h3 cell"""
     import json
 
     try:
-        lat, lon = coords
+        lat, lon = h3_coords
 
         m = await get_prediction_message_for_lat_lon(client, lat, lon)
         message_body = asdict(m)
+
+        log.info(f"publishing {message_body} to {prediction_queue}")
         channel.basic_publish(exchange="", routing_key=prediction_queue, body=json.dumps(message_body))
 
         # keep track of how many messages are published for each cell
@@ -53,4 +58,4 @@ async def predict_on_cell_coords(client: httpx.AsyncClient, coords: Tuple[float,
     except httpx.HTTPStatusError as e:
         log.error(f"got bad status from api server {e}")
     except Exception as e:
-        log.error(f"could not publish prediction at {coords} because {e}")
+        log.error(f"could not publish prediction at {h3_coords} because {e}")

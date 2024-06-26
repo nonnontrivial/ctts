@@ -12,7 +12,7 @@ class OpenMeteoClient:
         self.url_base = f"{PROTOCOL}://{open_meteo_host}:{open_meteo_port}"
 
     async def get_values_at_site(self) -> t.Tuple[int, float]:
-        """ask the instance of open meteo for cloud cover and elevation values for the observer site"""
+        """ask open meteo for cloud cover and elevation for the observer site"""
         import httpx
 
         lat, lon = self.site.latitude.value, self.site.longitude.value

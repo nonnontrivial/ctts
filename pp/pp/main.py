@@ -39,6 +39,7 @@ async def main():
         try:
             async with httpx.AsyncClient() as client:
                 while True:
+                    # allow predictions over cells to run in interleaved way
                     for cell_coords in resolution_zero_cell_coords:
                         await asyncio.create_task(predict_on_cell_coords(client, cell_coords, channel))
                         await asyncio.sleep(task_sleep_interval)
