@@ -1,6 +1,11 @@
 version: "3"
 
 services:
+  keydb:
+    image: "eqalpha/keydb:latest"
+    ports:
+      - "6379:6379"
+
   rabbitmq:
     image: "rabbitmq:management"
     ports:
@@ -41,12 +46,14 @@ services:
     environment:
       API_VERSION: "v1"
       API_HOST: "api"
+      KEYDB_HOST: "keydb"
       RABBITMQ_HOST: "rabbitmq"
       SLEEP_INTERVAL: "0.5"
     restart: on-failure
     depends_on:
       - rabbitmq
       - api
+      - keydb
     links:
       - rabbitmq
 

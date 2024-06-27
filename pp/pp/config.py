@@ -1,5 +1,7 @@
 import os
 
+keydb_host = os.getenv("KEYDB_HOST", "keydb")
+keydb_port = int(os.getenv("KEYDB_PORT", 6379))
 rabbitmq_host = os.getenv("RABBITMQ_HOST", "localhost")
 prediction_queue = os.getenv("PREDICTION_QUEUE", "prediction")
 

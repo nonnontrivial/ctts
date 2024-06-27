@@ -5,7 +5,7 @@ import httpx
 import pika
 from pika.exceptions import AMQPConnectionError
 
-from .prediction import predict_on_cell_coords
+from .prediction import publish_cell_prediction
 from .cells import get_res_zero_cell_coords
 from .config import rabbitmq_host, prediction_queue, task_sleep_interval
 
@@ -39,9 +39,8 @@ async def main():
         try:
             async with httpx.AsyncClient() as client:
                 while True:
-                    # allow predictions over cells to run in interleaved way
                     for cell_coords in resolution_zero_cell_coords:
-                        await asyncio.create_task(predict_on_cell_coords(client, cell_coords, channel))
+                        await asyncio.create_task(publish_cell_prediction(client, cell_coords, channel))
                         await asyncio.sleep(task_sleep_interval)
         except Exception as e:
             log.error(f"could not continue publishing because {e}")
