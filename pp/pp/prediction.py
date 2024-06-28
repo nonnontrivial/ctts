@@ -17,9 +17,9 @@ keydb = redis.Redis(host=keydb_host, port=keydb_port, db=0)
 prediction_endpoint_url = f"{api_protocol}://{api_host}:{api_port}/api/{api_version}/predict"
 
 
-async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: float, lon: float) -> PredictionMessage:
+async def get_prediction_message(client: httpx.AsyncClient, h3_lat: float, h3_lon: float) -> PredictionMessage:
     """create the object that will get published to rabbitmq."""
-    res = await client.get(prediction_endpoint_url, params={"lat": lat, "lon": lon})
+    res = await client.get(prediction_endpoint_url, params={"lat": h3_lat, "lon": h3_lon})
     res.raise_for_status()
 
     data = res.json()
@@ -27,11 +27,11 @@ async def get_prediction_message_for_lat_lon(client: httpx.AsyncClient, lat: flo
         raise ValueError("no sky brightness reading in api response")
 
     message = PredictionMessage(
-        lat=lat,
-        lon=lon,
-        h3_id=h3.geo_to_h3(lat, lon, resolution=0),
+        lat=h3_lat,
+        lon=h3_lon,
         utc=datetime.utcnow().isoformat(),
         mpsas=mpsas,
+        h3_id=h3.geo_to_h3(h3_lat, h3_lon, resolution=0),
     )
     return message
 
@@ -42,8 +42,7 @@ async def publish_cell_prediction(client: httpx.AsyncClient, h3_coords: Tuple[fl
 
     try:
         lat, lon = h3_coords
-
-        m = await get_prediction_message_for_lat_lon(client, lat, lon)
+        m = await get_prediction_message(client, lat, lon)
         message_body = asdict(m)
 
         log.info(f"publishing {message_body} to {prediction_queue}")
