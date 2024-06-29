@@ -6,7 +6,7 @@ import pika
 from pika.exceptions import AMQPConnectionError
 
 from .prediction import publish_cell_prediction
-from .cells import get_res_zero_cell_coords
+from .cells import get_h3_cells
 from .config import rabbitmq_host, prediction_queue, task_sleep_interval
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -33,13 +33,13 @@ async def main():
     except Exception as e:
         log.error(f"could not start publisher because {e}")
     else:
-        resolution_zero_cell_coords = get_res_zero_cell_coords()
-        log.debug(f"using {len(resolution_zero_cell_coords)} resolution zero cells")
-
         try:
+            h3_cell_coords = get_h3_cells()
+            log.debug(f"using {len(h3_cell_coords)} resolution zero cells")
+
             async with httpx.AsyncClient() as client:
                 while True:
-                    for cell_coords in resolution_zero_cell_coords:
+                    for cell_coords in h3_cell_coords:
                         await asyncio.create_task(publish_cell_prediction(client, cell_coords, channel))
                         await asyncio.sleep(task_sleep_interval)
         except Exception as e:
