@@ -20,13 +20,13 @@ python -m api.main
 
 ### endpoints
 
-#### `/api/v1/pollution`
+#### `/api/v1/lp`
 
 Gets the approximate artificial sky brightness
 map [RGBA pixel value](https://djlorenz.github.io/astronomy/lp2022/colors.html) for a lat and lon (for the year 2022).
 
 ```sh
-curl "localhost:8000/api/v1/pollution?lat=40.7277478&lon=-74.0000374"
+curl "localhost:8000/api/v1/lp?lat=40.7277478&lon=-74.0000374"
 ```
 
 ```json
