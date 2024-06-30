@@ -35,6 +35,9 @@ class Prediction:
     y: torch.Tensor
 
 
+path_to_state_dict = get_path_to_state_dict()
+
+
 async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
     """Predict sky brightness at utcnow for given lat and lon"""
 
@@ -49,7 +52,6 @@ async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
 
         model = NeuralNetwork()
 
-        path_to_state_dict = get_path_to_state_dict()
         logging.debug(f"loading state dict at {path_to_state_dict}")
         model.load_state_dict(torch.load(path_to_state_dict))
         model.eval()
@@ -72,7 +74,9 @@ async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
             ],
             dtype=torch.float32,
         ).unsqueeze(0)
+
         logging.debug(f"X vector for site is {X}")
+
         with torch.no_grad():
             predicted_y = model(X)
             return Prediction(X=X, y=predicted_y)

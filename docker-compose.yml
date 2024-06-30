@@ -45,6 +45,7 @@ services:
     build: ./pp
     environment:
       API_VERSION: "v1"
+      MODEL_VERSION: "0.1.0"
       API_HOST: "api"
       KEYDB_HOST: "keydb"
       RABBITMQ_HOST: "rabbitmq"

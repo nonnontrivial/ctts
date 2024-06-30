@@ -27,7 +27,8 @@ main_router = APIRouter(prefix=f"/api/{api_version}")
 
 
 def create_prediction_response(prediction_obj: Prediction) -> PredictionResponse:
-    y = round(float(prediction_obj.y.item()), 4)
+    precision_digits = 4
+    y = round(float(prediction_obj.y.item()), precision_digits)
     return PredictionResponse(sky_brightness=y)
 
 
@@ -36,7 +37,6 @@ async def get_prediction(lat, lon):
     """Predict sky brightness in magnitudes per square arcsecond for a lat and lon."""
     try:
         lat, lon = float(lat), float(lon)
-
         prediction = await predict_sky_brightness(lat, lon)
         return asdict(create_prediction_response(prediction))
     except Exception as e:
