@@ -36,13 +36,14 @@ async def create_brightness_message(client: httpx.AsyncClient, h3_lat: float, h3
     if (mpsas := data.get("sky_brightness", None)) is None:
         raise ValueError("no sky brightness reading in api response")
 
-    utc_now = datetime.utcnow().isoformat()
+    utc_now = datetime.utcnow()
     brightness_message = BrightnessMessage(
         uuid=str(uuid.uuid4()),
         lat=h3_lat,
         lon=h3_lon,
         h3_id=get_cell_id(h3_lat, h3_lon),
-        utc=utc_now,
+        utc_iso=utc_now.isoformat(),
+        utc_ns=int(utc_now.timestamp() * 1e9),
         mpsas=mpsas,
         model_version=model_version
     )

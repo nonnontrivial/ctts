@@ -49,7 +49,7 @@ services:
       API_HOST: "api"
       KEYDB_HOST: "keydb"
       RABBITMQ_HOST: "rabbitmq"
-      SLEEP_INTERVAL: "0.5"
+      TASK_SLEEP_INTERVAL: "0.5"
     restart: on-failure
     depends_on:
       - rabbitmq
