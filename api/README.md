@@ -49,7 +49,7 @@ curl "http://localhost:8000/api/v1/predict?lat=-30.2466&lon=-70.7494"
 
 ```json
 {
-  "sky_brightness": 22.0388
+  "mpsas": 22.0388
 }
 ```
 

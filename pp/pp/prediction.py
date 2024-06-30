@@ -23,7 +23,7 @@ prediction_endpoint_url = f"{api_protocol}://{api_host}:{api_port}/api/{api_vers
 
 def get_cell_id(lat, lon) -> str:
     """get the h3 cell for this lat and lon"""
-    return h3.geo_to_h3(lat, lon, resolution=0)[0]
+    return h3.geo_to_h3(lat, lon, resolution=0)
 
 
 async def create_brightness_message(client: httpx.AsyncClient, h3_lat: float, h3_lon: float) -> BrightnessMessage:
@@ -33,7 +33,7 @@ async def create_brightness_message(client: httpx.AsyncClient, h3_lat: float, h3
 
     data = res.json()
 
-    if (mpsas := data.get("sky_brightness", None)) is None:
+    if (mpsas := data.get("mpsas", None)) is None:
         raise ValueError("no sky brightness reading in api response")
 
     utc_now = datetime.utcnow()
@@ -58,7 +58,7 @@ async def publish_cell_brightness(client: httpx.AsyncClient, h3_coords: Tuple[fl
         m = await create_brightness_message(client, lat, lon)
         message_body = asdict(m)
 
-        log.info(f"publishing {message_body} to {prediction_queue}")
+        log.info(f"publishing brightness message {message_body}")
         channel.basic_publish(exchange="", routing_key=prediction_queue, body=json.dumps(message_body))
 
         keydb.incr(m.h3_id)

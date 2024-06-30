@@ -27,9 +27,10 @@ main_router = APIRouter(prefix=f"/api/{api_version}")
 
 
 def create_prediction_response(prediction_obj: Prediction) -> PredictionResponse:
+    """create the object that is ultimately served to clients as the prediction response."""
     precision_digits = 4
     y = round(float(prediction_obj.y.item()), precision_digits)
-    return PredictionResponse(sky_brightness=y)
+    return PredictionResponse(mpsas=y)
 
 
 @main_router.get("/predict")
