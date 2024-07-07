@@ -7,7 +7,7 @@ services:
       - "6379:6379"
 
   rabbitmq:
-    image: "rabbitmq:management"
+    image: "rabbitmq:3-management-alpine"
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -60,5 +60,4 @@ services:
 
 volumes:
   open-meteo-data:
-    external: true
     

@@ -14,10 +14,7 @@ log = logging.getLogger(__name__)
 
 
 async def main():
-    """initializes process of publishing sky brightness
-
-    n.b. with 122 res 0 cells on 2016 macbook, this will publish at a rate of 1.4m/s
-    """
+    """initializes process of publishing sky brightness messages to the prediction queue."""
 
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))

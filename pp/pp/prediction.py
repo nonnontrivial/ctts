@@ -51,7 +51,7 @@ async def create_brightness_message(client: httpx.AsyncClient, h3_lat: float, h3
 
 
 async def publish_cell_brightness(client: httpx.AsyncClient, h3_coords: Tuple[float, float], channel: Channel):
-    """create and publish sky brightness at given h3 cell coords."""
+    """request and publish sky brightness at given h3 cell coords."""
     try:
         lat, lon = h3_coords
 
