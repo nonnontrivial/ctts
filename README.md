@@ -8,5 +8,9 @@ this will spin up the process of the prediction producer container repeatedly as
 measurements across all [resolution 0 h3 cells](https://h3geo.org/docs/core-library/restable/) and publishing to rabbitmq.
 
 ```shell
+# create the volume for weather data
+docker volume create --name open-meteo-data
+
+# run the containers
 docker-compose up --build
 ```

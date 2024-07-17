@@ -1,6 +1,17 @@
 version: "3"
-
 services:
+  postgres:
+    image: "postgres:latest"
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
   keydb:
     image: "eqalpha/keydb:latest"
     ports:
@@ -12,7 +23,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      test: [ "CMD", "curl", "-f", "http://localhost:15672" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -58,6 +69,22 @@ services:
     links:
       - rabbitmq
 
+  pc:
+    build: ./pc
+    environment:
+      AMQP_HOST: "rabbitmq"
+      PG_DATABASE: "postgres"
+    restart: on-failure
+    depends_on:
+      - postgres
+      - rabbitmq
+    links:
+      - rabbitmq
+
+
+
 volumes:
+  postgres_data:
   open-meteo-data:
+    external: true
     
