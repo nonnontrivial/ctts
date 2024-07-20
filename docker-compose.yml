@@ -1,4 +1,5 @@
 version: "3"
+
 services:
   postgres:
     image: "postgres:latest"
@@ -52,7 +53,7 @@ services:
     depends_on:
       - openmeteo
 
-  pp:
+  producer:
     build: ./pp
     environment:
       API_VERSION: "v1"
@@ -69,7 +70,7 @@ services:
     links:
       - rabbitmq
 
-  pc:
+  consumer:
     build: ./pc
     environment:
       AMQP_HOST: "rabbitmq"

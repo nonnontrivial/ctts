@@ -1,4 +1,3 @@
-import os
 import json
 import asyncio
 import logging
@@ -6,22 +5,12 @@ from dataclasses import dataclass
 
 import psycopg
 import aio_pika
+import websockets
+
+from pc.config import *
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
-
-PG_USER = os.getenv("PG_USER", "postgres")
-PG_PASSWORD = os.getenv("PG_PASSWORD", "password")
-PG_DATABASE = os.getenv("PG_DATABASE", "localhost")
-PG_HOST = os.getenv("PG_HOST", "postgres")
-PG_PORT = int(os.getenv("PG_PORT", 5432))
-
-pg_dsn = f"dbname={PG_DATABASE} user={PG_USER} password={PG_PASSWORD} host={PG_HOST}"
-
-AMQP_USER = os.getenv("AMQP_USER", "guest")
-AMQP_PASSWORD = os.getenv("AMQP_PASSWORD", "guest")
-AMQP_HOST = os.getenv("AMQP_HOST", "localhost")
-AMQP_PREDICTION_QUEUE = os.getenv("AMQP_PREDICTION_QUEUE", "prediction")
 
 
 # FIXME should be defined elsewhere
@@ -54,7 +43,6 @@ def initialize_db():
             conn.commit()
 
 
-#
 def insert_brightness_message_in_db(message: BrightnessMessage):
     """insert subset of brightness message into the predictions table"""
     with psycopg.connect(pg_dsn) as conn:
@@ -77,7 +65,7 @@ async def main():
         amqp_connection = await aio_pika.connect_robust(f"amqp://{AMQP_USER}:{AMQP_PASSWORD}@{AMQP_HOST}")
     except Exception as e:
         import sys
-        log.error(f"could not form amqp connection; has rabbitmq started?")
+        log.error(f"could not form amqp connection because {e}; has rabbitmq started?")
         log.warning("exiting")
         sys.exit(1)
     else:

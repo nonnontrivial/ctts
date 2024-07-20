@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
 COPY . .
 
-CMD python -m pc.consume
+CMD python -m pc.main
