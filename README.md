@@ -11,6 +11,9 @@ measurements across all [resolution 0 h3 cells](https://h3geo.org/docs/core-libr
 # create the volume for weather data
 docker volume create --name open-meteo-data
 
+# get latest data into the above volume
+./update-open-meteo.sh
+
 # run the containers
 docker-compose up --build
 ```
