@@ -1,29 +1,18 @@
 import json
 import asyncio
 import logging
-from dataclasses import dataclass
 
 import psycopg
 import aio_pika
-import websockets
 
 from pc.config import *
+from pc.model import BrightnessMessage
+from pc.websockets_handler import WebSocketsHandler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
-
-# FIXME should be defined elsewhere
-@dataclass
-class BrightnessMessage:
-    uuid: str
-    lat: float
-    lon: float
-    h3_id: str
-    utc_iso: str
-    utc_ns: int
-    mpsas: float
-    model_version: str
+websockets_handler = WebSocketsHandler()
 
 
 def initialize_db():
@@ -56,30 +45,40 @@ def insert_brightness_message_in_db(message: BrightnessMessage):
             conn.commit()
 
 
-async def main():
+async def consume_from_rabbitmq():
     """create table in pg if needed and begin consuming messages from the queue,
     storing them in the predictions table"""
-    initialize_db()
-
     try:
         amqp_connection = await aio_pika.connect_robust(f"amqp://{AMQP_USER}:{AMQP_PASSWORD}@{AMQP_HOST}")
     except Exception as e:
         import sys
+
         log.error(f"could not form amqp connection because {e}; has rabbitmq started?")
         log.warning("exiting")
         sys.exit(1)
     else:
         async with amqp_connection:
+
             channel = await amqp_connection.channel()
             queue = await channel.declare_queue(AMQP_PREDICTION_QUEUE)
+
             async for m in queue:
                 async with m.process():
+                    # serialize the message coming over the queue and add to postgres
                     json_data = json.loads(m.body.decode())
-                    brightness_message = BrightnessMessage(**json_data)
-                    insert_brightness_message_in_db(brightness_message)
+                    message = BrightnessMessage(**json_data)
+
+                    insert_brightness_message_in_db(message)
+                    await websockets_handler.broadcast(message)
 
         await asyncio.Future()
 
 
+async def main():
+    coroutines = [websockets_handler.setup(), consume_from_rabbitmq()]
+    await asyncio.gather(*coroutines)
+
+
 if __name__ == "__main__":
+    initialize_db()
     asyncio.run(main())
