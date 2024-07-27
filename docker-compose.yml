@@ -73,7 +73,7 @@ services:
   consumer:
     build: ./pc
     ports:
-      - "8080:8080"
+      - "8090:8090"
     environment:
       AMQP_HOST: "rabbitmq"
       PG_DATABASE: "postgres"

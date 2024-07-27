@@ -28,6 +28,6 @@ class WebSocketsHandler:
 
     async def broadcast(self, message: BrightnessMessage):
         """send the message to all websockets"""
-        log.info(f"broadcasting to {len(self.clients)} clients")
+        log.info(f"broadcasting to {len(self.clients)} websocket clients on {WS_HOST}:{WS_PORT}")
         message_json = json.dumps(asdict(message))
         broadcast(self.clients, message_json)

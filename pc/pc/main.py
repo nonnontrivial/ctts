@@ -9,7 +9,7 @@ from pc.config import *
 from pc.model import BrightnessMessage
 from pc.websockets_handler import WebSocketsHandler
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
 websockets_handler = WebSocketsHandler()

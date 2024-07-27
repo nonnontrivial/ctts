@@ -14,4 +14,4 @@ AMQP_HOST = os.getenv("AMQP_HOST", "localhost")
 AMQP_PREDICTION_QUEUE = os.getenv("AMQP_PREDICTION_QUEUE", "prediction")
 
 WS_HOST = os.getenv("WS_HOST", "consumer")
-WS_PORT = int(os.getenv("WS_PORT", 8080))
+WS_PORT = int(os.getenv("WS_PORT", 8090))
