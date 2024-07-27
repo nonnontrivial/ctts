@@ -26,7 +26,7 @@ rabbitmq while saving them to postgres, to enable historical lookup.
 
 this will spin up the process of the prediction producer container repeatedly asking the api server for sky brightness
 measurements across all [resolution 0 h3 cells](https://h3geo.org/docs/core-library/restable/) and publishing to
-rabbitmq.
+rabbitmq, which the consumer container reads from and stores in postgres.
 
 ```shell
 # create the volume for weather data
