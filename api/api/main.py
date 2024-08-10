@@ -4,7 +4,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI, HTTPException, APIRouter
 
-from .config import api_version, log_level, service_port
+from .config import api_version, log_level, service_port, service_host
 from .models import PredictionResponse
 from .pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
 from .prediction.prediction import (
@@ -26,16 +26,15 @@ app = FastAPI()
 main_router = APIRouter(prefix=f"/api/{api_version}")
 
 
-def create_prediction_response(prediction_obj: Prediction) -> PredictionResponse:
-    """create the object that is ultimately served to clients as the prediction response."""
-    precision_digits = 4
-    y = round(float(prediction_obj.y.item()), precision_digits)
-    return PredictionResponse(mpsas=y)
-
-
 @main_router.get("/predict")
 async def get_prediction(lat, lon):
     """Predict sky brightness in magnitudes per square arcsecond for a lat and lon."""
+
+    def create_prediction_response(prediction_obj: Prediction) -> PredictionResponse:
+        """create the object that is ultimately served to clients as the prediction response."""
+        y = round(float(prediction_obj.y.item()), 10)
+        return PredictionResponse(mpsas=y)
+
     try:
         lat, lon = float(lat), float(lon)
         prediction = await predict_sky_brightness(lat, lon)
@@ -44,7 +43,7 @@ async def get_prediction(lat, lon):
         raise HTTPException(status_code=500, detail=f"failed to predict because {e}")
 
 
-@main_router.get("/lp")
+@main_router.get("/pollution")
 async def get_artificial_light_pollution(lat, lon):
     """Get artificial light pollution at a lat and lon. Source https://djlorenz.github.io/astronomy/lp2022/"""
     try:
@@ -62,4 +61,4 @@ async def get_artificial_light_pollution(lat, lon):
 app.include_router(main_router)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=service_port, log_config=get_log_config())
+    uvicorn.run(app, host=service_host, port=service_port, log_config=get_log_config())

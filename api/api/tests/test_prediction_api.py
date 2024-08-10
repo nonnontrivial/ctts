@@ -15,7 +15,6 @@ API_PREFIX = f"/api/{api_version}"
 def test_prediction(coords, lowerbound, upperbound):
     lat, lon = coords
     response = client.get(f"{API_PREFIX}/predict?lat={lat}&lon={lon}")
-    # assert response.json() == {}
     assert response.status_code == 200
     brightness = response.json()["mpsas"]
     assert lowerbound <= brightness <= upperbound

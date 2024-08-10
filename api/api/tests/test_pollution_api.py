@@ -21,7 +21,7 @@ def test_get_city_pollution(lat, lon):
         "b": 255,
         "a": 255
     }
-    res = client.get(f"{API_PREFIX}/lp?lat={lat}&lon={lon}")
+    res = client.get(f"{API_PREFIX}/pollution?lat={lat}&lon={lon}")
     assert res.json() == max_channels
 
 
@@ -36,5 +36,5 @@ def test_out_of_bounds(lat, lon):
         "b": 0,
         "a": 255
     }
-    res = client.get(f"{API_PREFIX}/lp?lat={lat}&lon={lon}")
+    res = client.get(f"{API_PREFIX}/pollution?lat={lat}&lon={lon}")
     assert res.json() == empty_channels
