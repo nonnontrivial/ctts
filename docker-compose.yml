@@ -12,6 +12,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - postgres
 
   keydb:
     image: "eqalpha/keydb:latest"
@@ -84,9 +92,8 @@ services:
     links:
       - rabbitmq
 
-
-
 volumes:
+  grafana-data:
   postgres-data:
   open-meteo-data:
     external: true
