@@ -49,17 +49,16 @@ async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
     try:
         cloud_cover, elevation = await meteo_client.get_values_at_site()
         logging.debug(f"meteo_client response at {lat},{lon} is {cloud_cover}o, {elevation}m")
-
-        model = NeuralNetwork()
-
-        logging.debug(f"loading state dict at {path_to_state_dict}")
-        model.load_state_dict(torch.load(path_to_state_dict))
-        model.eval()
     except Exception as e:
         import traceback
         logging.error(traceback.format_exc())
-        raise ValueError(f"{e}")
+        raise ValueError(f"meteo data failure: {e}")
     else:
+        model = NeuralNetwork()
+        logging.debug(f"loading state dict at {path_to_state_dict}")
+        model.load_state_dict(torch.load(path_to_state_dict))
+        model.eval()
+
         torch.set_printoptions(sci_mode=False)
 
         X = torch.tensor(
