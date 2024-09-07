@@ -15,13 +15,12 @@ between a set of independent variables and the dependent variable
 (sky brightness) available in a [public dataset](http://www.unihedron.com/projects/darksky/database/?csv=true) using
 pytorch.
 
-H3 is then used to discretize cells over the earth that form
-the basis of the requests made to the api server serving up
-the sky brightness.
-
-This component pushes brightness values from the model onto
-rabbitmq while another component consumes them - inserting to
-postgres to enable historical lookup.
+Another component uses [H3](https://uber.github.io/h3-py/intro.html)
+to discretize the surface of the earth into cells, which form the basis
+of the requests made to the api server serving up the sky brightness.
+This component then pushes brightness values from the api server onto
+rabbitmq, while another component consumes them from the queue -
+inserting to postgres to enable historical lookup of brightness values.
 
 ## running locally
 
