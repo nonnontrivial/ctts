@@ -1,0 +1,9 @@
+[sqm]
+max = 22
+min = 16
+
+[csv]
+filename = "globe_at_night.csv"
+
+[train]
+epochs = 100

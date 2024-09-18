@@ -1,5 +1,5 @@
+import tomllib
 from pathlib import Path
-from configparser import ConfigParser
 
 import numpy as np
 import pandas as pd
@@ -7,16 +7,14 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-from ..prediction.constants import features
+from api.prediction.constants import features
 from api.prediction.net.nn import NeuralNetwork
 
-features_size = len(features)
+with open(Path(__file__).parent / "config.toml", "rb") as f:
+    config = tomllib.load(f)
 
-config = ConfigParser()
-config.read(Path(__file__).parent / "config.ini")
-
-csv_filename = config.get("csv", "filename")
-epochs = config.getint("train", "epochs")
+csv_filename = config["csv"]["filename"]
+epochs = config["train"]["epochs"]
 
 path_to_prediction_pkg = Path(__file__).parent.parent / "prediction"
 saved_model_path = path_to_prediction_pkg / "model.pth"
@@ -27,7 +25,7 @@ if not path_to_gan_dataframe.exists():
     raise FileNotFoundError()
 
 df = pd.read_csv(path_to_gan_dataframe)
-print(f"read csv with {len(df)} rows")
+print(f"consumed csv with {len(df)} rows")
 
 torch.set_printoptions(sci_mode=False)
 feature_tensor = torch.tensor(df[features].values.astype(np.float32))
@@ -59,10 +57,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 
 def train_loop(
-    data_loader: DataLoader,
-    model: NeuralNetwork,
-    loss_fn: nn.HuberLoss,
-    optimizer: torch.optim.Adam,
+        data_loader: DataLoader,
+        model: NeuralNetwork,
+        loss_fn: nn.HuberLoss,
+        optimizer: torch.optim.Adam,
 ):
     model.train()
     for batch, (X, y) in enumerate(data_loader):
@@ -78,7 +76,7 @@ def train_loop(
             print(f"loss: {loss:>7f} [{current:>5d}]")
 
 
-def test_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberLoss):
+def evaluate_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberLoss):
     model.eval()
 
     with torch.no_grad():
@@ -94,10 +92,10 @@ if __name__ == "__main__":
     print(f"starting training with {epochs} epochs, and saving state dict to {saved_model_path}")
 
     for epoch in range(epochs):
-        print(f"epoch {epoch + 1}")
+        print(f"epoch {epoch + 1}/{epochs}")
         train_loop(train_dataloader, model, loss_fn, optimizer)
 
-    test_model(test_dataloader, model, loss_fn)
+    evaluate_model(test_dataloader, model, loss_fn)
 
-    print(f"saving to {saved_model_path}")
+    print(f"saving state dict to {saved_model_path}")
     torch.save(model.state_dict(), saved_model_path)
