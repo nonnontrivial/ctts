@@ -22,7 +22,7 @@ This component then pushes brightness values from the api server onto
 rabbitmq, while another component consumes them from the queue -
 inserting to postgres to enable historical lookup of brightness values.
 
-## running locally
+## how to run
 
 This will spin up the process of the prediction producer container
 repeatedly asking the api container for sky brightness measurements
