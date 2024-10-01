@@ -1,7 +1,7 @@
 astroplan==0.9.1
 astropy==6.0.0
 pandas==2.1.4
-torch~=2.2.2
+torch~=2.2.x
 requests==2.31.0
 fastapi~=0.110.2
 httpx==0.26.0

@@ -5,9 +5,9 @@ import httpx
 import pika
 from pika.exceptions import AMQPConnectionError
 
-from .prediction import publish_cell_brightness
-from .cells import get_h3_cells
-from .config import rabbitmq_host, prediction_queue, task_sleep_interval
+from .prediction import publish_observation_to_queue
+from .cells.h3 import get_h3_cells
+from .config import rabbitmq_host, queue_name, task_sleep_interval
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ async def main():
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
         channel = connection.channel()
-        channel.queue_declare(queue=prediction_queue)
+        channel.queue_declare(queue=queue_name)
     except AMQPConnectionError as e:
         import sys
 
@@ -36,7 +36,7 @@ async def main():
             async with httpx.AsyncClient() as client:
                 while True:
                     for cell_coords in h3_cell_coords:
-                        await asyncio.create_task(publish_cell_brightness(client, cell_coords, channel))
+                        await asyncio.create_task(publish_observation_to_queue(client, cell_coords, channel))
                         await asyncio.sleep(task_sleep_interval)
         except Exception as e:
             log.error(f"could not continue publishing because {e}")

@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   postgres:
     image: "postgres:latest"
@@ -65,8 +63,8 @@ services:
     build: ./pp
     environment:
       API_VERSION: "v1"
-      MODEL_VERSION: "0.1.0"
       API_HOST: "api"
+      MODEL_VERSION: "0.1.0"
       KEYDB_HOST: "keydb"
       RABBITMQ_HOST: "rabbitmq"
       TASK_SLEEP_INTERVAL: "0.5"

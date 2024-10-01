@@ -1,4 +1,5 @@
-FROM python:3.11.7-slim-bullseye
+ARG VERSION=3.12.6-slim-bookworm
+FROM python:${VERSION}
 
 LABEL maintainer="Kevin Donahue <nonnontrivial@gmail.com>"
 

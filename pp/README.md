@@ -1,8 +1,8 @@
 # pp
 
-prediction producer.
+> prediction producer.
 
-> handles sky brightness prediction across resolution 0 h3 cells and puts on rabbitmq
+Handles sky brightness prediction across resolution 0 h3 cells and puts results on rabbitmq
 
 ## monitoring
 
