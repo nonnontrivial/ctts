@@ -46,20 +46,24 @@ Rabbitmq will take time to start up, at which time `producer` and
 Once rabbitmq does start, there should be output like this:
 
 ```shell
-producer-1   | 2024-07-27 23:48:09,301 [INFO] publishing brightness message {'uuid': '86967a4d-d6a5-4421-8db1-73d9d0d45ea5', 'lat': 11.509775527199592, 'lon': -55.499062349013, 'h3_id': '805ffffffffffff', 'utc_iso': '2024-07-27T23:48:09.301613', 'utc_ns': 1722124089301613056, 'mpsas': 8.6264, 'model_version': '0.1.0'}
-producer-1   | 2024-07-27 23:48:09,304 [INFO] 805ffffffffffff has had 2 predictions published
-consumer-1   | 2024-07-27 23:48:09,321 [INFO] inserting brightness message for 805ffffffffffff
-consumer-1   | 2024-07-27 23:48:09,327 [INFO] broadcasting to 0 websocket clients on consumer:8090
-api-1        | 2024-07-27 23:48:09,922 [INFO] 172.19.0.7:43300 - "GET /api/v1/predict?lat=16.702868303031234&lon=-13.374845104752373 HTTP/1.1" 200
-producer-1   | 2024-07-27 23:48:09,926 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=16.702868303031234&lon=-13.374845104752373 "HTTP/1.1 200 OK"
-producer-1   | 2024-07-27 23:48:09,927 [INFO] publishing brightness message {'uuid': '01d5912d-752b-4611-8de9-4f092dc21c5c', 'lat': 16.702868303031234, 'lon': -13.374845104752373, 'h3_id': '8055fffffffffff', 'utc_iso': '2024-07-27T23:48:09.927243', 'utc_ns': 1722124089927243008, 'mpsas': 4.5332, 'model_version': '0.1.0'}
-producer-1   | 2024-07-27 23:48:09,930 [INFO] 8055fffffffffff has had 3 predictions published
-consumer-1   | 2024-07-27 23:48:09,945 [INFO] inserting brightness message for 8055fffffffffff
-consumer-1   | 2024-07-27 23:48:09,950 [INFO] broadcasting to 0 websocket clients on consumer:8090
-api-1        | 2024-07-27 23:48:10,540 [INFO] 172.19.0.7:43300 - "GET /api/v1/predict?lat=-7.460529604384309&lon=84.45314174117765 HTTP/1.1" 200
-producer-1   | 2024-07-27 23:48:10,544 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=-7.460529604384309&lon=84.45314174117765 "HTTP/1.1 200 OK"
-producer-1   | 2024-07-27 23:48:10,547 [INFO] publishing brightness message {'uuid': 'd015ee51-d60e-4722-9fb3-f442fd3c52e3', 'lat': -7.460529604384309, 'lon': 84.45314174117765, 'h3_id': '8087fffffffffff', 'utc_iso': '2024-07-27T23:48:10.547142', 'utc_ns': 1722124090547142144, 'mpsas': 9.0234, 'model_version': '0.1.0'}
-producer-1   | 2024-07-27 23:48:10,549 [INFO] 8087fffffffffff has had 4 predictions published
-consumer-1   | 2024-07-27 23:48:10,565 [INFO] inserting brightness message for 8087fffffffffff
-consumer-1   | 2024-07-27 23:48:10,572 [INFO] broadcasting to 0 websocket clients on consumer:8090
+producer-1   | 2024-10-01 00:01:38,305 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=50.103201482241325&lon=-143.47849001502516 "HTTP/1.1 200 OK"
+producer-1   | 2024-10-01 00:01:38,306 [INFO] publishing brightness observation for cell 801dfffffffffff
+api-1        | 2024-10-01 00:01:38,304 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=50.103201482241325&lon=-143.47849001502516 HTTP/1.1" 200
+consumer-1   | 2024-10-01 00:01:38,309 [INFO] saving brightness observation 801dfffffffffff:62f41905-fc7a-4003-a1a8-5bf8b2d739ae
+producer-1   | 2024-10-01 00:01:38,314 [INFO] cell 801dfffffffffff has had 6 predictions published
+producer-1   | 2024-10-01 00:01:38,970 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=24.053793264068165&lon=130.21990279877684 "HTTP/1.1 200 OK"
+producer-1   | 2024-10-01 00:01:38,971 [INFO] publishing brightness observation for cell 804bfffffffffff
+api-1        | 2024-10-01 00:01:38,967 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=24.053793264068165&lon=130.21990279877684 HTTP/1.1" 200
+producer-1   | 2024-10-01 00:01:38,974 [INFO] cell 804bfffffffffff has had 6 predictions published
+consumer-1   | 2024-10-01 00:01:38,978 [INFO] saving brightness observation 804bfffffffffff:efbc5442-60b3-403e-b698-e8cf3cbd450a
+producer-1   | 2024-10-01 00:01:39,642 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=-0.7617301194234768&lon=-21.43378831072749 "HTTP/1.1 200 OK"
+producer-1   | 2024-10-01 00:01:39,643 [INFO] publishing brightness observation for cell 807dfffffffffff
+producer-1   | 2024-10-01 00:01:39,645 [INFO] cell 807dfffffffffff has had 6 predictions published
+api-1        | 2024-10-01 00:01:39,640 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=-0.7617301194234768&lon=-21.43378831072749 HTTP/1.1" 200
+consumer-1   | 2024-10-01 00:01:39,651 [INFO] saving brightness observation 807dfffffffffff:d6776046-b315-42bb-b472-7383b29e723e
+producer-1   | 2024-10-01 00:01:40,328 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=-39.547652536884&lon=-36.364248231710086 "HTTP/1.1 200 OK"
+producer-1   | 2024-10-01 00:01:40,329 [INFO] publishing brightness observation for cell 80c5fffffffffff
+api-1        | 2024-10-01 00:01:40,327 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=-39.547652536884&lon=-36.364248231710086 HTTP/1.1" 200
+producer-1   | 2024-10-01 00:01:40,331 [INFO] cell 80c5fffffffffff has had 6 predictions published
+consumer-1   | 2024-10-01 00:01:40,334 [INFO] saving brightness observation 80c5fffffffffff:d4713ee8-d370-4f71-9572-43dc81844e6c
 ```
