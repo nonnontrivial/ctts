@@ -3,7 +3,7 @@ import typing as t
 from ..config import open_meteo_host, open_meteo_port
 from ..observer_site import ObserverSite
 from ..utils import get_astro_time_hour
-from .constants import MAX_OKTAS, PROTOCOL
+from .constants import MAX_OKTAS, PROTOCOL, model
 
 
 class OpenMeteoClient:
@@ -11,14 +11,13 @@ class OpenMeteoClient:
         self.site = site
         self.url_base = f"{PROTOCOL}://{open_meteo_host}:{open_meteo_port}"
 
-    async def get_values_at_site(self) -> t.Tuple[int, float]:
+    async def get_hourly_values_at_site(self) -> t.Tuple[int, float]:
         """ask open meteo for cloud cover and elevation for the observer site"""
         import httpx
 
         lat, lon = self.site.latitude.value, self.site.longitude.value
 
         async with httpx.AsyncClient() as client:
-            model = "ecmwf_ifs04"
             params = {
                 "latitude": lat,
                 "longitude": lon,
@@ -27,6 +26,7 @@ class OpenMeteoClient:
             }
             r = await client.get(f"{self.url_base}/v1/forecast", params=params)
             r.raise_for_status()
+
             res_json = r.json()
 
             elevation = float(res_json.get("elevation", 0.))
@@ -41,7 +41,7 @@ class OpenMeteoClient:
         """pull out the relevant index in the meteo data"""
         return get_astro_time_hour(self.site.utc_time)
 
-    def get_cloud_cover_as_oktas(self, cloud_cover_percentage: int):
+    def get_cloud_cover_as_oktas(self, cloud_cover_percentage: int) -> int:
         """convert cloud cover percentage to oktas (eights of sky covered)"""
         import numpy as np
         import math

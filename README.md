@@ -25,10 +25,12 @@ inserting to postgres to enable historical lookup of brightness values.
 ## how to run
 
 This will spin up the process of the prediction producer container
-repeatedly asking the api container for sky brightness measurements
-_at the current time_ across all [resolution 0 h3 cells](https://h3geo.org/docs/core-library/restable/);
+repeatedly asking the api container for sky brightness predictions
+_at the current time_ across all [resolution 6 H3 cells](https://h3geo.org/docs/core-library/restable/);
 publishing them to rabbitmq, which the consumer container reads from
 and stores messages (in postgres container).
+
+> note: at present only cells in north america are generated.
 
 ```shell
 # create the volume for weather data
@@ -48,30 +50,33 @@ to the queue.
 Once rabbitmq does start, there should be output like this:
 
 ```log
-producer-1   | 2024-10-01 00:01:38,305 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=50.103201482241325&lon=-143.47849001502516 "HTTP/1.1 200 OK"
-producer-1   | 2024-10-01 00:01:38,306 [INFO] publishing brightness observation for cell 801dfffffffffff
-api-1        | 2024-10-01 00:01:38,304 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=50.103201482241325&lon=-143.47849001502516 HTTP/1.1" 200
-consumer-1   | 2024-10-01 00:01:38,309 [INFO] saving brightness observation 801dfffffffffff:62f41905-fc7a-4003-a1a8-5bf8b2d739ae
-producer-1   | 2024-10-01 00:01:38,314 [INFO] cell 801dfffffffffff has had 6 predictions published
-producer-1   | 2024-10-01 00:01:38,970 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=24.053793264068165&lon=130.21990279877684 "HTTP/1.1 200 OK"
-producer-1   | 2024-10-01 00:01:38,971 [INFO] publishing brightness observation for cell 804bfffffffffff
-api-1        | 2024-10-01 00:01:38,967 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=24.053793264068165&lon=130.21990279877684 HTTP/1.1" 200
-producer-1   | 2024-10-01 00:01:38,974 [INFO] cell 804bfffffffffff has had 6 predictions published
-consumer-1   | 2024-10-01 00:01:38,978 [INFO] saving brightness observation 804bfffffffffff:efbc5442-60b3-403e-b698-e8cf3cbd450a
-producer-1   | 2024-10-01 00:01:39,642 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=-0.7617301194234768&lon=-21.43378831072749 "HTTP/1.1 200 OK"
-producer-1   | 2024-10-01 00:01:39,643 [INFO] publishing brightness observation for cell 807dfffffffffff
-producer-1   | 2024-10-01 00:01:39,645 [INFO] cell 807dfffffffffff has had 6 predictions published
-api-1        | 2024-10-01 00:01:39,640 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=-0.7617301194234768&lon=-21.43378831072749 HTTP/1.1" 200
-consumer-1   | 2024-10-01 00:01:39,651 [INFO] saving brightness observation 807dfffffffffff:d6776046-b315-42bb-b472-7383b29e723e
-producer-1   | 2024-10-01 00:01:40,328 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=-39.547652536884&lon=-36.364248231710086 "HTTP/1.1 200 OK"
-producer-1   | 2024-10-01 00:01:40,329 [INFO] publishing brightness observation for cell 80c5fffffffffff
-api-1        | 2024-10-01 00:01:40,327 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=-39.547652536884&lon=-36.364248231710086 HTTP/1.1" 200
-producer-1   | 2024-10-01 00:01:40,331 [INFO] cell 80c5fffffffffff has had 6 predictions published
-consumer-1   | 2024-10-01 00:01:40,334 [INFO] saving brightness observation 80c5fffffffffff:d4713ee8-d370-4f71-9572-43dc81844e6c
+api-1        | 2024-10-01 23:13:35,963 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=18.93443063422478&lon=-102.69523192458102 HTTP/1.1" 200
+producer-1   | 2024-10-01 23:13:35,965 [INFO] publishing brightness observation for cell 8049fffffffffff
+producer-1   | 2024-10-01 23:13:35,970 [INFO] cell 8049fffffffffff has had 61 predictions published
+consumer-1   | 2024-10-01 23:13:35,975 [INFO] saved brightness observation 8049fffffffffff:8d3adf35-6d65-4033-b901-5500994440f7
+producer-1   | 2024-10-01 23:13:36,072 [INFO] 84 distinct cells have observations published
+api-1        | 2024-10-01 23:13:36,229 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=23.751984470800828&lon=-98.56249212703489 HTTP/1.1" 200
+producer-1   | 2024-10-01 23:13:36,234 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=23.751984470800828&lon=-98.56249212703489 "HTTP/1.1 200 OK"
+producer-1   | 2024-10-01 23:13:36,235 [INFO] publishing brightness observation for cell 8049fffffffffff
+producer-1   | 2024-10-01 23:13:36,236 [INFO] cell 8049fffffffffff has had 62 predictions published
+consumer-1   | 2024-10-01 23:13:36,244 [INFO] saved brightness observation 8049fffffffffff:7a0de422-00c6-42da-b771-0ad740d72472
+producer-1   | 2024-10-01 23:13:36,338 [INFO] 85 distinct cells have observations published
+api-1        | 2024-10-01 23:13:36,494 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=17.630481352179363&lon=-100.25972697954386 HTTP/1.1" 200
+producer-1   | 2024-10-01 23:13:36,496 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=17.630481352179363&lon=-100.25972697954386 "HTTP/1.1 200 OK"
+producer-1   | 2024-10-01 23:13:36,498 [INFO] publishing brightness observation for cell 8049fffffffffff
+producer-1   | 2024-10-01 23:13:36,513 [INFO] cell 8049fffffffffff has had 63 predictions published
+consumer-1   | 2024-10-01 23:13:36,522 [INFO] saved brightness observation 8049fffffffffff:35b65bbe-67dc-4547-a1dd-9a6eea059828
+producer-1   | 2024-10-01 23:13:36,616 [INFO] 86 distinct cells have observations published
+api-1        | 2024-10-01 23:13:36,787 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=27.38982117748413&lon=-101.71565690812395 HTTP/1.1" 200
+producer-1   | 2024-10-01 23:13:36,795 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=27.38982117748413&lon=-101.71565690812395 "HTTP/1.1 200 OK"
+producer-1   | 2024-10-01 23:13:36,796 [INFO] publishing brightness observation for cell 8049fffffffffff
+producer-1   | 2024-10-01 23:13:36,801 [INFO] cell 8049fffffffffff has had 64 predictions published
+consumer-1   | 2024-10-01 23:13:36,808 [INFO] saved brightness observation 8049fffffffffff:0a346078-002b-4bce-86d5-b38455e9fbac
+producer-1   | 2024-10-01 23:13:36,902 [INFO] 87 distinct cells have observations published
 ```
 
 This output indicates that the producer component is sucessfully
-getting sky brightness predictions at h3 cells, and storing them
+getting sky brightness predictions at H3 cells, and storing them
 in the postgres table `brightnessobservation`.
 
 

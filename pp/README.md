@@ -2,7 +2,7 @@
 
 > prediction producer.
 
-Handles sky brightness prediction across resolution 0 h3 cells and puts results on rabbitmq
+Retrieves sky brightness prediction across h3 cells and puts results on rabbitmq.
 
 ## monitoring
 

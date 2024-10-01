@@ -6,21 +6,22 @@ import pika
 from pika.exceptions import AMQPConnectionError
 
 from .prediction import publish_observation_to_queue
-from .cells.h3 import get_h3_cells
-from .config import rabbitmq_host, queue_name, task_sleep_interval
+from .cells.continent_manager import H3ContinentManager
+from .config import rabbitmq_host, queue_name
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
+continent_manager = H3ContinentManager(continent="north-america")
+
 
 async def main():
-    """initializes process of publishing sky brightness messages to the prediction queue."""
-
+    """begin publishing sky brightness predictions to the prediction queue."""
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
         channel = connection.channel()
         channel.queue_declare(queue=queue_name)
-    except AMQPConnectionError as e:
+    except AMQPConnectionError as _:
         import sys
 
         log.error(f"could not form amqp connection; has rabbitmq started?")
@@ -29,15 +30,24 @@ async def main():
     except Exception as e:
         log.error(f"could not start publisher because {e}")
     else:
+        from collections import defaultdict
+        from h3 import h3_to_geo
+
         try:
-            h3_cell_coords = get_h3_cells()
-            log.debug(f"using {len(h3_cell_coords)} resolution zero cells")
+            na_cells = continent_manager.get_cell_covering()
+            log.info(f"requesting predictions for {len(na_cells)} cells")
+
+            cell_counts = defaultdict(int)
 
             async with httpx.AsyncClient() as client:
                 while True:
-                    for cell_coords in h3_cell_coords:
-                        await asyncio.create_task(publish_observation_to_queue(client, cell_coords, channel))
-                        await asyncio.sleep(task_sleep_interval)
+                    for cell in na_cells:
+                        cell_counts[cell] += 1
+
+                        geo_cell = h3_to_geo(cell)
+                        await asyncio.create_task(publish_observation_to_queue(client, geo_cell, channel))
+                        await asyncio.sleep(0.1)
+                        log.info(f"{len(cell_counts)} distinct cells have had observations published")
         except Exception as e:
             log.error(f"could not continue publishing because {e}")
             channel.close()

@@ -12,5 +12,3 @@ api_host = os.getenv("API_HOST", "localhost")
 api_version = os.getenv("API_VERSION", "v1")
 
 model_version = os.getenv("MODEL_VERSION", "0.1.0")
-
-task_sleep_interval = float(os.getenv("TASK_SLEEP_INTERVAL", "0.5"))

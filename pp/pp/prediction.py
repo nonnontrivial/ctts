@@ -7,20 +7,15 @@ from datetime import datetime
 from pika.channel import Channel
 import redis
 import httpx
-import h3
 
 from .config import model_version, api_protocol, api_host, api_port, api_version, queue_name, keydb_host, \
     keydb_port
 from .models.models import BrightnessObservation
+from .cells.continent_manager import H3ContinentManager
 
 log = logging.getLogger(__name__)
 
 keydb = redis.Redis(host=keydb_host, port=keydb_port, db=0)
-
-
-def get_cell_id(lat, lon) -> str:
-    """get the h3 cell for this lat and lon"""
-    return h3.geo_to_h3(lat, lon, resolution=0)
 
 
 async def create_brightness_observation(client: httpx.AsyncClient, h3_lat: float,
@@ -33,17 +28,17 @@ async def create_brightness_observation(client: httpx.AsyncClient, h3_lat: float
 
     data = res.json()
 
-    if (mpsas := data.get("mpsas", None)) is None:
-        raise ValueError("no sky brightness reading in api response")
+    if (magnitudes := data.get("mpsas", None)) is None:
+        raise ValueError("no sky brightness mpsas reading in api response")
 
     utc_now = datetime.utcnow()
     brightness_message = BrightnessObservation(
         uuid=str(uuid.uuid4()),
         lat=h3_lat,
         lon=h3_lon,
-        h3_id=get_cell_id(h3_lat, h3_lon),
+        h3_id=H3ContinentManager.get_cell_id(h3_lat, h3_lon),
         utc_iso=utc_now.isoformat(),
-        mpsas=mpsas,
+        mpsas=magnitudes,
         model_version=model_version
     )
     return brightness_message

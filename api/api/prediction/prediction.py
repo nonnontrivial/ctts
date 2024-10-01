@@ -39,7 +39,7 @@ path_to_state_dict = get_path_to_state_dict()
 
 
 async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
-    """Predict sky brightness at utcnow for given lat and lon"""
+    """predict sky brightness at utcnow for given lat and lon"""
 
     location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
 
@@ -47,14 +47,16 @@ async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
     meteo_client = OpenMeteoClient(site=site)
 
     try:
-        cloud_cover, elevation = await meteo_client.get_values_at_site()
+        cloud_cover, elevation = await meteo_client.get_hourly_values_at_site()
         logging.debug(f"meteo_client response at {lat},{lon} is {cloud_cover}o, {elevation}m")
     except Exception as e:
         import traceback
+
         logging.error(traceback.format_exc())
         raise ValueError(f"meteo data failure: {e}")
     else:
         model = NeuralNetwork()
+
         logging.debug(f"loading state dict at {path_to_state_dict}")
         model.load_state_dict(torch.load(path_to_state_dict))
         model.eval()
@@ -74,7 +76,7 @@ async def predict_sky_brightness(lat: float, lon: float) -> Prediction:
             dtype=torch.float32,
         ).unsqueeze(0)
 
-        logging.debug(f"X vector for site is {X}")
+        logging.debug(f"vector for site is {X}")
 
         with torch.no_grad():
             predicted_y = model(X)
