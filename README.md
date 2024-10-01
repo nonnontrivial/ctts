@@ -45,7 +45,7 @@ Rabbitmq will take time to start up, at which time `producer` and
 `consumer` containers will attempt restart to form connection.
 Once rabbitmq does start, there should be output like this:
 
-```shell
+```log
 producer-1   | 2024-10-01 00:01:38,305 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=50.103201482241325&lon=-143.47849001502516 "HTTP/1.1 200 OK"
 producer-1   | 2024-10-01 00:01:38,306 [INFO] publishing brightness observation for cell 801dfffffffffff
 api-1        | 2024-10-01 00:01:38,304 [INFO] 172.18.0.9:39216 - "GET /api/v1/predict?lat=50.103201482241325&lon=-143.47849001502516 HTTP/1.1" 200
