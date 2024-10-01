@@ -37,12 +37,14 @@ docker volume create --name open-meteo-data
 # get latest data into the above volume
 ./update-open-meteo.sh
 
-# run the containers
-docker-compose up --build
+# run the containers (build flag only necessary for first run)
+docker compose up --build
 ```
 
 Rabbitmq will take time to start up, at which time `producer` and
-`consumer` containers will attempt restart to form connection.
+`consumer` containers will attempt restart to form their connections
+to the queue.
+
 Once rabbitmq does start, there should be output like this:
 
 ```log
@@ -67,3 +69,9 @@ api-1        | 2024-10-01 00:01:40,327 [INFO] 172.18.0.9:39216 - "GET /api/v1/pr
 producer-1   | 2024-10-01 00:01:40,331 [INFO] cell 80c5fffffffffff has had 6 predictions published
 consumer-1   | 2024-10-01 00:01:40,334 [INFO] saving brightness observation 80c5fffffffffff:d4713ee8-d370-4f71-9572-43dc81844e6c
 ```
+
+This output indicates that the producer component is sucessfully
+getting sky brightness predictions at h3 cells, and storing them
+in the postgres table `brightnessobservation`.
+
+
