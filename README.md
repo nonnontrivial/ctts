@@ -19,16 +19,16 @@ Another component uses [H3](https://uber.github.io/h3-py/intro.html)
 to discretize the surface of the earth into cells, which form the basis
 of the requests made to the api server serving up the sky brightness.
 This component then pushes brightness values from the api server onto
-rabbitmq, while another component consumes them from the queue -
-inserting to postgres to enable historical lookup of brightness values.
+rabbitmq, while another component consumes them from that queue -
+inserting records in postgres to enable historical lookup.
 
-## how to run
+## running with docker
 
 This will spin up the process of the prediction producer container
 repeatedly asking the api container for sky brightness predictions
-_at the current time_ across all [resolution 6 H3 cells](https://h3geo.org/docs/core-library/restable/);
-publishing them to rabbitmq, which the consumer container reads from
-and stores messages (in postgres container).
+_for the current time_ across all [resolution 6 H3 cells](https://h3geo.org/docs/core-library/restable/);
+publishing those predictions to rabbitmq, which the consumer container reads from,
+storing those messages in the `brightnessobservation` table.
 
 > note: at present only cells in north america are generated.
 
@@ -75,8 +75,8 @@ consumer-1   | 2024-10-01 23:13:36,808 [INFO] saved brightness observation 8049f
 producer-1   | 2024-10-01 23:13:36,902 [INFO] 87 distinct cells have observations published
 ```
 
-This output indicates that the producer component is sucessfully
-getting sky brightness predictions at H3 cells, and storing them
-in the postgres table `brightnessobservation`.
+This output indicates that the producer service is sucessfully
+fetching sky brightness predictions for H3 cells and the consumer
+service is storing them in the postgres table `brightnessobservation`.
 
 
