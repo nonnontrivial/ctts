@@ -56,7 +56,7 @@ learning_rate = 1e-5
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 
-def train_loop(
+def train_model(
         data_loader: DataLoader,
         model: NeuralNetwork,
         loss_fn: nn.HuberLoss,
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     for epoch in range(epochs):
         print(f"epoch {epoch + 1}/{epochs}")
-        train_loop(train_dataloader, model, loss_fn, optimizer)
+        train_model(train_dataloader, model, loss_fn, optimizer)
 
     evaluate_model(test_dataloader, model, loss_fn)
 

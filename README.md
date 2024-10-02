@@ -12,7 +12,7 @@ sense to have a way of performing this measurement indirectly.
 
 The approach this project takes is to model the relationship
 between a set of independent variables and the dependent variable
-(sky brightness) available in a [public dataset](http://www.unihedron.com/projects/darksky/database/?csv=true) using
+(sky brightness) available in a [public dataset](https://globeatnight.org/maps-data/) using
 pytorch.
 
 Another component uses [H3](https://uber.github.io/h3-py/intro.html)

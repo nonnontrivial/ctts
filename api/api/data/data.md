@@ -8,4 +8,3 @@
 ## globe at night
 
 - https://globeatnight.org/maps-data/
-- https://globeatnight.org/gan-mn/
