@@ -1,0 +1,7 @@
+[model]
+state_dict_filename = "model.pth"
+
+[meteo]
+host = "openmeteo"
+port = 8080
+model = "ecmwf_ifs04"

@@ -50,33 +50,12 @@ to the queue.
 Once rabbitmq does start, there should be output like this:
 
 ```log
-api-1        | 2024-10-01 23:13:35,963 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=18.93443063422478&lon=-102.69523192458102 HTTP/1.1" 200
-producer-1   | 2024-10-01 23:13:35,965 [INFO] publishing brightness observation for cell 8049fffffffffff
-producer-1   | 2024-10-01 23:13:35,970 [INFO] cell 8049fffffffffff has had 61 predictions published
-consumer-1   | 2024-10-01 23:13:35,975 [INFO] saved brightness observation 8049fffffffffff:8d3adf35-6d65-4033-b901-5500994440f7
-producer-1   | 2024-10-01 23:13:36,072 [INFO] 84 distinct cells have observations published
-api-1        | 2024-10-01 23:13:36,229 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=23.751984470800828&lon=-98.56249212703489 HTTP/1.1" 200
-producer-1   | 2024-10-01 23:13:36,234 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=23.751984470800828&lon=-98.56249212703489 "HTTP/1.1 200 OK"
-producer-1   | 2024-10-01 23:13:36,235 [INFO] publishing brightness observation for cell 8049fffffffffff
-producer-1   | 2024-10-01 23:13:36,236 [INFO] cell 8049fffffffffff has had 62 predictions published
-consumer-1   | 2024-10-01 23:13:36,244 [INFO] saved brightness observation 8049fffffffffff:7a0de422-00c6-42da-b771-0ad740d72472
-producer-1   | 2024-10-01 23:13:36,338 [INFO] 85 distinct cells have observations published
-api-1        | 2024-10-01 23:13:36,494 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=17.630481352179363&lon=-100.25972697954386 HTTP/1.1" 200
-producer-1   | 2024-10-01 23:13:36,496 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=17.630481352179363&lon=-100.25972697954386 "HTTP/1.1 200 OK"
-producer-1   | 2024-10-01 23:13:36,498 [INFO] publishing brightness observation for cell 8049fffffffffff
-producer-1   | 2024-10-01 23:13:36,513 [INFO] cell 8049fffffffffff has had 63 predictions published
-consumer-1   | 2024-10-01 23:13:36,522 [INFO] saved brightness observation 8049fffffffffff:35b65bbe-67dc-4547-a1dd-9a6eea059828
-producer-1   | 2024-10-01 23:13:36,616 [INFO] 86 distinct cells have observations published
-api-1        | 2024-10-01 23:13:36,787 [INFO] 172.18.0.8:52564 - "GET /api/v1/predict?lat=27.38982117748413&lon=-101.71565690812395 HTTP/1.1" 200
-producer-1   | 2024-10-01 23:13:36,795 [INFO] HTTP Request: GET http://api:8000/api/v1/predict?lat=27.38982117748413&lon=-101.71565690812395 "HTTP/1.1 200 OK"
-producer-1   | 2024-10-01 23:13:36,796 [INFO] publishing brightness observation for cell 8049fffffffffff
-producer-1   | 2024-10-01 23:13:36,801 [INFO] cell 8049fffffffffff has had 64 predictions published
-consumer-1   | 2024-10-01 23:13:36,808 [INFO] saved brightness observation 8049fffffffffff:0a346078-002b-4bce-86d5-b38455e9fbac
-producer-1   | 2024-10-01 23:13:36,902 [INFO] 87 distinct cells have observations published
+producer-1   | 2024-10-03 22:37:54,517 [INFO] 368 distinct cells have had observations published
+consumer-1   | 2024-10-03 22:37:54,524 [INFO] saved brightness observation H3Index(8049fffffffffff):8.252717018127441@2024-10-03T22:37:54.516356+00:00
 ```
 
 This output indicates that the producer service is sucessfully
-fetching sky brightness predictions for H3 cells and the consumer
+getting sky brightness predictions for H3 cells and that the consumer
 service is storing them in the postgres table `brightnessobservation`.
 
 

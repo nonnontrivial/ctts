@@ -6,9 +6,8 @@ class BrightnessObservation(models.Model):
     lat = fields.FloatField()
     lon = fields.FloatField()
     h3_id = fields.CharField(max_length=15)
-    utc_iso = fields.CharField(max_length=30)
+    utc_iso = fields.CharField(max_length=32)
     mpsas = fields.FloatField()
-    model_version = fields.CharField(max_length=36)
 
     def __str__(self):
-        return f"{self.h3_id}:{self.uuid}"
+        return f"H3Index({self.h3_id}):{self.mpsas}@{self.utc_iso}"

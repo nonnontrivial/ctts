@@ -1,41 +1,43 @@
 import typing as t
 
-from ..config import open_meteo_host, open_meteo_port
+import requests
+
+from .. import config
+
 from ..observer_site import ObserverSite
 from ..utils import get_astro_time_hour
-from .constants import MAX_OKTAS, PROTOCOL, model
+from .constants import MAX_OKTAS, PROTOCOL
 
 
 class OpenMeteoClient:
     def __init__(self, site: ObserverSite) -> None:
         self.site = site
-        self.url_base = f"{PROTOCOL}://{open_meteo_host}:{open_meteo_port}"
+        host = config["meteo"]["host"]
+        port = config["meteo"]["port"]
+        self.url_base = f"{PROTOCOL}://{host}:{port}"
 
-    async def get_hourly_values_at_site(self) -> t.Tuple[int, float]:
+    def get_hourly_values_at_site(self) -> t.Tuple[int, float]:
         """ask open meteo for cloud cover and elevation for the observer site"""
-        import httpx
-
         lat, lon = self.site.latitude.value, self.site.longitude.value
+        model = config["meteo"]["model"]
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "models": model,
+            "hourly": "temperature_2m,cloud_cover"
+        }
+        r = requests.get(f"{self.url_base}/v1/forecast", params=params)
+        r.raise_for_status()
 
-        async with httpx.AsyncClient() as client:
-            params = {
-                "latitude": lat,
-                "longitude": lon,
-                "models": model,
-                "hourly": "temperature_2m,cloud_cover"
-            }
-            r = await client.get(f"{self.url_base}/v1/forecast", params=params)
-            r.raise_for_status()
+        res_json = r.json()
 
-            res_json = r.json()
+        elevation = float(res_json.get("elevation", 0.))
 
-            elevation = float(res_json.get("elevation", 0.))
+        idx = self.get_hourly_index_of_site_time()
+        cloud_cover = res_json["hourly"]["cloud_cover"][idx]
+        cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
 
-            idx = self.get_hourly_index_of_site_time()
-            cloud_cover = res_json["hourly"]["cloud_cover"][idx]
-            cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
-
-            return cloud_cover, elevation
+        return cloud_cover, elevation
 
     def get_hourly_index_of_site_time(self) -> int:
         """pull out the relevant index in the meteo data"""

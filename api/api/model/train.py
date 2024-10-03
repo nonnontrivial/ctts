@@ -7,8 +7,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-from api.prediction.constants import features
-from api.prediction.net.nn import NeuralNetwork
+from api.service.constants import features
+from api.service.net.nn import NN
 
 with open(Path(__file__).parent / "config.toml", "rb") as f:
     config = tomllib.load(f)
@@ -16,7 +16,7 @@ with open(Path(__file__).parent / "config.toml", "rb") as f:
 csv_filename = config["csv"]["filename"]
 epochs = config["train"]["epochs"]
 
-path_to_prediction_pkg = Path(__file__).parent.parent / "prediction"
+path_to_prediction_pkg = Path(__file__).parent.parent / "service"
 saved_model_path = path_to_prediction_pkg / "model.pth"
 
 path_to_data_dir = Path(__file__).parent.parent / "data"
@@ -49,7 +49,7 @@ device = (
     if torch.backends.mps.is_available()
     else "cpu"
 )
-model = NeuralNetwork().to(device)
+model = NN().to(device)
 
 loss_fn = nn.HuberLoss()
 learning_rate = 1e-5
@@ -58,7 +58,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 def train_model(
         data_loader: DataLoader,
-        model: NeuralNetwork,
+        model: NN,
         loss_fn: nn.HuberLoss,
         optimizer: torch.optim.Adam,
 ):
@@ -76,14 +76,14 @@ def train_model(
             print(f"loss: {loss:>7f} [{current:>5d}]")
 
 
-def evaluate_model(data_loader: DataLoader, model: NeuralNetwork, loss_fn: nn.HuberLoss):
+def evaluate_model(data_loader: DataLoader, model: NN, loss_fn: nn.HuberLoss):
     model.eval()
 
     with torch.no_grad():
         test_loss = 0
         for batch, (X, y) in enumerate(data_loader):
             pred = model(X)
-            print(f"prediction at batch {batch} was {pred} for {X} ")
+            print(f"service at batch {batch} was {pred} for {X} ")
             loss = loss_fn(pred.squeeze(), y)
             test_loss += loss.item() * X.size(0)
 

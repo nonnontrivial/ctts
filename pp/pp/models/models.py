@@ -8,4 +8,3 @@ class BrightnessObservation(BaseModel):
     h3_id: str
     utc_iso: str
     mpsas: float
-    model_version: str

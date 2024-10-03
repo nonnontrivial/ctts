@@ -1,64 +1,26 @@
-from dataclasses import asdict
 import logging
+from concurrent import futures
 
-import uvicorn
-from fastapi import FastAPI, HTTPException, APIRouter
+import grpc
 
-from .config import api_version, log_level, service_port, service_host
-from .models import PredictionResponse
-from .pollution.pollution import ArtificialNightSkyBrightnessMapImage, Coords
-from .prediction.prediction import (
-    Prediction,
-    predict_sky_brightness,
-)
+from .stubs import brightness_service_pb2_grpc
+from .service.brightness_servicer import BrightnessServicer
+from .config import log_level, service_port
 
 log_format = "%(asctime)s [%(levelname)s] %(message)s"
 logging.basicConfig(level=log_level, format=log_format)
 
-
-def get_log_config():
-    config = uvicorn.config.LOGGING_CONFIG
-    config["formatters"]["access"]["fmt"] = log_format
-    return config
+log = logging.getLogger(__name__)
 
 
-app = FastAPI()
-main_router = APIRouter(prefix=f"/api/{api_version}")
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    brightness_service_pb2_grpc.add_BrightnessServiceServicer_to_server(BrightnessServicer(), server)
+    server.add_insecure_port(f"[::]:{service_port}")
+    server.start()
+    server.wait_for_termination()
 
-
-@main_router.get("/predict")
-async def get_prediction(lat, lon):
-    """Predict sky brightness in magnitudes per square arcsecond for a lat and lon."""
-
-    def create_prediction_response(prediction_obj: Prediction) -> PredictionResponse:
-        """create the object that is ultimately served to clients as the prediction response."""
-        y = round(float(prediction_obj.y.item()), 10)
-        return PredictionResponse(mpsas=y)
-
-    try:
-        lat, lon = float(lat), float(lon)
-        prediction = await predict_sky_brightness(lat, lon)
-        return asdict(create_prediction_response(prediction))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"failed to predict because {e}")
-
-
-@main_router.get("/pollution")
-async def get_artificial_light_pollution(lat, lon):
-    """Get artificial light pollution at a lat and lon. Source https://djlorenz.github.io/astronomy/lp2022/"""
-    try:
-        lat, lon = float(lat), float(lon)
-
-        map_image = ArtificialNightSkyBrightnessMapImage()
-        pixel_rgba = map_image.get_pixel_value_at_coords(coords=Coords(lat, lon))
-
-        channels = ("r", "g", "b", "a")
-        return {channel: pixel_value for channel, pixel_value in zip(channels, pixel_rgba)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"could not get light pollution because {e}")
-
-
-app.include_router(main_router)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=service_host, port=service_port, log_config=get_log_config())
+    log.info(f"starting up gRPC server on port {service_port}")
+    serve()

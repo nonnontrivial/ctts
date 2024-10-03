@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package brightness;
+
+service BrightnessService {
+  rpc GetBrightnessObservation (BrightnessRequest) returns (BrightnessObservation) {}
+}
+
+message BrightnessRequest {
+  double lat = 1;
+  double lon = 2;
+}
+
+message BrightnessObservation {
+  string uuid = 1;
+  double lat = 2;
+  double lon = 3;
+  string utc_iso = 4;
+  float mpsas = 5;
+}
+

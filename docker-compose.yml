@@ -19,11 +19,6 @@ services:
     depends_on:
       - postgres
 
-  keydb:
-    image: "eqalpha/keydb:latest"
-    ports:
-      - "6379:6379"
-
   rabbitmq:
     image: "rabbitmq:alpine"
     ports:
@@ -49,12 +44,10 @@ services:
   api:
     build: ./api
     ports:
-      - "8000:8000"
+      - "50051:50051"
     environment:
       API_VERSION: "v1"
       LOG_LEVEL: 30
-      OPEN_METEO_HOST: "openmeteo"
-      OPEN_METEO_PORT: 8080
     restart: on-failure
     depends_on:
       - openmeteo
@@ -65,13 +58,11 @@ services:
       API_VERSION: "v1"
       API_HOST: "api"
       MODEL_VERSION: "0.1.0"
-      KEYDB_HOST: "keydb"
       RABBITMQ_HOST: "rabbitmq"
     restart: on-failure
     depends_on:
       - rabbitmq
       - api
-      - keydb
     links:
       - rabbitmq
 

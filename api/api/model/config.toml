@@ -2,8 +2,9 @@
 max = 22
 min = 16
 
+[train]
+epochs = 100
+
 [csv]
 filename = "globe_at_night.csv"
 
-[train]
-epochs = 100

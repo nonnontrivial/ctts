@@ -7,7 +7,7 @@ from ..constants import (
 )
 
 
-class NeuralNetwork(nn.Module):
+class NN(nn.Module):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.flatten = nn.Flatten()
