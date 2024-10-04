@@ -50,13 +50,20 @@ to the queue.
 Once rabbitmq does start, there should be output like this:
 
 ```log
-producer-1   | 2024-10-03 22:37:54,517 [INFO] 368 distinct cells have had observations published
-consumer-1   | 2024-10-03 22:37:54,524 [INFO] saved brightness observation H3Index(8049fffffffffff):8.252717018127441@2024-10-03T22:37:54.516356+00:00
+producer-1   | 2024-10-03 23:59:12,266 [INFO] brightness observation response for 8649a36a7ffffff is uuid: "f275a795-8af7-491b-9645-3ce2e14fe3cd"
+producer-1   | lat: 18.575429951519293
+producer-1   | lon: -101.86020792493713
+producer-1   | utc_iso: "2024-10-03T23:59:12.266163+00:00"
+producer-1   | mpsas: 12.7519617
+consumer-1   | 2024-10-03 23:59:12,269 [INFO] received message b'{"uuid": "f275a795-8af7-491b-9645-3ce2e14fe3cd", "lat": 18.575429951519293, "lon": -101.86020792493713, "h3_id": "8649a36a7ffffff", "utc_iso": "2024-10-03T23:59:12.266163+00:00", "mpsas": 12.751961708068848}'
+producer-1   | 
+producer-1   | 2024-10-03 23:59:12,267 [INFO] 260 distinct cells have had observations published
+consumer-1   | 2024-10-03 23:59:12,276 [INFO] saved BrightnessObservation(#8649a36a7ffffff,12.751961708068848,2024-10-03T23:59:12.266163+00:00)
 ```
 
-This output indicates that the producer service is sucessfully
-getting sky brightness predictions for H3 cells and that the consumer
-service is storing them in the postgres table `brightnessobservation`.
+This output indicates that the producer service is successfully getting
+sky brightness predictions for H3 cells and that the consumer service
+is storing them in the postgres table `brightnessobservation`.
 
 
 ## licensing

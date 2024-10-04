@@ -10,4 +10,4 @@ class BrightnessObservation(models.Model):
     mpsas = fields.FloatField()
 
     def __str__(self):
-        return f"H3Index({self.h3_id}):{self.mpsas}@{self.utc_iso}"
+        return f"{self.__class__.__name__}(#{self.h3_id},{self.mpsas},{self.utc_iso})"

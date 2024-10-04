@@ -7,7 +7,7 @@ PG_HOST = os.getenv("PG_HOST", "postgres")
 PG_PORT = int(os.getenv("PG_PORT", 5432))
 pg_dsn = f"postgres://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DATABASE}"
 
-AMQP_USER = os.getenv("AMQP_USER", "guest")
-AMQP_PASSWORD = os.getenv("AMQP_PASSWORD", "guest")
-AMQP_HOST = os.getenv("AMQP_HOST", "localhost")
-AMQP_PREDICTION_QUEUE = os.getenv("AMQP_PREDICTION_QUEUE", "prediction")
+rabbitmq_user = os.getenv("AMQP_USER", "guest")
+rabbitmq_password = os.getenv("AMQP_PASSWORD", "guest")
+rabbitmq_host = os.getenv("AMQP_HOST", "localhost")
+prediction_queue_name = os.getenv("AMQP_PREDICTION_QUEUE", "prediction")

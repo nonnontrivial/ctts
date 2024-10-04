@@ -17,9 +17,8 @@ class H3ContinentManager:
     def get_cell_covering(self) -> typing.Set:
         return h3.polyfill_geojson(self.polygon, res=self.resolution)
 
-    @staticmethod
-    def get_cell_id(lat, lon) -> str:
-        return h3.geo_to_h3(lat, lon, resolution=0)
+    def get_cell_id(self, lat, lon) -> str:
+        return h3.geo_to_h3(lat, lon, resolution=self.resolution)
 
     def _ingest_polygon(self) -> typing.Dict:
         geojson_file_path = Path(__file__).parent / f"{self.continent}.geojson"

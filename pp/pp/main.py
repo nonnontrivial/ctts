@@ -42,18 +42,19 @@ def run_observation_requests(h3_cells: typing.Set, pika_channel: BlockingChannel
 
             try:
                 response = stub.GetBrightnessObservation(request)
-                log.debug(f"brightness observation response is {response}")
             except grpc.RpcError as e:
                 log.error(f"rpc error on brightness requests {e}")
             else:
+                log.info(f"brightness observation response for {cell} is {response}")
                 brightness_observation = BrightnessObservation(
                     uuid=response.uuid,
                     lat=lat,
                     lon=lon,
-                    h3_id=H3ContinentManager.get_cell_id(lat, lon),
+                    h3_id=continent_manager.get_cell_id(lat, lon),
                     utc_iso=response.utc_iso,
                     mpsas=response.mpsas,
                 )
+                log.debug(f"publishing to {queue_name}")
                 pika_channel.basic_publish(exchange="", routing_key=queue_name,
                                            body=json.dumps(brightness_observation.model_dump()))
                 log.info(f"{len(cell_counts)} distinct cells have had observations published")

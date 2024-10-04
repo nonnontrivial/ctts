@@ -3,6 +3,7 @@ import logging
 import asyncio
 
 import aio_pika
+from aio_pika.abc import AbstractIncomingMessage
 
 from pc.config import *
 from pc.persistence.models import BrightnessObservation
@@ -11,10 +12,9 @@ log = logging.getLogger(__name__)
 
 
 async def consume_brightness_observations():
-    """begin consuming messages from the queue"""
+    """consume messages from the prediction queue"""
     try:
-        protocol = "amqp"
-        amqp_connection = await aio_pika.connect_robust(f"{protocol}://{AMQP_USER}:{AMQP_PASSWORD}@{AMQP_HOST}")
+        connection = await aio_pika.connect_robust(f"amqp://{rabbitmq_user}:{rabbitmq_password}@{rabbitmq_host}")
     except Exception as e:
         import sys
 
@@ -22,22 +22,23 @@ async def consume_brightness_observations():
         log.warning("exiting")
         sys.exit(1)
     else:
-        async with amqp_connection:
-            channel = await amqp_connection.channel()
-            queue = await channel.declare_queue(AMQP_PREDICTION_QUEUE)
-            await queue.consume(save_brightness_observation)
+        async with connection:
+            channel = await connection.channel()
+            queue = await channel.declare_queue(prediction_queue_name)
+            await queue.consume(save_brightness_observation, no_ack=True)
             await asyncio.Future()
 
 
-async def save_brightness_observation(message: aio_pika.IncomingMessage):
+async def save_brightness_observation(message: AbstractIncomingMessage):
     """store brightness message in `brightnessobservation` table"""
-    async with message.process():
-        brightness_observation_json = json.loads(message.body.decode())
-        brightness_observation = BrightnessObservation(**brightness_observation_json)
+    log.info(f"received message {message.body}")
 
-        try:
-            await brightness_observation.save()
-        except Exception as e:
-            log.error(f"could not save brightness observation {e}")
-        else:
-            log.info(f"saved brightness observation {brightness_observation}")
+    brightness_observation_json = json.loads(message.body.decode())
+    brightness_observation = BrightnessObservation(**brightness_observation_json)
+
+    try:
+        await brightness_observation.save()
+    except Exception as e:
+        log.error(f"could not save brightness observation {e}")
+    else:
+        log.info(f"saved {brightness_observation}")
