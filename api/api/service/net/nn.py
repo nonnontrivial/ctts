@@ -1,10 +1,11 @@
 import torch.nn as nn
 
-from ..constants import (
-    num_features,
-    HIDDEN_SIZE,
-    OUTPUT_SIZE,
-)
+from .. import config
+
+num_features = len(config["model"]["features"])
+
+HIDDEN_SIZE = 64 * 3
+OUTPUT_SIZE = 1
 
 
 class NN(nn.Module):

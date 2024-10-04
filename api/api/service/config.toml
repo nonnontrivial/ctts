@@ -1,5 +1,14 @@
 [model]
 state_dict_filename = "model.pth"
+features = [
+    "Latitude",
+    "Longitude",
+    "Elevation",
+    "CloudCover",
+    "UTTimeHour",
+    "MoonAlt",
+    "MoonAz",
+]
 
 [meteo]
 host = "openmeteo"

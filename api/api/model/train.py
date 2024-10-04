@@ -1,4 +1,3 @@
-import tomllib
 from pathlib import Path
 
 import numpy as np
@@ -7,14 +6,13 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-from api.service.constants import features
+import api.service
 from api.service.net.nn import NN
-
-with open(Path(__file__).parent / "config.toml", "rb") as f:
-    config = tomllib.load(f)
+from . import config
 
 csv_filename = config["csv"]["filename"]
 epochs = config["train"]["epochs"]
+features = api.service.config["model"]["features"]
 
 path_to_prediction_pkg = Path(__file__).parent.parent / "service"
 saved_model_path = path_to_prediction_pkg / "model.pth"
@@ -28,6 +26,7 @@ df = pd.read_csv(path_to_gan_dataframe)
 print(f"consumed csv with {len(df)} rows")
 
 torch.set_printoptions(sci_mode=False)
+
 feature_tensor = torch.tensor(df[features].values.astype(np.float32))
 feature_tensor = torch.nan_to_num(feature_tensor, nan=0.0)
 target_tensor = torch.tensor(df["SQMReading"].values.astype(np.float32)).to(

@@ -1,6 +1,5 @@
 import typing
 from pathlib import Path
-import tomllib
 
 import astropy.units as u
 import numpy as np
@@ -8,6 +7,8 @@ import pandas as pd
 from astroplan import Observer
 from astropy.coordinates import EarthLocation
 from astropy.time import Time
+
+from . import config
 
 
 def get_moon_altaz(datetime, lat, lon):
@@ -90,9 +91,6 @@ def write_dataframe(csv_source_paths: typing.Generator[Path, None, None], write_
 
 
 if __name__ == "__main__":
-    with open(Path(__file__).parent / "config.toml", "rb") as f:
-        config = tomllib.load(f)
-
     max_sqm = config["sqm"]["max"]
     min_sqm = config["sqm"]["min"]
     csv_filename = config["csv"]["filename"]
