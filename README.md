@@ -20,7 +20,7 @@ to discretize the surface of the earth into cells, which form the basis
 of the requests made to the api server serving up the sky brightness.
 This component then pushes brightness values from the api server onto
 rabbitmq, while another component consumes them from that queue -
-inserting records in postgres to enable historical lookup.
+inserting records into postgres to enable historical lookup.
 
 ## running with docker
 
@@ -32,6 +32,10 @@ storing those messages in the `brightnessobservation` table.
 
 > note: at present only cells in north america are generated.
 
+- clone the repo
+- `cd` into it
+- run the following:
+
 ```shell
 # create the volume for weather data
 docker volume create --name open-meteo-data
@@ -39,7 +43,7 @@ docker volume create --name open-meteo-data
 # get latest data into the above volume
 ./update-open-meteo.sh
 
-# run the containers (build flag only necessary for first run)
+# run the containers (`build` flag only necessary for first run)
 docker compose up --build
 ```
 
