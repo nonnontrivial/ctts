@@ -38,7 +38,6 @@ class Consumer:
     async def _ingest_message(self, message: AbstractIncomingMessage):
         """store and disseminate brightness message"""
         log.info(f"received message {message.body}")
-        print('ingesting')
 
         try:
             brightness_observation_json = json.loads(message.body.decode())
