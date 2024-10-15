@@ -43,4 +43,4 @@ class WebsocketHandler:
             self._clients.remove(websocket)
 
 
-ws_handler = WebsocketHandler(host=ws_host, port=ws_port)
+websocket_handler = WebsocketHandler(host=ws_host, port=ws_port)
