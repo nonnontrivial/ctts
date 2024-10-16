@@ -2,13 +2,22 @@ syntax = "proto3";
 
 package brightness;
 
+// handles sky brightness prediction and pollution requests
 service BrightnessService {
-  rpc GetBrightnessObservation (BrightnessRequest) returns (BrightnessObservation) {}
+  rpc GetBrightnessObservation (Coordinates) returns (BrightnessObservation) {}
+  rpc GetPollution (Coordinates) returns (Pollution) {}
 }
 
-message BrightnessRequest {
+message Coordinates {
   double lat = 1;
   double lon = 2;
+}
+
+message Pollution {
+  uint32 r = 1;
+  uint32 g = 2;
+  uint32 b = 3;
+  uint32 a = 4;
 }
 
 message BrightnessObservation {
@@ -18,4 +27,3 @@ message BrightnessObservation {
   string utc_iso = 4;
   float mpsas = 5;
 }
-

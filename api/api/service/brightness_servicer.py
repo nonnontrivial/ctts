@@ -7,9 +7,9 @@ import astropy.units as u
 import torch
 from astropy.coordinates import EarthLocation
 
-from api.stubs import brightness_service_pb2, brightness_service_pb2_grpc
-from .meteo.open_meteo_client import OpenMeteoClient
-from .net.nn import NN
+from ..stubs import brightness_service_pb2, brightness_service_pb2_grpc
+from .open_meteo.open_meteo_client import OpenMeteoClient
+from .neural_net.nn import NN
 from .observer_site import ObserverSite
 from . import config
 
@@ -17,8 +17,10 @@ path_to_state_dict = Path(__file__).parent / config["model"]["state_dict_filenam
 
 
 class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
+    def GetPollution(self, request, context):
+        pass
+
     def GetBrightnessObservation(self, request, context):
-        """get sky brightness prediction at utcnow for given lat and lon"""
         lat, lon = request.lat, request.lon
 
         location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)

@@ -26,7 +26,8 @@ if _version_not_supported:
 
 
 class BrightnessServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """handles sky brightness prediction and pollution requests
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -36,15 +37,27 @@ class BrightnessServiceStub(object):
         """
         self.GetBrightnessObservation = channel.unary_unary(
                 '/brightness.BrightnessService/GetBrightnessObservation',
-                request_serializer=brightness__service__pb2.BrightnessRequest.SerializeToString,
+                request_serializer=brightness__service__pb2.Coordinates.SerializeToString,
                 response_deserializer=brightness__service__pb2.BrightnessObservation.FromString,
+                _registered_method=True)
+        self.GetPollution = channel.unary_unary(
+                '/brightness.BrightnessService/GetPollution',
+                request_serializer=brightness__service__pb2.Coordinates.SerializeToString,
+                response_deserializer=brightness__service__pb2.Pollution.FromString,
                 _registered_method=True)
 
 
 class BrightnessServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """handles sky brightness prediction and pollution requests
+    """
 
     def GetBrightnessObservation(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPollution(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -55,8 +68,13 @@ def add_BrightnessServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetBrightnessObservation': grpc.unary_unary_rpc_method_handler(
                     servicer.GetBrightnessObservation,
-                    request_deserializer=brightness__service__pb2.BrightnessRequest.FromString,
+                    request_deserializer=brightness__service__pb2.Coordinates.FromString,
                     response_serializer=brightness__service__pb2.BrightnessObservation.SerializeToString,
+            ),
+            'GetPollution': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPollution,
+                    request_deserializer=brightness__service__pb2.Coordinates.FromString,
+                    response_serializer=brightness__service__pb2.Pollution.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -67,7 +85,8 @@ def add_BrightnessServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class BrightnessService(object):
-    """Missing associated documentation comment in .proto file."""
+    """handles sky brightness prediction and pollution requests
+    """
 
     @staticmethod
     def GetBrightnessObservation(request,
@@ -84,8 +103,35 @@ class BrightnessService(object):
             request,
             target,
             '/brightness.BrightnessService/GetBrightnessObservation',
-            brightness__service__pb2.BrightnessRequest.SerializeToString,
+            brightness__service__pb2.Coordinates.SerializeToString,
             brightness__service__pb2.BrightnessObservation.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetPollution(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/brightness.BrightnessService/GetPollution',
+            brightness__service__pb2.Coordinates.SerializeToString,
+            brightness__service__pb2.Pollution.FromString,
             options,
             channel_credentials,
             insecure,

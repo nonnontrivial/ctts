@@ -1,33 +1,24 @@
-from dataclasses import dataclass
+import typing
 from pathlib import Path
 
 from PIL import Image
 
-
-@dataclass
-class Coords:
-    lat: float
-    lon: float
+from . import config
+from .models import Coords, Pixel
 
 
-@dataclass
-class Pixel:
-    x: int
-    y: int
+default_path_to_map_image = Path(__file__).parent.parent.parent / "data" / "map" / config["image"]["filename"]
 
 
-image_mode = "RGBA"
-
-path_to_data_dir = Path(__file__).parent.parent / "data"
-default_path_to_map_image = path_to_data_dir / "map" / "world2022.png"
-
-
-class ArtificialNightSkyBrightnessMapImage:
+class PollutionImage:
     def __init__(self, path_to_map_image: Path = default_path_to_map_image) -> None:
+
         if not path_to_map_image.exists():
             raise FileNotFoundError(f"{path_to_map_image} does not exist")
 
+        image_mode = config["image"]["mode"]
         self.image = Image.open(path_to_map_image).convert(image_mode)
+
         # see domain column in table at https://djlorenz.github.io/astronomy/lp2022/
         self.max_lat_n = 75
         self.max_lat_s = 65
@@ -40,7 +31,7 @@ class ArtificialNightSkyBrightnessMapImage:
     def max_lon_degs(self):
         return 180 * 2
 
-    def get_pixel_in_image_from_coords(self, coords: Coords) -> Pixel:
+    def _get_pixel_from_coords(self, coords: Coords) -> Pixel:
         # see https://gis.stackexchange.com/a/372118
         width_scale = self.image.width / self.max_lon_degs
         height_scale = self.image.height / self.max_lat_degs
@@ -48,14 +39,16 @@ class ArtificialNightSkyBrightnessMapImage:
         y = int((self.max_lat_n - coords.lat) * height_scale)
         return Pixel(x, y)
 
-    def get_pixel_value(self, pixel: Pixel) -> tuple[int, int, int, int]:
+    def _get_pixel_value(self, pixel: Pixel) -> typing.Tuple[int, int, int, int]:
         try:
-            return self.image.getpixel((pixel.x, pixel.y))
+            x, y = (pixel.x, pixel.y)
+            return self.image.getpixel((x,y)) # type: ignore
         except IndexError:
             return 0, 0, 0, 255
 
-    def get_pixel_value_at_coords(self, coords: Coords) -> tuple[int, int, int, int]:
+    def get_pixel_value_at_coords(self, coords: Coords):
+        """determine what is the RGBA value in the image at coords"""
         # see https://djlorenz.github.io/astronomy/lp2022/colors.html
-        pixel = self.get_pixel_in_image_from_coords(coords)
-        pixel_value = self.get_pixel_value(pixel)
+        pixel = self._get_pixel_from_coords(coords)
+        pixel_value = self._get_pixel_value(pixel)
         return pixel_value

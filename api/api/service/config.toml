@@ -11,6 +11,8 @@ features = [
 ]
 
 [meteo]
+protocol = "http"
 host = "openmeteo"
 port = 8080
 model = "ecmwf_ifs04"
+max_oktas = 8

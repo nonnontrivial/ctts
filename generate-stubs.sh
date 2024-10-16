@@ -13,5 +13,11 @@ generate_stubs() {
 generate_stubs "./pp/pp/stubs"
 generate_stubs "./api/api/stubs"
 
-echo "done"
+old="import brightness_service_pb2 as brightness__service__pb2"
+new="from . import brightness_service_pb2 as brightness__service__pb2"
+
+sed -i '' -e "s/$old/$new/" ./pp/pp/stubs/brightness_service_pb2_grpc.py
+sed -i '' -e "s/$old/$new/" ./api/api/stubs/brightness_service_pb2_grpc.py
+
+echo "generated stubs"
 

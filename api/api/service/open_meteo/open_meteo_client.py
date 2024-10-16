@@ -6,15 +6,16 @@ from .. import config
 
 from ..observer_site import ObserverSite
 from ..utils import get_astro_time_hour
-from .constants import MAX_OKTAS, PROTOCOL
 
 
 class OpenMeteoClient:
     def __init__(self, site: ObserverSite) -> None:
         self.site = site
+
+        protocol=config["meteo"]["protocol"]
         host = config["meteo"]["host"]
         port = config["meteo"]["port"]
-        self.url_base = f"{PROTOCOL}://{host}:{port}"
+        self.url_base = f"{protocol}://{host}:{port}"
 
     def get_hourly_values_at_site(self) -> t.Tuple[int, float]:
         """ask open meteo for cloud cover and elevation for the observer site"""
@@ -51,5 +52,6 @@ class OpenMeteoClient:
         if cloud_cover_percentage is None or math.isnan(cloud_cover_percentage):
             raise ValueError("cloud cover percentage is not a number. is open meteo volume up to date?")
 
-        percentage_as_oktas = int(np.interp(cloud_cover_percentage, (0, 100), (0, MAX_OKTAS)))
+        max_oktas = config["meteo"]["max_oktas"]
+        percentage_as_oktas = int(np.interp(cloud_cover_percentage, (0, 100), (0, max_oktas)))
         return percentage_as_oktas

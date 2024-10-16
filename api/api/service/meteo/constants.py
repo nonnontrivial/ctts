@@ -1,2 +1,0 @@
-PROTOCOL = "http"
-MAX_OKTAS = 8
