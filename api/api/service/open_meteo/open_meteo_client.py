@@ -7,6 +7,7 @@ from .. import config
 from ..observer_site import ObserverSite
 from ..utils import get_astro_time_hour
 
+model = config["meteo"]["model"]
 
 class OpenMeteoClient:
     def __init__(self, site: ObserverSite) -> None:
@@ -17,21 +18,20 @@ class OpenMeteoClient:
         port = config["meteo"]["port"]
         self.url_base = f"{protocol}://{host}:{port}"
 
-    def get_hourly_values_at_site(self) -> t.Tuple[int, float]:
-        """ask open meteo for cloud cover and elevation for the observer site"""
+    def get_forecast(self) -> t.Tuple[int, float]:
         lat, lon = self.site.latitude.value, self.site.longitude.value
-        model = config["meteo"]["model"]
+
+        hourly_params = {"temperature_2m", "cloud_cover"}
         params = {
             "latitude": lat,
             "longitude": lon,
             "models": model,
-            "hourly": "temperature_2m,cloud_cover"
+            "hourly": ",".join(hourly_params)
         }
         r = requests.get(f"{self.url_base}/v1/forecast", params=params)
         r.raise_for_status()
 
         res_json = r.json()
-
         elevation = float(res_json.get("elevation", 0.))
 
         idx = self.get_hourly_index_of_site_time()

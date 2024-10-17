@@ -28,13 +28,9 @@ def mock_grpc_client(mocker):
 @pytest.fixture
 def mock_pika_channel(mocker):
     channel_mock = MagicMock()
-    # create a mock connection that returns the mock channel
     connection_mock = MagicMock()
     connection_mock.channel.return_value = channel_mock
-
-    # patch the BlockingConnection to return the mock connection
     mocker.patch("pika.BlockingConnection", return_value=connection_mock)
-
     return channel_mock
 
 

@@ -31,11 +31,10 @@ class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
 
         location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
         site = ObserverSite(location=location)
-        meteo_client = OpenMeteoClient(site=site)
 
         try:
-            cloud_cover, elevation = meteo_client.get_hourly_values_at_site()
-            logging.debug(f"meteo_client response at {lat},{lon} is {cloud_cover}o, {elevation}m")
+            meteo_client = OpenMeteoClient(site=site)
+            cloud_cover, elevation = meteo_client.get_forecast()
         except Exception as e:
             import traceback
 
@@ -59,10 +58,11 @@ class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
                 ],
                 dtype=torch.float32,
             ).unsqueeze(0)
-            logging.debug(f"vector for site is {x}")
+
 
             with torch.no_grad():
                 predicted_y = model(x)
+                logging.debug(f"predicted {x} to be {predicted_y}")
 
             time_utc = datetime.now(timezone.utc)
             observation = brightness_service_pb2.BrightnessObservation(
