@@ -13,19 +13,32 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.12]
+        package-dir: 
+          - api
+          - pp
+
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python 3.12
+
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-verion }}
+
       - name: Install dependencies
         run: |
+          cd ${{ matrix.package-dir }}
           python -m pip install --upgrade pip
-          pip install -r ./pp/requirements.txt && pip install -r ./pp/requirements-test.txt
-          pip install -r ./api/requirements.txt && pip install -r ./api/requirements-test.txt
+          pip install -r requirements.txt && pip install -r requirements-test.txt
+
       - name: Test with pytest
         run: |
+          cd ${{ matrix.package-dir }}
           python -m pytest
+
