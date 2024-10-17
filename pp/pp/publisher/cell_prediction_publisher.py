@@ -29,7 +29,7 @@ class CellPredictionPublisher:
 
     def publish_prediction_at_cell(self, cell):
         lat, lon = h3_to_geo(cell)
-        request = brightness_service_pb2.BrightnessRequest(lat=lat, lon=lon)
+        request = brightness_service_pb2.Coordinates(lat=lat, lon=lon)
         try:
             response = self._stub.GetBrightnessObservation(request)
         except grpc.RpcError as e:

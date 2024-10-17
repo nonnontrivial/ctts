@@ -46,9 +46,10 @@ class PollutionImage:
         except IndexError:
             return 0, 0, 0, 255
 
-    def get_pixel_value_at_coords(self, coords: Coords):
+    def get_rgba_at_coords(self, lat:float, lon:float) -> typing.Tuple[int,int,int,int]:
         """determine what is the RGBA value in the image at coords"""
         # see https://djlorenz.github.io/astronomy/lp2022/colors.html
+        coords = Coords(lat=lat,lon=lon)
         pixel = self._get_pixel_from_coords(coords)
         pixel_value = self._get_pixel_value(pixel)
         return pixel_value
