@@ -4,7 +4,7 @@
 
 Pulls brightness observation messages off of the prediction queue and:
 
-- inserts to postgres
+- inserts to postgres (`brightnessobservation` table)
 - broadcasts over websockets connection
 
 ```shell
