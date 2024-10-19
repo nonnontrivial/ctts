@@ -1,14 +1,17 @@
 # CTTS
 
-> **c**loser **t**o **t**he **s**tars
+> closer to the stars
 
-CTTS is *a way of predicting the [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) across the earth, and how it changes over time*..
+CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) all over the
+earth, without a sensor.
 
 ## features
 
 * gRPC api for sky brightness "readings" (at the current time across H3 cells at resolution 6 in north america)
 
 * gRPC api for light pollution values (in RGBA, from a 2022 map)
+
+* publisher component that repeatedly generates & stores readings for coordinates of H3 cells
 
 ## about
 
@@ -42,10 +45,8 @@ docker volume create --name open-meteo-data
 docker compose up --build
 ```
 
-Rabbitmq will take time to start up, at which time `producer` and
-`consumer` containers will attempt restart until the channel becomes available.
-
-Once rabbitmq does start, there should be output like this:
+> Rabbitmq will take time to start up, at which time `producer` and `consumer` containers will attempt restart until the channel becomes available.
+> Once rabbitmq does start, there should be output like this:
 
 ```log
 producer-1   | 2024-10-03 23:59:12,266 [INFO] brightness observation response for 8649a36a7ffffff is uuid: "f275a795-8af7-491b-9645-3ce2e14fe3cd"
@@ -59,9 +60,11 @@ producer-1   | 2024-10-03 23:59:12,267 [INFO] 260 distinct cells have had observ
 consumer-1   | 2024-10-03 23:59:12,276 [INFO] saved BrightnessObservation(#8649a36a7ffffff,12.751961708068848,2024-10-03T23:59:12.266163+00:00)
 ```
 
-This output indicates that the producer service is successfully getting
-sky brightness predictions for H3 cells and that the consumer service
-is storing them in the postgres table `brightnessobservation`.
+This output indicates that the producer service is successfully getting sky brightness predictions
+for H3 cells and that the consumer service is storing them in the postgres table `brightnessobservation`.
+
+`mpsas` in the response stands for 'magnitudes per square arcsecond', and it is the predicted brightness
+value for that location.
 
 ## documentation
 
