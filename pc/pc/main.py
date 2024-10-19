@@ -6,6 +6,7 @@ from pc.consumer.consumer import Consumer
 from pc.consumer.websocket_handler import websocket_handler
 from pc.config import amqp_url, prediction_queue
 
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 

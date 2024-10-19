@@ -1,26 +1,29 @@
-# ctts
+# CTTS
 
-This project was inspired by wanting **a way of seeing what the
-[sky brightness](https://en.wikipedia.org/wiki/Sky_brightness)
-is over the entire earth surface, and how it changes over time**..
+> *c*loser *t*o *t*he *s*tars
 
-Given that it would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
-everywhere that we want a brightness measurement, it would make
-sense to have a way of performing this measurement indirectly.
+CTTS is **a way of predicting the [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) across the earth, and how it changes over time**..
 
----
+## features
 
-The approach this project takes is to model the relationship
-between a set of independent variables and the dependent variable
-(sky brightness) available in a [public dataset](https://globeatnight.org/maps-data/) using
-pytorch.
+* gRPC api for sky brightness "readings" (at the current time across H3 cells at resolution 6 in north america)
 
-Another component uses [H3](https://uber.github.io/h3-py/intro.html)
-to discretize the surface of the earth into cells, which form the basis
-of the requests made to the api server serving up the sky brightness.
-This component then pushes brightness values from the api server onto
-rabbitmq, while another component consumes them from that queue -
-inserting records into postgres to enable historical lookup.
+* gRPC api for light pollution values (in RGBA, from a 2022 map)
+
+## about
+
+This project is motivated by the desire for synoptic knowledge of "where are the stars good".
+
+It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
+everywhere that a brightness measurement is desired, so it would make sense to have a way of
+doing inference of this value.
+
+
+The approach this project takes is to use pytorch to capture the relationships in the [Globe At Night
+dataset](https://globeatnight.org/maps-data/) and use that to predict sky brightness for H3
+cells at resoultion 6. 
+
+> note: currently limited to north america
 
 ## running with docker
 
@@ -69,6 +72,9 @@ This output indicates that the producer service is successfully getting
 sky brightness predictions for H3 cells and that the consumer service
 is storing them in the postgres table `brightnessobservation`.
 
+## documentation
+
+See [`.md` files](./api/README.md) in component directories.
 
 ## licensing
 

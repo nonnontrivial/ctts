@@ -6,11 +6,12 @@ from pathlib import Path
 import astropy.units as u
 import torch
 from astropy.coordinates import EarthLocation
+from astropy.time import Time
 
 from ..stubs import brightness_service_pb2, brightness_service_pb2_grpc
 from .open_meteo.open_meteo_client import OpenMeteoClient
 from .neural_net.nn import NN
-from .observer_site import ObserverSite
+from .observer_site import ObservationSite
 from .pollution.pollution_image import PollutionImage
 from . import config
 
@@ -29,8 +30,10 @@ class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
     def GetBrightnessObservation(self, request, context):
         lat, lon = request.lat, request.lon
 
+        now = Time.now()
+
         location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
-        site = ObserverSite(location=location)
+        site = ObservationSite(utc_time=now, location=location)
 
         try:
             meteo_client = OpenMeteoClient(site=site)
@@ -39,7 +42,7 @@ class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
             import traceback
 
             logging.error(traceback.format_exc())
-            raise ValueError(f"could not get meteo data {e}")
+            raise ValueError(f"could not get open meteo data {e}")
         else:
             model = NN()
             model.load_state_dict(torch.load(path_to_state_dict))
@@ -58,7 +61,6 @@ class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
                 ],
                 dtype=torch.float32,
             ).unsqueeze(0)
-
 
             with torch.no_grad():
                 predicted_y = model(x)

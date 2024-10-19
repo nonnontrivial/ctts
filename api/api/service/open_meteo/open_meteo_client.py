@@ -4,13 +4,13 @@ import requests
 
 from .. import config
 
-from ..observer_site import ObserverSite
+from ..observer_site import ObservationSite
 from ..utils import get_astro_time_hour
 
 model = config["meteo"]["model"]
 
 class OpenMeteoClient:
-    def __init__(self, site: ObserverSite) -> None:
+    def __init__(self, site: ObservationSite) -> None:
         self.site = site
 
         protocol=config["meteo"]["protocol"]

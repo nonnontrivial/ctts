@@ -46,7 +46,6 @@ class CellPredictionPublisher:
             )
             self._channel.basic_publish(exchange="", routing_key=self._queue_name,
                                         body=json.dumps(brightness_observation.model_dump()))
-            log.info(f"{len(CellPredictionPublisher.cell_counts)} distinct cells have had observations published")
 
     def publish(self):
         """get brightness observations for a set of cells, forwarding responses to rabbitmq"""
@@ -55,3 +54,4 @@ class CellPredictionPublisher:
             for cell in cells:
                 CellPredictionPublisher.cell_counts[cell] += 1
                 self.publish_prediction_at_cell(cell)
+                log.debug(f"{len(CellPredictionPublisher.cell_counts)} distinct cells have had observations published")
