@@ -1,7 +1,5 @@
 # api
 
-gRPC apis for [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness).
-
 ## gRPC client example
 
 - install dependencies `pip install grpcio-tools grpcio protobuf`

@@ -1,8 +1,8 @@
 # CTTS
 
-> *c*loser *t*o *t*he *s*tars
+> **c**loser **t**o **t**he **s**tars
 
-CTTS is **a way of predicting the [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) across the earth, and how it changes over time**..
+CTTS is *a way of predicting the [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) across the earth, and how it changes over time*..
 
 ## features
 
@@ -27,16 +27,8 @@ cells at resoultion 6.
 
 ## running with docker
 
-This will spin up the process of the prediction producer container
-repeatedly asking the api container for sky brightness predictions
-_for the current time_ across all [resolution 6 H3 cells](https://h3geo.org/docs/core-library/restable/);
-publishing those predictions to rabbitmq, which the consumer container reads from,
-storing those messages in the `brightnessobservation` table.
-
-> note: at present only cells in north america are generated.
-
-- clone the repo
-- `cd` into it
+- `git clone`
+- `cd` into the repo
 - run the following:
 
 ```shell
@@ -51,8 +43,7 @@ docker compose up --build
 ```
 
 Rabbitmq will take time to start up, at which time `producer` and
-`consumer` containers will attempt restart to form their connections
-to the queue.
+`consumer` containers will attempt restart until the channel becomes available.
 
 Once rabbitmq does start, there should be output like this:
 
@@ -74,7 +65,7 @@ is storing them in the postgres table `brightnessobservation`.
 
 ## documentation
 
-See [`.md` files](./api/README.md) in component directories.
+- [api client usage](./api/README.md)
 
 ## licensing
 
