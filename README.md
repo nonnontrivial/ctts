@@ -1,6 +1,6 @@
 # CTTS
 
-> notice: this is alpha software; apis may change quickly, and quality of the brightness prediction is still being ironed out
+> note: this is alpha software; apis may change quickly, and quality of the brightness prediction is still being ironed out
 
 CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) all over the
 earth, without a sensor.
@@ -12,6 +12,14 @@ earth, without a sensor.
 * gRPC api for light pollution values (in RGBA, from a 2022 map)
 
 * publisher component that repeatedly generates & stores readings for coordinates of H3 cells
+
+## todos
+
+- [ ] support for continents other than north america
+- [ ] less noisy container startup
+- [ ] live updates to open meteo data while app is running
+- [ ] REST apis in addition to the gRPC ones
+- [ ] better storage of predictions in order to faciliate grouping/sorting
 
 ## about
 
@@ -65,14 +73,6 @@ for H3 cells and that the consumer service is storing them in the postgres table
 
 `mpsas` in the response stands for 'magnitudes per square arcsecond', and it is the predicted brightness
 value for that location.
-
-## todos
-
-- [ ] support for continents other than north america
-- [ ] less noisy container startup
-- [ ] live updates to open meteo data while app is running
-- [ ] REST apis in addition to the gRPC ones
-- [ ] better storage of predictions in order to faciliate grouping/sorting
 
 ## documentation
 
