@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class BrightnessObservation(BaseModel):
@@ -8,3 +9,8 @@ class BrightnessObservation(BaseModel):
     h3_id: str
     utc_iso: str
     mpsas: float
+
+class CellCycle(BaseModel):
+    start: datetime
+    end: datetime
+    duration_s: int

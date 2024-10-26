@@ -46,9 +46,7 @@ services:
   producer:
     build: ./pp
     environment:
-      API_VERSION: "v1"
       API_HOST: "api"
-      MODEL_VERSION: "0.1.0"
       RABBITMQ_HOST: "rabbitmq"
     restart: on-failure
     depends_on:

@@ -9,7 +9,7 @@ from pc.consumer.consumer import Consumer
 def consumer():
     amqp_url="amqp://localhost"
     prediction_queue="prediction"
-    return Consumer(url=amqp_url, queue_name=prediction_queue)
+    return Consumer(url=amqp_url, prediction_queue=prediction_queue,cycle_queue="")
 
 @pytest.mark.skip
 @pytest.mark.asyncio

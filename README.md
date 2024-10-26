@@ -82,5 +82,3 @@ value for that location.
 
 This project is licensed under the AGPL-3.0 license.
 
-Note: The GeoJSON file located at `./pp/pp/cells/north-america.geojson` is licensed under the Apache License, Version 2.0, and retains its original copyright (Copyright 2018 Esri).
-

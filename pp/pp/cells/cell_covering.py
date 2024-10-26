@@ -5,28 +5,26 @@ from pathlib import Path
 import h3
 from shapely.geometry import shape, Polygon
 
-Continents = typing.Literal["north-america"]
+RESOULTION = 0
+
+def get_cell_id(lat, lon, resolution) -> str:
+    return h3.geo_to_h3(lat, lon, resolution=resolution)
 
 
-class H3ContinentManager:
-    def __init__(self, continent: Continents, resolution=6):
-        self.continent = continent
-        self.resolution = resolution
-
+class H3CellCovering:
+    """the cell covering that the publisher should publish over"""
+    def __init__(self):
+        self.resolution = RESOULTION
         self.polygon = self._ingest_polygon()
 
-    def get_cell_covering(self) -> typing.Set:
-        """get the set of cells inside the polygon"""
+    def __call__(self, *args, **kwargs) -> typing.Set:
         return h3.polyfill_geojson(self.polygon, res=self.resolution)
 
-    def get_cell_id(self, lat, lon) -> str:
-        """turn lat lat into an h3 cell id"""
-        return h3.geo_to_h3(lat, lon, resolution=self.resolution)
-
     def _ingest_polygon(self) -> typing.Dict:
-        geojson_file_path = Path(__file__).parent / f"{self.continent}.geojson"
-        with open(geojson_file_path, "r") as file:
+        path_to_geojson = Path(__file__).parent / f"map.geojson"
+        with open(path_to_geojson, "r") as file:
             geojson = json.load(file)
+
         geojson_polygon = geojson["features"][0]["geometry"]
         polygon = shape(geojson_polygon)
 

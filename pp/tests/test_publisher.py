@@ -4,7 +4,7 @@ import uuid
 import pytest
 
 from pp.publisher.cell_prediction_publisher import CellPredictionPublisher
-from pp.cells.continent_manager import H3ContinentManager
+from pp.cells.cell_covering import H3CellCovering
 
 
 @pytest.fixture
@@ -34,11 +34,20 @@ def mock_pika_channel(mocker):
     return channel_mock
 
 
-def test_publisher_publishes_on_channel(mock_grpc_client, mock_pika_channel):
-    continent_manager = H3ContinentManager(continent="north-america")
-    cell_publisher = CellPredictionPublisher(continent_manager=continent_manager, api_host="localhost",
+@pytest.fixture
+def publisher(mock_grpc_client, mock_pika_channel):
+    cell_covering = H3CellCovering()
+    return CellPredictionPublisher(cell_covering=cell_covering, api_host="localhost",
                                              api_port=50051,
-                                             channel=mock_pika_channel, queue_name="prediction")
+                                             channel=mock_pika_channel,
+                                             prediction_queue="prediction",
+                                             cycle_queue="cycle")
 
-    cell_publisher.publish_prediction_at_cell("89283082813ffff")
+def test_publisher_publishes_prediction_on_channel(publisher, mock_pika_channel):
+    cell = "89283082813ffff"
+    publisher.predict_cell_brightness(cell)
     mock_pika_channel.basic_publish.assert_called_once()
+
+@pytest.mark.skip
+def test_number_of_distinct_cells_published(publisher, mock_pika_channel):
+    pass
