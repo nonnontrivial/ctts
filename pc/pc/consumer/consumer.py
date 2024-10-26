@@ -19,11 +19,12 @@ class Consumer:
 
     async def start(self):
         try:
+            log.info(f"connecting to {self._amqp_url}")
             connection = await aio_pika.connect_robust(self._amqp_url)
         except Exception as e:
             import sys
 
-            log.error(f"could not form amqp connection because {e}; has rabbitmq started?")
+            log.error(f"could not form amqp connection because {e}; is rabbitmq running?")
             log.warning("exiting")
             sys.exit(1)
         else:
@@ -32,18 +33,19 @@ class Consumer:
                 await self.consume(channel) # type: ignore
 
     async def consume(self, channel: AbstractRobustChannel):
-        """consume from the queues we care about"""
+        log.info(f"consuming from {self._prediction_queue}")
         prediction_queue = await channel.declare_queue(self._prediction_queue)
-        cycle_queue = await channel.declare_queue(self._cycle_queue)
-
         await prediction_queue.consume(self._on_prediction_message, no_ack=True)
-        await cycle_queue.consume(self._on_cycle_message, no_ack=True)
+
+        # cycle_queue = await channel.declare_queue(self._cycle_queue)
+        # await cycle_queue.consume(self._on_cycle_message, no_ack=True)
 
         await asyncio.Future()
 
     async def _on_cycle_message(self, message: AbstractIncomingMessage):
-        """handle incoming message by retrieving max sqm reading from postgres within the range"""
-        pass
+        """handle incoming message by retrieving max reading from postgres within
+        the range in the mesage"""
+        log.debug(f"received message {message.body}")
 
     async def _on_prediction_message(self, message: AbstractIncomingMessage):
         """handle incoming message by storing in postgres"""

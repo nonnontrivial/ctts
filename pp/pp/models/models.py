@@ -11,6 +11,6 @@ class BrightnessObservation(BaseModel):
     mpsas: float
 
 class CellCycle(BaseModel):
-    start: datetime
-    end: datetime
+    start_time_utc: datetime
+    end_time_utc: datetime
     duration_s: int

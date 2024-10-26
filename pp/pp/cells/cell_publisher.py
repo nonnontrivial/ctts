@@ -1,14 +1,14 @@
 import logging
 import json
 import typing
-from datetime import datetime
+from datetime import datetime, timezone
 from collections import defaultdict
 
 import grpc
 from h3 import h3_to_geo
 from pika.adapters.blocking_connection import BlockingChannel
 
-from ..cells.cell_covering import H3CellCovering, get_cell_id
+from ..cells.cell_covering import CellCovering, get_cell_id
 from ..stubs.brightness_service_pb2_grpc import BrightnessServiceStub
 from ..stubs import brightness_service_pb2
 from ..models.models import BrightnessObservation, CellCycle
@@ -16,12 +16,13 @@ from ..models.models import BrightnessObservation, CellCycle
 log = logging.getLogger(__name__)
 
 
-class CellPredictionPublisher:
+class CellPublisher(CellCovering):
     cell_counts = defaultdict(int)
 
-    def __init__(self, cell_covering: H3CellCovering, api_host: str, api_port: int, channel: BlockingChannel,
+    def __init__(self, api_host: str, api_port: int, channel: BlockingChannel,
                  prediction_queue: str, cycle_queue: str):
-        self._cell_covering = cell_covering
+        super().__init__()
+
         self._prediction_queue = prediction_queue
         self._cycle_queue = cycle_queue
         self._channel = channel
@@ -32,6 +33,7 @@ class CellPredictionPublisher:
 
     def _publish(self, queue_name: str, message: typing.Dict[str, typing.Any]):
         """publish a message onto a queue"""
+        log.info(f"publishing {message} to {queue_name}")
         self._channel.basic_publish(exchange="", routing_key=queue_name, body=json.dumps(message))
 
     def predict_cell_brightness(self, cell) -> None:
@@ -44,7 +46,7 @@ class CellPredictionPublisher:
         except grpc.RpcError as e:
             log.error(f"rpc error on brightness requests {e}")
         else:
-            log.info(f"brightness observation response for {cell} is {response}")
+            log.debug(f"brightness observation response for {cell} is {response}")
             brightness_observation = BrightnessObservation(
                 uuid=response.uuid,
                 lat=lat,
@@ -56,14 +58,21 @@ class CellPredictionPublisher:
             self._publish(self._prediction_queue, brightness_observation.model_dump())
 
     def run(self):
+        cells = self.covering
+        if len(cells) == 0:
+            raise ValueError("cell covering is empty!")
+
+        log.info(f"publishing brightness for {len(cells)} cells(s)")
         while True:
-            start = datetime.now()
-            for cell in self._cell_covering():
-                CellPredictionPublisher.cell_counts[cell] += 1
-
+            start_time_utc = datetime.now(timezone.utc)
+            for cell in cells:
+                CellPublisher.cell_counts[cell] += 1
                 self.predict_cell_brightness(cell)
-                log.debug(f"{len(CellPredictionPublisher.cell_counts)} distinct cells have had observations published")
+                log.debug(f"{len(CellPublisher.cell_counts)} distinct cells have had observations published")
+            end_time_utc = datetime.now(timezone.utc)
 
-            end = datetime.now()
-            cell_cycle = CellCycle(start=start, end=end, duration_s=int((end - start).total_seconds()))
-            self._publish(self._cycle_queue, cell_cycle.model_dump())
+            cell_cycle = CellCycle(start_time_utc=start_time_utc, end_time_utc=end_time_utc, duration_s=int((end_time_utc - start_time_utc).total_seconds()))
+            cell_cycle = cell_cycle.model_dump()
+            cell_cycle["start_time_utc"] = cell_cycle["start_time_utc"].isoformat()
+            cell_cycle["end_time_utc"] = cell_cycle["end_time_utc"].isoformat()
+            self._publish(self._cycle_queue, cell_cycle)

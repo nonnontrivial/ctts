@@ -5,33 +5,32 @@ from pathlib import Path
 import h3
 from shapely.geometry import shape, Polygon
 
-RESOULTION = 0
+from ..config import resolution
 
 def get_cell_id(lat, lon, resolution) -> str:
     return h3.geo_to_h3(lat, lon, resolution=resolution)
 
 
-class H3CellCovering:
-    """the cell covering that the publisher should publish over"""
+class CellCovering:
     def __init__(self):
-        self.resolution = RESOULTION
-        self.polygon = self._ingest_polygon()
-
-    def __call__(self, *args, **kwargs) -> typing.Set:
-        return h3.polyfill_geojson(self.polygon, res=self.resolution)
-
-    def _ingest_polygon(self) -> typing.Dict:
-        path_to_geojson = Path(__file__).parent / f"map.geojson"
-        with open(path_to_geojson, "r") as file:
+        with open(Path(__file__).parent / "land.geojson", "r") as file:
             geojson = json.load(file)
 
-        geojson_polygon = geojson["features"][0]["geometry"]
-        polygon = shape(geojson_polygon)
+        self.polygons = [CellCovering.get_polygon_of_feature(f) for f in geojson["features"]]
 
+    @staticmethod
+    def get_polygon_of_feature(feature: typing.Dict) -> typing.Dict:
+        polygon=shape(feature["geometry"])
         if not isinstance(polygon, Polygon):
-            raise ValueError("could not parse geojson as polygon")
+            raise TypeError("geojson is not a Polygon")
 
         return {
             "type": "Polygon",
             "coordinates": [list(polygon.exterior.coords)]
         }
+
+    @property
+    def covering(self) -> typing.Set:
+        """the complete covering from all features in the collection"""
+        all_polygons=set().union(*[h3.polyfill_geojson(p, res=resolution) for p in self.polygons])
+        return all_polygons

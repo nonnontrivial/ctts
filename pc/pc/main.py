@@ -13,7 +13,10 @@ log = logging.getLogger(__name__)
 async def main():
     """run the primary coroutines together"""
     consumer = Consumer(url=amqp_url, prediction_queue=prediction_queue, cycle_queue=cycle_queue)
-    coroutines = [initialize_db(), consumer.start()]
+    coroutines = [
+        initialize_db(),
+        consumer.start()
+    ]
     await asyncio.gather(*coroutines)
 
 
