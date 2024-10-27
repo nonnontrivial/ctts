@@ -7,7 +7,7 @@ earth, without a sensor.
 
 ## features
 
-* gRPC api for sky brightness "readings" (at the current time across H3 cells at resolution 6 in north america)
+* gRPC api for predicting sky brightness
 
 * gRPC api for light pollution values (in RGBA, from a 2022 map)
 
