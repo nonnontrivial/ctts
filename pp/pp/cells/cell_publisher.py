@@ -52,10 +52,12 @@ class CellPublisher(CellCovering):
                 lat=lat,
                 lon=lon,
                 h3_id=get_cell_id(lat, lon, resolution=6),
-                utc_iso=response.utc_iso,
                 mpsas=response.mpsas,
+                timestamp_utc=response.utc_iso,
             )
-            self._publish(self._prediction_queue, brightness_observation.model_dump())
+            dumped = brightness_observation.model_dump()
+            dumped["timestamp_utc"] = brightness_observation.timestamp_utc.isoformat()
+            self._publish(self._prediction_queue, dumped)
 
     def run(self):
         cells = self.covering

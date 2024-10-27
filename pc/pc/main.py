@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from pc.persistence.db import initialize_db
+from pc.persistence.db import create_pool, create_brightness_table
 from pc.consumer.consumer import Consumer
 from pc.config import amqp_url, prediction_queue, cycle_queue
 
@@ -11,14 +11,22 @@ log = logging.getLogger(__name__)
 
 
 async def main():
-    """run the primary coroutines together"""
-    consumer = Consumer(url=amqp_url, prediction_queue=prediction_queue, cycle_queue=cycle_queue)
-    coroutines = [
-        initialize_db(),
-        consumer.start()
-    ]
-    await asyncio.gather(*coroutines)
+    pool = await create_pool()
+    if pool is None:
+        raise ValueError("connection pool is none")
+
+    await create_brightness_table(pool)
+    consumer = Consumer(
+        url=amqp_url,
+        prediction_queue=prediction_queue,
+        cycle_queue=cycle_queue,
+        connection_pool=pool
+    )
+    await consumer.start()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        log.error(f"failed to run: {e}")

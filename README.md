@@ -19,7 +19,7 @@ earth, without a sensor.
 - [x] less noisy container startup
 - [ ] live updates to open meteo data while app is running
 - [ ] REST apis in addition to the gRPC ones
-- [ ] better storage of predictions in order to faciliate grouping/sorting
+- [x] better storage of predictions in order to faciliate grouping/sorting
 
 ## about
 

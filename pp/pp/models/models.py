@@ -7,8 +7,8 @@ class BrightnessObservation(BaseModel):
     lat: float
     lon: float
     h3_id: str
-    utc_iso: str
     mpsas: float
+    timestamp_utc: datetime
 
 class CellCycle(BaseModel):
     start_time_utc: datetime
