@@ -19,9 +19,10 @@ jobs:
     strategy:
       matrix:
         python-version: [3.12]
-        package-dir: 
+        package-dir:
           - api
           - pp
+          - pc
 
     steps:
       - uses: actions/checkout@v4
@@ -41,4 +42,3 @@ jobs:
         run: |
           cd ${{ matrix.package-dir }}
           python -m pytest
-

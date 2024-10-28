@@ -13,14 +13,14 @@ log = logging.getLogger(__name__)
 async def main():
     pool = await create_pool()
     if pool is None:
-        raise ValueError("connection pool is none")
-
+        raise ValueError("no connection pool!")
     await create_brightness_table(pool)
     consumer = Consumer(
         url=amqp_url,
         prediction_queue=prediction_queue,
         cycle_queue=cycle_queue,
-        connection_pool=pool
+        connection_pool=pool,
+        on_cycle_completion=lambda brightness_observation: log.info(brightness_observation.model_dump())
     )
     await consumer.start()
 

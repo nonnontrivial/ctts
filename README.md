@@ -49,8 +49,17 @@ docker volume create --name open-meteo-data
 # get latest data into the above volume
 ./update-open-meteo.sh
 
-# run the containers (`build` flag only necessary for first run)
+# run the containers (optionally use `build` flag)
 docker compose up --build
+```
+
+After rabbitmq starts up, the producer and consumer containers will start up,
+at which point you should see output like this:
+
+```sh
+producer-1   | 2024-10-28 01:44:02,803 [INFO] publishing {'uuid': 'ef566c44-78db-45e3-8558-7c35ed1e5095', 'lat': 39.6421440381801, 'lon': 44.21375098521473, 'h3_id': '802dfffffffffff', 'mpsas': 12.076292037963867, 'timestamp_utc': '2024-10-28T01:44:02.802762+00:00'} to brightness.prediction
+producer-1   | 2024-10-28 01:44:02,804 [INFO] publishing {'start_time_utc': '2024-10-28T01:43:58.223292+00:00', 'end_time_utc': '2024-10-28T01:44:02.804525+00:00', 'duration_s': 4} to brightness.cycle
+consumer-1   | 2024-10-28 01:44:02,810 [INFO] {'uuid': '91b939ae-fe15-4e0c-abcb-3104a5ef0644', 'lat': 28.50830365117256, 'lon': 86.00509004642792, 'h3_id': '803dfffffffffff', 'mpsas': 20.70200538635254, 'timestamp_utc': datetime.datetime(2024, 10, 28, 1, 44, 2, 271912, tzinfo=datetime.timezone.utc)}
 ```
 
 
