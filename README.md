@@ -7,34 +7,34 @@ earth, without a sensor.
 
 ## features
 
-* gRPC api for sky brightness "readings" (at the current time across H3 cells at resolution 6 in north america)
+* gRPC api for predicting sky brightness
 
 * gRPC api for light pollution values (in RGBA, from a 2022 map)
 
-* publisher component that repeatedly generates & stores readings for coordinates of H3 cells
+* publisher component that repeatedly generates readings for coordinates of H3 cells
+
+* consumer component that stores the readings and computes the reading with highest `mpsas` during the last cycle of observation
 
 ## todos
 
-- [ ] support for continents other than north america
-- [ ] less noisy container startup
+- [x] support for continents other than north america
+- [x] less noisy container startup
 - [ ] live updates to open meteo data while app is running
 - [ ] REST apis in addition to the gRPC ones
-- [ ] better storage of predictions in order to faciliate grouping/sorting
+- [x] better storage of predictions in order to faciliate grouping/sorting
 
 ## about
 
 This project is motivated by the desire for synoptic knowledge of "where are the stars good".
 
 It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
-everywhere that a brightness measurement is desired, so it would make sense to have a way of
+everywhere you would want a brightness measurement, so it would make sense to have a way of
 doing inference of this value.
 
 
 The approach this project takes is to use pytorch to capture the relationships in the [Globe At Night
 dataset](https://globeatnight.org/maps-data/) and use that to predict sky brightness for H3
-cells at resoultion 6. 
-
-> note: currently limited to north america
+cells at a configured H3 resoultion (default `0`).
 
 ## running with docker
 
@@ -49,38 +49,37 @@ docker volume create --name open-meteo-data
 # get latest data into the above volume
 ./update-open-meteo.sh
 
-# run the containers (`build` flag only necessary for first run)
+# run the containers (optionally use `build` flag)
 docker compose up --build
 ```
 
-> Rabbitmq will take time to start up, at which time `producer` and `consumer` containers will attempt restart until the channel becomes available.
-> Once rabbitmq does start, there should be output like this:
+After rabbitmq starts up, the producer and consumer containers will start up,
+at which point you should see output like this:
 
-```log
-producer-1   | 2024-10-03 23:59:12,266 [INFO] brightness observation response for 8649a36a7ffffff is uuid: "f275a795-8af7-491b-9645-3ce2e14fe3cd"
-producer-1   | lat: 18.575429951519293
-producer-1   | lon: -101.86020792493713
-producer-1   | utc_iso: "2024-10-03T23:59:12.266163+00:00"
-producer-1   | mpsas: 12.7519617
-consumer-1   | 2024-10-03 23:59:12,269 [INFO] received message b'{"uuid": "f275a795-8af7-491b-9645-3ce2e14fe3cd", "lat": 18.575429951519293, "lon": -101.86020792493713, "h3_id": "8649a36a7ffffff", "utc_iso": "2024-10-03T23:59:12.266163+00:00", "mpsas": 12.751961708068848}'
-producer-1   | 
-producer-1   | 2024-10-03 23:59:12,267 [INFO] 260 distinct cells have had observations published
-consumer-1   | 2024-10-03 23:59:12,276 [INFO] saved BrightnessObservation(#8649a36a7ffffff,12.751961708068848,2024-10-03T23:59:12.266163+00:00)
+```sh
+producer-1   | 2024-10-28 13:16:27,502 [INFO] publishing {'uuid': 'e6c22004-9180-4599-9e87-36b86f68a5e7', 'lat': 43.42281493904898, 'lon': -97.42465926125905, 'h3_id': '8027fffffffffff', 'mpsas': 9.942784309387207, 'timestamp_utc': '2024-10-28T13:16:27.501192+00:00'} to brightness.prediction
+producer-1   | 2024-10-28 13:16:27,580 [INFO] publishing {'uuid': 'a548be90-89f7-4995-9239-197523c3afd0', 'lat': 19.093680683484372, 'lon': 43.638818828910864, 'h3_id': '8053fffffffffff', 'mpsas': 9.202325820922852, 'timestamp_utc': '2024-10-28T13:16:27.579755+00:00'} to brightness.prediction
+producer-1   | 2024-10-28 13:16:27,656 [INFO] publishing {'uuid': '2759f0e8-2f94-4efd-bf19-4b765947d983', 'lat': 60.432795263055546, 'lon': -77.20705748560815, 'h3_id': '800ffffffffffff', 'mpsas': 11.305692672729492, 'timestamp_utc': '2024-10-28T13:16:27.655087+00:00'} to brightness.prediction
+producer-1   | 2024-10-28 13:16:27,736 [INFO] publishing {'uuid': 'd53872da-2505-41a9-84f1-d9336b0aff83', 'lat': -30.01574044171678, 'lon': 129.95847216046155, 'h3_id': '80b9fffffffffff', 'mpsas': 12.414505004882812, 'timestamp_utc': '2024-10-28T13:16:27.735392+00:00'} to brightness.prediction
+producer-1   | 2024-10-28 13:16:27,737 [INFO] publishing {'start_time_utc': '2024-10-28T13:16:24.874541+00:00', 'end_time_utc': '2024-10-28T13:16:27.737791+00:00', 'duration_s': 2} to brightness.cycle
+consumer-1   | 2024-10-28 13:16:27,744 [INFO] {'uuid': 'aa89439d-9a22-41e1-b8d2-674bea5263ee', 'lat': -74.92843438917433, 'lon': -34.64375807722018, 'h3_id': '80effffffffffff', 'mpsas': 23.74591636657715, 'timestamp_utc': datetime.datetime(2024, 10, 28, 13, 16, 25, 624186, tzinfo=datetime.timezone.utc)}
 ```
 
-This output indicates that the producer service is successfully getting sky brightness predictions
-for H3 cells and that the consumer service is storing them in the postgres table `brightnessobservation`.
+The above output means:
 
-`mpsas` in the response stands for 'magnitudes per square arcsecond', and it is the predicted brightness
-value for that location.
+1. the producer container is publishing the brightness readings it is getting from
+the api container
+
+2. the consumer container has determined which reading made during the last cycle
+through H3 cells had the highest brightness (`mpsas` is the measure of brightness
+spread over a square arcsecond of sky, where higher means darker sky with more
+stars visible)
+
 
 ## documentation
 
-- [api client usage](./api/README.md)
+- [how to write your own client for the sky brightness gRPC api](./api/README.md)
 
 ## licensing
 
 This project is licensed under the AGPL-3.0 license.
-
-Note: The GeoJSON file located at `./pp/pp/cells/north-america.geojson` is licensed under the Apache License, Version 2.0, and retains its original copyright (Copyright 2018 Esri).
-

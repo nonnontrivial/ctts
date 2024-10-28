@@ -12,18 +12,18 @@ services:
 
   rabbitmq:
     image: "rabbitmq:alpine"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
     ports:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:15672" ]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
       retries: 5
-      start_period: 30s
-    environment:
-      RABBITMQ_DEFAULT_USER: "guest"
-      RABBITMQ_DEFAULT_PASS: "guest"
+      start_period: 20s
 
   openmeteo:
     image: "ghcr.io/open-meteo/open-meteo"
@@ -41,21 +41,20 @@ services:
       LOG_LEVEL: 30
     restart: on-failure
     depends_on:
-      - openmeteo
+      openmeteo:
+        condition: service_started
 
   producer:
     build: ./pp
     environment:
-      API_VERSION: "v1"
       API_HOST: "api"
-      MODEL_VERSION: "0.1.0"
       RABBITMQ_HOST: "rabbitmq"
     restart: on-failure
     depends_on:
-      - rabbitmq
-      - api
-    links:
-      - rabbitmq
+      api:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   consumer:
     build: ./pc
@@ -66,13 +65,12 @@ services:
       PG_DATABASE: "postgres"
     restart: on-failure
     depends_on:
-      - postgres
-      - rabbitmq
-    links:
-      - rabbitmq
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   postgres-data:
   open-meteo-data:
     external: true
-    

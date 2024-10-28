@@ -1,17 +1,32 @@
-from unittest import mock
+from unittest.mock import AsyncMock, patch
 
 import pytest
+import asyncpg
 from aio_pika import Message
 
 from pc.consumer.consumer import Consumer
 
 @pytest.fixture
-def consumer():
+async def mock_asyncpg_pool():
+    with patch("asyncpg.create_pool") as mock_create_pool:
+        mock_pool = AsyncMock()
+        mock_create_pool.return_value = mock_pool
+
+        mock_connection = AsyncMock()
+        mock_pool.acquire.return_value.__aenter__.return_value = mock_connection
+        yield mock_pool
+
+@pytest.fixture
+def consumer(mock_asyncpg_pool):
     amqp_url="amqp://localhost"
     prediction_queue="prediction"
-    return Consumer(url=amqp_url, queue_name=prediction_queue)
+    return Consumer(
+        url=amqp_url,prediction_queue=prediction_queue,
+        cycle_queue="",
+        connection_pool=mock_asyncpg_pool,
+        on_cycle_completion=lambda _: None
+    )
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_can_consume_message(consumer):
-    pass
+async def test_consumer(consumer):
+    assert consumer is not None
