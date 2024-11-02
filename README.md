@@ -75,6 +75,19 @@ through H3 cells had the highest brightness (`mpsas` is the measure of brightnes
 spread over a square arcsecond of sky, where higher means darker sky with more
 stars visible)
 
+## changing the resolution
+
+By default, the producer runs over [resolution 0 cells](https://h3geo.org/docs/core-library/restable/),
+but this can be adjusted by setting the environment of the `producer` container in
+`docker-compose.yaml`:
+
+```yaml
+producer:
+  build: ./pp
+  environment:
+    RESOLUTION: 0
+```
+
 
 ## documentation
 

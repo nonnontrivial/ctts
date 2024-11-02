@@ -49,6 +49,7 @@ services:
     environment:
       API_HOST: "api"
       RABBITMQ_HOST: "rabbitmq"
+      RESOLUTION: 0
     restart: on-failure
     depends_on:
       api:

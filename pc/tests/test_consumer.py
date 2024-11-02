@@ -21,7 +21,8 @@ def consumer(mock_asyncpg_pool):
     amqp_url="amqp://localhost"
     prediction_queue="prediction"
     return Consumer(
-        url=amqp_url,prediction_queue=prediction_queue,
+        url=amqp_url,
+        prediction_queue=prediction_queue,
         cycle_queue="",
         connection_pool=mock_asyncpg_pool,
         on_cycle_completion=lambda _: None
