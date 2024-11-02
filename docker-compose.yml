@@ -36,9 +36,6 @@ services:
     build: ./api
     ports:
       - "50051:50051"
-    environment:
-      API_VERSION: "v1"
-      LOG_LEVEL: 30
     restart: on-failure
     depends_on:
       openmeteo:

@@ -27,14 +27,3 @@ with grpc.insecure_channel(f"{host}:{port}") as channel:
     print(response)
 
 ```
-
-## model
-
-### building and training
-
-The api depends on a model being trained from csv data.
-
-The following commands will generate a new `model.pth` (i.e. the learned parameters):
-
-- `python -m api.model.build` to write the csv that the model trains on
-- `python -m api.model.train` to train on the data in the csv
