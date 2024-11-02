@@ -34,7 +34,7 @@ doing inference of this value.
 
 The approach this project takes is to use pytorch to capture the relationships in the [Globe At Night
 dataset](https://globeatnight.org/maps-data/) and use that to predict sky brightness for H3
-cells at a configured [H3 resoultion](https://h3geo.org/docs/core-library/restable/) (default `0`).
+cells at a configured [H3 resolution](https://h3geo.org/docs/core-library/restable/) (default `0`).
 
 ## running with docker
 
