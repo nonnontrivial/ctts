@@ -21,31 +21,35 @@ class Consumer:
         self._pool = connection_pool
         self._on_cycle_completion = on_cycle_completion
 
-    async def start(self):
+        self.connection = None
+
+    async def connect(self):
+        """establish the connection or exit"""
         try:
             log.info(f"connecting to {self._amqp_url}")
-            connection = await aio_pika.connect_robust(self._amqp_url)
+            self.connection = await aio_pika.connect_robust(self._amqp_url)
         except Exception as e:
             import sys
 
             log.error(f"could not form amqp connection because {e}; is rabbitmq running?")
             log.warning("exiting")
             sys.exit(1)
-        else:
-            async with connection:
-                channel = await connection.channel()
-                await self.consume(channel) # type: ignore
 
-    async def consume(self, channel: AbstractRobustChannel):
-        log.info(f"consuming from {self._prediction_queue}")
-        prediction_queue = await channel.declare_queue(self._prediction_queue)
-        await prediction_queue.consume(self._on_prediction_message, no_ack=True)
+    async def consume(self):
+        if self.connection is None:
+            raise ValueError("there is no connection!")
 
-        log.info(f"consuming from {self._cycle_queue}")
-        cycle_queue = await channel.declare_queue(self._cycle_queue)
-        await cycle_queue.consume(self._on_cycle_message, no_ack=True)
+        async with self.connection:
+            channel = await self.connection.channel()
 
-        await asyncio.Future()
+            prediction_queue = await channel.declare_queue(self._prediction_queue)
+            await prediction_queue.consume(self._on_prediction_message, no_ack=True)
+
+            cycle_queue = await channel.declare_queue(self._cycle_queue)
+            await cycle_queue.consume(self._on_cycle_message, no_ack=True)
+
+            log.info("waiting on messages")
+            await asyncio.Future()
 
     async def _on_cycle_message(self, message: AbstractIncomingMessage):
         """handle incoming message by retrieving max reading from postgres within
@@ -56,16 +60,16 @@ class Consumer:
             cell_cycle = CellCycle(**message_dict)
 
             record = await select_max_brightness_record_in_range(self._pool, cell_cycle)
-            if record is not None:
-                record = dict(record)
-                uuid = str(record["uuid"])
-                del record["uuid"]
-                max_brightness_observation_in_cycle = BrightnessObservation(**record, uuid=uuid)
-                self._on_cycle_completion(max_brightness_observation_in_cycle)
+            if record is None:
+                raise ValueError(f"no record in range of cycle {cell_cycle}")
+
+            record = dict(record)
+            uuid = str(record["uuid"])
+            del record["uuid"]
+            max_brightness_observation_in_cycle = BrightnessObservation(**record, uuid=uuid)
+            self._on_cycle_completion(max_brightness_observation_in_cycle)
         except Exception as e:
             log.error(f"could not process cycle message: {e}")
-        else:
-            pass
 
 
     async def _on_prediction_message(self, message: AbstractIncomingMessage):
