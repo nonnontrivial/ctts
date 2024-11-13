@@ -11,8 +11,8 @@ from pc.config import amqp_url, prediction_queue, cycle_queue
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
-def on_cycle_completion(bo: BrightnessObservation):
-    log.info(bo.model_dump())
+def on_cycle_completion(brightness_observation: BrightnessObservation):
+    log.info(f"cycle completed with {brightness_observation.model_dump()}")
 
 
 async def main():

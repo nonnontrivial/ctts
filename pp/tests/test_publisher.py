@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+from datetime import datetime, timedelta
 import uuid
 
 import pytest
@@ -42,15 +43,13 @@ def publisher(mock_grpc_client, mock_pika_channel):
                          prediction_queue="prediction",
                          cycle_queue="cycle")
 
-def test_publisher_publishes_prediction_on_channel(publisher, mock_pika_channel):
+def test_brightness_message_publish(publisher, mock_pika_channel):
     cell = "89283082813ffff"
-    publisher.predict_cell_brightness(cell)
+    publisher.publish_cell_brightness_message(cell)
     mock_pika_channel.basic_publish.assert_called_once()
 
-@pytest.mark.skip
-def test_number_of_distinct_cells_published(publisher, mock_pika_channel):
-    pass
-
-@pytest.mark.skip
-def test_cell_covering(publisher, mock_pika_channel):
-    pass
+def test_cycle_completion_message_publish(publisher, mock_pika_channel):
+    then = datetime.now() - timedelta(minutes=5)
+    now = datetime.now()
+    publisher.publish_cycle_completion_message(then, now)
+    mock_pika_channel.basic_publish.assert_called_once()

@@ -56,13 +56,12 @@ docker compose up --build
 After rabbitmq starts up, the producer and consumer containers will start up,
 at which point you should see output like this:
 
-```sh
-producer-1   | 2024-10-28 13:16:27,502 [INFO] publishing {'uuid': 'e6c22004-9180-4599-9e87-36b86f68a5e7', 'lat': 43.42281493904898, 'lon': -97.42465926125905, 'h3_id': '8027fffffffffff', 'mpsas': 9.942784309387207, 'timestamp_utc': '2024-10-28T13:16:27.501192+00:00'} to brightness.prediction
-producer-1   | 2024-10-28 13:16:27,580 [INFO] publishing {'uuid': 'a548be90-89f7-4995-9239-197523c3afd0', 'lat': 19.093680683484372, 'lon': 43.638818828910864, 'h3_id': '8053fffffffffff', 'mpsas': 9.202325820922852, 'timestamp_utc': '2024-10-28T13:16:27.579755+00:00'} to brightness.prediction
-producer-1   | 2024-10-28 13:16:27,656 [INFO] publishing {'uuid': '2759f0e8-2f94-4efd-bf19-4b765947d983', 'lat': 60.432795263055546, 'lon': -77.20705748560815, 'h3_id': '800ffffffffffff', 'mpsas': 11.305692672729492, 'timestamp_utc': '2024-10-28T13:16:27.655087+00:00'} to brightness.prediction
-producer-1   | 2024-10-28 13:16:27,736 [INFO] publishing {'uuid': 'd53872da-2505-41a9-84f1-d9336b0aff83', 'lat': -30.01574044171678, 'lon': 129.95847216046155, 'h3_id': '80b9fffffffffff', 'mpsas': 12.414505004882812, 'timestamp_utc': '2024-10-28T13:16:27.735392+00:00'} to brightness.prediction
-producer-1   | 2024-10-28 13:16:27,737 [INFO] publishing {'start_time_utc': '2024-10-28T13:16:24.874541+00:00', 'end_time_utc': '2024-10-28T13:16:27.737791+00:00', 'duration_s': 2} to brightness.cycle
-consumer-1   | 2024-10-28 13:16:27,744 [INFO] {'uuid': 'aa89439d-9a22-41e1-b8d2-674bea5263ee', 'lat': -74.92843438917433, 'lon': -34.64375807722018, 'h3_id': '80effffffffffff', 'mpsas': 23.74591636657715, 'timestamp_utc': datetime.datetime(2024, 10, 28, 13, 16, 25, 624186, tzinfo=datetime.timezone.utc)}
+```log
+producer-1   | 2024-11-13 03:01:02,478 [INFO] publishing {'uuid': 'c6df89c5-a4fa-48fc-bfd8-11d08494902f', 'lat': 16.702868303031234, 'lon': -13.374845104752373, 'h3_id': '8055fffffffffff', 'mpsas': 6.862955570220947, 'timestamp_utc': '2024-11-13T03:01:02.478000+00:00'} to brightness.prediction
+producer-1   | 2024-11-13 03:01:02,553 [INFO] publishing {'uuid': '9b5f2e8b-c22d-4d05-900e-0156f78632ce', 'lat': 26.283628653081813, 'lon': 62.954274989658984, 'h3_id': '8043fffffffffff', 'mpsas': 9.472949028015137, 'timestamp_utc': '2024-11-13T03:01:02.552848+00:00'} to brightness.prediction
+producer-1   | 2024-11-13 03:01:02,625 [INFO] publishing {'uuid': 'fbbc3cd5-839d-43de-a7c4-8f51100679fd', 'lat': -4.530154895350926, 'lon': -42.02241568705745, 'h3_id': '8081fffffffffff', 'mpsas': 9.065463066101074, 'timestamp_utc': '2024-11-13T03:01:02.624759+00:00'} to brightness.prediction
+producer-1   | 2024-11-13 03:01:02,626 [INFO] publishing {'start_time_utc': '2024-11-13T03:01:00.114586+00:00', 'end_time_utc': '2024-11-13T03:01:02.626208+00:00', 'duration_s': 2} to brightness.cycle
+consumer-1   | 2024-11-13 03:01:02,631 [INFO] cycle completed with {'uuid': '4bb0c627-596c-42be-a93a-26f36c5ca3c1', 'lat': 55.25746462939812, 'lon': 127.08774514928741, 'h3_id': '8015fffffffffff', 'mpsas': 23.763256072998047, 'timestamp_utc': datetime.datetime(2024, 11, 13, 3, 1, 1, 129155, tzinfo=datetime.timezone.utc)}
 ```
 
 The above output means:

@@ -20,7 +20,7 @@ class CellCovering:
 
     @staticmethod
     def get_polygon_of_feature(feature: typing.Dict) -> typing.Dict:
-        polygon=shape(feature["geometry"])
+        polygon = shape(feature["geometry"])
         if not isinstance(polygon, Polygon):
             raise TypeError("geojson is not a Polygon")
 

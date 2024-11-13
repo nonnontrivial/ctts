@@ -37,9 +37,7 @@ class CellPublisher(CellCovering):
         log.info(f"publishing {message} to {queue_name}")
         self._channel.basic_publish(exchange="", routing_key=queue_name, body=json.dumps(message))
 
-    def predict_cell_brightness(self, cell) -> None:
-        """ask brightness service for prediction of sky brightness on h3 cell
-        for the current time"""
+    def publish_cell_brightness_message(self, cell) -> None:
         lat, lon = h3_to_geo(cell)
         request = brightness_service_pb2.Coordinates(lat=lat, lon=lon)
         try:
@@ -60,22 +58,26 @@ class CellPublisher(CellCovering):
             dumped["timestamp_utc"] = brightness_observation.timestamp_utc.isoformat()
             self._publish(self._prediction_queue, dumped)
 
+    def publish_cycle_completion_message(self, start: datetime, end: datetime) -> None:
+        cell_cycle = CellCycle(start_time_utc=start, end_time_utc=end, duration_s=int((end - start).total_seconds()))
+        cell_cycle = cell_cycle.model_dump()
+        cell_cycle["start_time_utc"] = cell_cycle["start_time_utc"].isoformat()
+        cell_cycle["end_time_utc"] = cell_cycle["end_time_utc"].isoformat()
+        self._publish(self._cycle_queue, cell_cycle)
+
     def run(self):
         cells = self.covering
         if len(cells) == 0:
             raise ValueError("cell covering is empty!")
-
         log.info(f"publishing brightness for {len(cells)} cells(s)")
+
         while True:
             start_time_utc = datetime.now(timezone.utc)
+
             for cell in cells:
                 CellPublisher.cell_counts[cell] += 1
-                self.predict_cell_brightness(cell)
+                self.publish_cell_brightness_message(cell)
                 log.debug(f"{len(CellPublisher.cell_counts)} distinct cells have had observations published")
-            end_time_utc = datetime.now(timezone.utc)
 
-            cell_cycle = CellCycle(start_time_utc=start_time_utc, end_time_utc=end_time_utc, duration_s=int((end_time_utc - start_time_utc).total_seconds()))
-            cell_cycle = cell_cycle.model_dump()
-            cell_cycle["start_time_utc"] = cell_cycle["start_time_utc"].isoformat()
-            cell_cycle["end_time_utc"] = cell_cycle["end_time_utc"].isoformat()
-            self._publish(self._cycle_queue, cell_cycle)
+            end_time_utc = datetime.now(timezone.utc)
+            self.publish_cycle_completion_message(start_time_utc, end_time_utc)
