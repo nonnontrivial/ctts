@@ -28,8 +28,8 @@ earth, without a sensor.
 This project is motivated by the desire for synoptic knowledge of "where are the stars good".
 
 It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
-everywhere you would want a brightness measurement, so it would make sense to have a way of
-doing inference of this value.
+everywhere you would want a brightness measurement, so it would instead make sense to have a way
+of doing inference of this value.
 
 
 The approach this project takes is to use pytorch to capture the relationships in the [Globe At Night
@@ -47,9 +47,9 @@ cells at a configured [H3 resolution](https://h3geo.org/docs/core-library/restab
 docker volume create --name open-meteo-data
 
 # get latest data into the above volume
-./update-open-meteo.sh
+./update-open-meteo-data.sh
 
-# run the containers (optionally use `build` flag)
+# build and run the containers
 docker compose up --build
 ```
 

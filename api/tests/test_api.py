@@ -49,7 +49,7 @@ def test_pollution(brightness_service_stub, lat, lon, channel_value):
     (31.230416, 121.473701),
 ])
 @patch('api.service.open_meteo.open_meteo_client.requests.get')
-def test_brightness_observation(mock_get, lat, lon, brightness_service_stub):
+def test_brightness_observation_valid_coords(mock_get, lat, lon, brightness_service_stub):
     mock_response = mock_get.return_value
     mock_response.status_code = 200
     mock_response.json.return_value={"elevation":0.,"hourly":{"cloud_cover":[0]*24}}

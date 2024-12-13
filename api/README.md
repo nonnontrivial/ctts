@@ -1,5 +1,13 @@
 # api
 
+api server for sky brightness
+
+## running the tests
+
+```sh
+python3 -m pytest
+```
+
 ## gRPC client example
 
 - install dependencies `pip install grpcio-tools grpcio protobuf`
