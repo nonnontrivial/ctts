@@ -2,8 +2,7 @@
 
 > note: this is alpha software; apis may change quickly, and quality of the brightness prediction is still being ironed out
 
-CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) all over the
-earth, without a sensor.
+CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) all over the earth's landmass, without a sensor.
 
 ## features
 

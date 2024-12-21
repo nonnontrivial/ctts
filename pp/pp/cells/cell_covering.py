@@ -8,7 +8,10 @@ from shapely.geometry import shape, Polygon
 from ..config import resolution
 
 class CellCovering:
-    def __init__(self, path_to_geojson: Path = Path(__file__).parent / "land.geojson"):
+    def __init__(self, path_to_geojson: Path | None = None):
+        if path_to_geojson is None:
+            path_to_geojson = Path(__file__).parent / "land.geojson"
+
         with open(path_to_geojson, "r") as file:
             geojson = json.load(file)
 

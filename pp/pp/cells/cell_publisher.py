@@ -3,6 +3,7 @@ import json
 import typing
 from datetime import datetime, timezone
 from collections import defaultdict
+from pathlib import Path
 
 import grpc
 from h3 import h3_to_geo
@@ -21,8 +22,8 @@ class CellPublisher(CellCovering):
     cell_counts = defaultdict(int)
 
     def __init__(self, api_host: str, api_port: int, channel: BlockingChannel,
-                 prediction_queue: str, cycle_queue: str):
-        super().__init__()
+                 prediction_queue: str, cycle_queue: str, path_to_geojson: Path | None = None):
+        super().__init__(path_to_geojson=path_to_geojson)
 
         self._prediction_queue = prediction_queue
         self._cycle_queue = cycle_queue
@@ -67,10 +68,10 @@ class CellPublisher(CellCovering):
 
     def run(self):
         cells = self.covering
-        if len(cells) == 0:
+        if not cells:
             raise ValueError("cell covering is empty!")
-        log.info(f"publishing brightness for {len(cells)} cells(s)")
 
+        log.info(f"publishing brightness for {len(cells)} cells(s) resoulution {resolution}")
         while True:
             start_time_utc = datetime.now(timezone.utc)
 

@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+from pathlib import Path
 import uuid
 
 import pytest
@@ -33,7 +34,7 @@ def mock_pika_channel(mocker):
 
 
 @pytest.fixture
-def publisher(mock_grpc_client, mock_pika_channel):
+def cell_publisher(mock_grpc_client, mock_pika_channel):
     return CellPublisher(api_host="localhost",
                          api_port=50051,
                          channel=mock_pika_channel,
