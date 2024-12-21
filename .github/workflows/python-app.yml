@@ -22,6 +22,7 @@ jobs:
         package-dir:
           - api
           - pp
+          - pc
 
     steps:
       - uses: actions/checkout@v4

@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 brightness_observation_table = "brightness_observation"
 
-async def create_connection_pool() -> typing.Optional[asyncpg.Pool]:
+async def create_pg_connection_pool() -> typing.Optional[asyncpg.Pool]:
     pool = await asyncpg.create_pool(
         user=pg_user,
         password=pg_password,

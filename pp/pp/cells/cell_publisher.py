@@ -8,7 +8,7 @@ import grpc
 from h3 import h3_to_geo
 from pika.adapters.blocking_connection import BlockingChannel
 
-from ..cells.cell_covering import CellCovering, get_cell_id
+from ..cells.cell_covering import CellCovering
 from ..config import resolution
 from ..stubs.brightness_service_pb2_grpc import BrightnessServiceStub
 from ..stubs import brightness_service_pb2
@@ -50,7 +50,7 @@ class CellPublisher(CellCovering):
                 uuid=response.uuid,
                 lat=lat,
                 lon=lon,
-                h3_id=get_cell_id(lat, lon, resolution=resolution),
+                h3_id=CellCovering.get_cell_id(lat, lon, resolution=resolution),
                 mpsas=response.mpsas,
                 timestamp_utc=response.utc_iso,
             )

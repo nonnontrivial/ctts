@@ -2,7 +2,7 @@ import asyncio
 import logging
 import typing
 
-from pc.persistence.db import create_connection_pool, create_brightness_table
+from pc.persistence.db import create_pg_connection_pool, create_brightness_table
 from pc.persistence.models import BrightnessObservation
 from pc.consumer.consumer import Consumer
 from pc.config import amqp_url, prediction_queue, cycle_queue
@@ -16,11 +16,12 @@ def on_cycle_completion(brightness_observation: BrightnessObservation):
 
 
 async def main():
-    pool = await create_connection_pool()
+    pool = await create_pg_connection_pool()
     if pool is None:
         raise ValueError("no connection pool!")
 
     await create_brightness_table(pool)
+
     consumer = Consumer(
         url=amqp_url,
         prediction_queue=prediction_queue,
