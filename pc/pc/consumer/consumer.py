@@ -35,18 +35,22 @@ class Consumer:
             log.warning("exiting")
             sys.exit(1)
 
-    async def consume(self):
+    async def consume_from_queues(self):
+        """consume data from the prediction and cycle queues"""
         if self.connection is None:
             raise ValueError("there is no connection!")
 
         async with self.connection:
             channel = await self.connection.channel()
+            queues = {
+                self._prediction_queue: self._on_prediction_message,
+                self._cycle_queue: self._on_cycle_message
+            }
 
-            prediction_queue = await channel.declare_queue(self._prediction_queue)
-            await prediction_queue.consume(self._on_prediction_message, no_ack=True)
-
-            cycle_queue = await channel.declare_queue(self._cycle_queue)
-            await cycle_queue.consume(self._on_cycle_message, no_ack=True)
+            for queue_name, handler in queues.items():
+                log.info(f"consuming from {queue_name}")
+                queue = await channel.declare_queue(queue_name)
+                await queue.consume(handler, no_ack=True)
 
             log.info("waiting on messages")
             await asyncio.Future()

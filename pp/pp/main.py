@@ -5,14 +5,13 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import AMQPConnectionError
 
 from .config import rabbitmq_host, prediction_queue, cycle_queue, api_port, api_host
-from .cells.cell_covering import CellCovering
 from .cells.cell_publisher import CellPublisher
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
 
-def main():
+def run_publisher():
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(rabbitmq_host))
 
@@ -43,4 +42,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_publisher()

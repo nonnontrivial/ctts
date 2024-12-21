@@ -7,16 +7,17 @@ from shapely.geometry import shape, Polygon
 
 from ..config import resolution
 
-def get_cell_id(lat, lon, resolution) -> str:
-    return h3.geo_to_h3(lat, lon, resolution=resolution)
-
-
 class CellCovering:
-    def __init__(self):
-        with open(Path(__file__).parent / "land.geojson", "r") as file:
+    def __init__(self, path_to_geojson: Path = Path(__file__).parent / "land.geojson"):
+        with open(path_to_geojson, "r") as file:
             geojson = json.load(file)
 
         self.polygons = [CellCovering.get_polygon_of_feature(f) for f in geojson["features"]]
+
+    @staticmethod
+    def get_cell_id(lat, lon, resolution) -> str:
+        return h3.geo_to_h3(lat, lon, resolution=resolution)
+
 
     @staticmethod
     def get_polygon_of_feature(feature: typing.Dict) -> typing.Dict:
