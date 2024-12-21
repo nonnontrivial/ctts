@@ -15,3 +15,5 @@ prediction_queue = os.getenv("AMQP_PREDICTION_QUEUE", "brightness.prediction")
 cycle_queue = os.getenv("AMQP_CYCLE_QUEUE", "brightness.cycle")
 
 amqp_url = f"amqp://{rabbitmq_user}:{rabbitmq_password}@{rabbitmq_host}"
+
+brightness_observation_table = "brightness_observation"

@@ -3,12 +3,10 @@ import typing
 
 import asyncpg
 
-from ..config import pg_host,pg_port,pg_user,pg_password,pg_database
+from ..config import pg_host, pg_port, pg_user, pg_password, pg_database, brightness_observation_table
 from .models import BrightnessObservation, CellCycle
 
 log = logging.getLogger(__name__)
-
-brightness_observation_table = "brightness_observation"
 
 async def create_pg_connection_pool() -> typing.Optional[asyncpg.Pool]:
     pool = await asyncpg.create_pool(
@@ -22,7 +20,7 @@ async def create_pg_connection_pool() -> typing.Optional[asyncpg.Pool]:
     )
     return pool
 
-async def create_brightness_table(pool: asyncpg.Pool):
+async def setup_table(pool: asyncpg.Pool):
     async with pool.acquire() as conn:
         await conn.execute(
         f"""

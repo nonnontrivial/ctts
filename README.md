@@ -57,11 +57,11 @@ After rabbitmq starts up, the producer and consumer containers will start up,
 at which point you should see output like this:
 
 ```log
-producer-1   | 2024-11-13 03:01:02,478 [INFO] publishing {'uuid': 'c6df89c5-a4fa-48fc-bfd8-11d08494902f', 'lat': 16.702868303031234, 'lon': -13.374845104752373, 'h3_id': '8055fffffffffff', 'mpsas': 6.862955570220947, 'timestamp_utc': '2024-11-13T03:01:02.478000+00:00'} to brightness.prediction
-producer-1   | 2024-11-13 03:01:02,553 [INFO] publishing {'uuid': '9b5f2e8b-c22d-4d05-900e-0156f78632ce', 'lat': 26.283628653081813, 'lon': 62.954274989658984, 'h3_id': '8043fffffffffff', 'mpsas': 9.472949028015137, 'timestamp_utc': '2024-11-13T03:01:02.552848+00:00'} to brightness.prediction
-producer-1   | 2024-11-13 03:01:02,625 [INFO] publishing {'uuid': 'fbbc3cd5-839d-43de-a7c4-8f51100679fd', 'lat': -4.530154895350926, 'lon': -42.02241568705745, 'h3_id': '8081fffffffffff', 'mpsas': 9.065463066101074, 'timestamp_utc': '2024-11-13T03:01:02.624759+00:00'} to brightness.prediction
-producer-1   | 2024-11-13 03:01:02,626 [INFO] publishing {'start_time_utc': '2024-11-13T03:01:00.114586+00:00', 'end_time_utc': '2024-11-13T03:01:02.626208+00:00', 'duration_s': 2} to brightness.cycle
-consumer-1   | 2024-11-13 03:01:02,631 [INFO] cycle completed with {'uuid': '4bb0c627-596c-42be-a93a-26f36c5ca3c1', 'lat': 55.25746462939812, 'lon': 127.08774514928741, 'h3_id': '8015fffffffffff', 'mpsas': 23.763256072998047, 'timestamp_utc': datetime.datetime(2024, 11, 13, 3, 1, 1, 129155, tzinfo=datetime.timezone.utc)}
+producer-1   | 2024-12-21 17:08:55,237 [INFO] publishing {'uuid': '0cdacdcb-dcf3-4d5c-9e60-94d397d89840', 'lat': 69.66345294982115, 'lon': -30.968044606549025, 'h3_id': '8007fffffffffff', 'mpsas': 24.703824996948242, 'timestamp_utc': '2024-12-21T17:08:55.236185+00:00'} to brightness.prediction
+producer-1   | 2024-12-21 17:08:55,355 [INFO] publishing {'uuid': 'f16a7b7c-039d-44d6-b764-fc37fadad1b7', 'lat': 26.80710329336693, 'lon': 109.167486033384, 'h3_id': '8041fffffffffff', 'mpsas': 10.82265853881836, 'timestamp_utc': '2024-12-21T17:08:55.354661+00:00'} to brightness.prediction
+producer-1   | 2024-12-21 17:08:55,356 [INFO] publishing {'start_time_utc': '2024-12-21T17:08:34.174937+00:00', 'end_time_utc': '2024-12-21T17:08:55.356353+00:00', 'duration_s': 21} to brightness.cycle
+producer-1   | 2024-12-21 17:08:55,502 [INFO] publishing {'uuid': 'bc236db7-dd78-43cb-925b-78ea7c777f5e', 'lat': 16.702868303031234, 'lon': -13.374845104752373, 'h3_id': '8055fffffffffff', 'mpsas': 6.5024333000183105, 'timestamp_utc': '2024-12-21T17:08:55.501490+00:00'} to brightness.prediction
+consumer-1   | 2024-12-21 17:08:55,507 [INFO] cycle completed with max observation {'uuid': '0fbfe7cd-4b49-49b3-9c51-b5560706a2d8', 'lat': -69.66345294982115, 'lon': 149.03195539345094, 'h3_id': '80edfffffffffff', 'mpsas': 28.068134307861328, 'timestamp_utc': datetime.datetime(2024, 12, 21, 17, 8, 53, 2272, tzinfo=datetime.timezone.utc)}
 ```
 
 The above output means:
@@ -94,3 +94,4 @@ producer:
 ## licensing
 
 This project is licensed under the AGPL-3.0 license.
+
