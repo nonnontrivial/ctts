@@ -1,26 +1,25 @@
 # CTTS
 
-> note: this is *alpha software*; apis may change quickly, and quality of the brightness prediction is still being ironed out
+> note: this is _alpha software_; apis may change quickly, and quality of the brightness prediction is still being ironed out
 
 CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) all over the earth's landmass, without a sensor.
 
 ## features
 
-* gRPC api for predicting sky brightness
+- gRPC api for predicting sky brightness
 
-* gRPC api for light pollution values (in RGBA, from a 2022 map)
+- publisher component that repeatedly generates sky brightness readings for coordinates of H3 cells
 
-* publisher component that repeatedly generates readings for coordinates of H3 cells
-
-* consumer component that stores the readings and computes the reading with highest `mpsas` during the last cycle of observation
+- consumer component that stores sky brightness readings and finds reading with highest `mpsas` during last iteration over H3 cells
 
 ## todos
 
 - [x] support for continents other than north america
 - [x] less noisy container startup
-- [ ] live updates to open meteo data while app is running
-- [ ] REST apis in addition to the gRPC ones
 - [x] better storage of predictions in order to faciliate grouping/sorting
+- [ ] updates to open meteo weather data while app is running
+- [ ] monitoring/alerting layer for prediction cycle
+- [ ] availability of images on image repository
 
 ## about
 
@@ -29,7 +28,6 @@ This project is motivated by the desire for synoptic knowledge of "where are the
 It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
 everywhere you would want a brightness measurement, so it would instead make sense to have a way
 of doing inference of this value.
-
 
 The approach this project takes is to use pytorch to capture the relationships in the [Globe At Night
 dataset](https://globeatnight.org/maps-data/) and use that to predict sky brightness for H3
@@ -66,12 +64,12 @@ consumer-1   | 2024-12-21 17:08:55,507 [INFO] cycle completed with max observati
 The above output means:
 
 1. the producer container is publishing the brightness readings it is getting from
-the api container
+   the api container
 
 2. the consumer container has determined which reading made during the last cycle
-through H3 cells had the highest brightness (`mpsas` is the measure of brightness
-spread over a square arcsecond of sky, where higher means darker sky with more
-stars visible)
+   through H3 cells had the highest brightness (`mpsas` is the measure of brightness
+   spread over a square arcsecond of sky, where higher means darker sky with more
+   stars visible)
 
 ## changing the resolution
 
@@ -85,7 +83,6 @@ producer:
     RESOLUTION: 0
 ```
 
-
 ## documentation
 
 - [how to write your own client for the sky brightness gRPC api](./api/README.md)
@@ -93,4 +90,3 @@ producer:
 ## licensing
 
 This project is licensed under the AGPL-3.0 license.
-
