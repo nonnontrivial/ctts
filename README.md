@@ -23,15 +23,16 @@ CTTS is an open source application for reading [sky brightness](https://en.wikip
 
 ## about
 
-This project is motivated by the desire for synoptic knowledge of "where are the stars good".
+This project is motivated by the desire to know:
+
+> where and when are the stars good?
 
 It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
-everywhere you would want a brightness measurement, so it would instead make sense to have a way
-of doing inference of this value.
+everywhere you would want a sky brightness measurement, but one path is to do inference of this value.
 
 The approach this project takes is to use pytorch to capture the relationships in the [Globe At Night
-dataset](https://globeatnight.org/maps-data/) and use that to predict sky brightness for H3
-cells at a configured [H3 resolution](https://h3geo.org/docs/core-library/restable/) (default `0`).
+dataset](https://globeatnight.org/maps-data/) and use that captured relationship to
+predict sky brightness for H3 cells at a configured [H3 resolution](https://h3geo.org/docs/core-library/restable/) (default `0`).
 
 ## running with docker
 
