@@ -15,10 +15,10 @@ everywhere you would want a sky brightness measurement, but one path is to do in
 
 The approach this project takes is:
 
-- use pytorch to capture the relationship between various factors and skybrightness within a [public dataset](https://globeatnight.org/maps-data/)
+- use pytorch to capture the relationship between various factors and sky brightness within a [public dataset](https://globeatnight.org/maps-data/)
 - put that behind an gRPC API
 - discretize the world using [H3](https://h3geo.org/docs/core-library/restable/)
-- continuously get predicted sky brightness for those H3 cells
+- continuously get predicted sky brightness for those H3 cells from the gRPC API
 
 ## todos
 
