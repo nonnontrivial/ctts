@@ -4,32 +4,27 @@
 
 CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) all over the earth's landmass, without a sensor.
 
-## features
-
-- gRPC api for predicting sky brightness
-
-- publisher component that repeatedly generates sky brightness readings for coordinates of H3 cells
-
-- consumer component that stores sky brightness readings and finds reading with highest `mpsas` during last iteration over H3 cells
-
-## todos
-
-- [ ] update open meteo data while app is running
-- [ ] create typer app to manage brightness model
-- [ ] brightness prediction cycle can push alerts
-
 ## about
 
-This project is motivated by the desire to know:
+This project is motivated by wanting an answer to the following question:
 
 > where and when are the stars good?
 
 It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
 everywhere you would want a sky brightness measurement, but one path is to do inference of this value.
 
-The approach this project takes is to use pytorch to capture the relationships in the [Globe At Night
-dataset](https://globeatnight.org/maps-data/) and use that captured relationship to
-predict sky brightness for H3 cells at a configured [H3 resolution](https://h3geo.org/docs/core-library/restable/) (default `0`).
+The approach this project takes is to use pytorch to capture the relationships within the [Globe At Night
+dataset](https://globeatnight.org/maps-data/) and predict sky brightness for H3 cells at a configured [H3 resolution](https://h3geo.org/docs/core-library/restable/) (default `0`).
+
+## features
+
+- passive collection of predicted sky brightness for H3 cells in earth's landmass.
+
+## todos
+
+- [ ] update open meteo data while app is running
+- [ ] create typer app to manage brightness model
+- [ ] brightness prediction cycle can push alerts
 
 ## running with docker
 
