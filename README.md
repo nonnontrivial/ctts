@@ -8,17 +8,17 @@ CTTS is an open source application for reading [sky brightness](https://en.wikip
 
 This project is motivated by wanting an answer to the following question:
 
-> where and when are the stars good?
+> how much better are the stars in the [Atacama](https://en.wikipedia.org/wiki/Atacama_Desert) than in my backyard?
 
 It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
 everywhere you would want a sky brightness measurement, but one path is to do inference of this value.
 
-The approach this project takes is to use pytorch to capture the relationships within the [Globe At Night
-dataset](https://globeatnight.org/maps-data/) and predict sky brightness for H3 cells at a configured [H3 resolution](https://h3geo.org/docs/core-library/restable/) (default `0`).
+The approach this project takes is:
 
-## features
-
-- passive collection of predicted sky brightness for H3 cells in earth's landmass.
+- use pytorch to capture the relationship between various factors and skybrightness within a [public dataset](https://globeatnight.org/maps-data/)
+- put that behind an gRPC API
+- discretize the world using [H3](https://h3geo.org/docs/core-library/restable/)
+- continuously get predicted sky brightness for those H3 cells
 
 ## todos
 
