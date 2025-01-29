@@ -14,12 +14,9 @@ CTTS is an open source application for reading [sky brightness](https://en.wikip
 
 ## todos
 
-- [x] support for continents other than north america
-- [x] less noisy container startup
-- [x] better storage of predictions in order to faciliate grouping/sorting
-- [ ] updates to open meteo weather data while app is running
-- [ ] monitoring/alerting layer for prediction cycle
-- [ ] availability of images on image repository
+- [ ] update open meteo data while app is running
+- [ ] create typer app to manage brightness model
+- [ ] brightness prediction cycle can push alerts
 
 ## about
 
