@@ -4,14 +4,7 @@
 
 CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) all over the earth's landmass, without a sensor.
 
-## about
-
-This project is motivated by wanting an answer to the following question:
-
-> how much better are the stars in the [Atacama](https://en.wikipedia.org/wiki/Atacama_Desert) than in my backyard?
-
-It would be infeasible to have [sensors](http://unihedron.com/projects/darksky/TSL237-E32.pdf)
-everywhere you would want a sky brightness measurement, but one path is to do inference of this value.
+Specifically, it conducts a survey of H3 cells in earth's landmass in terms of their sky brightness.
 
 The approach this project takes is:
 
@@ -22,9 +15,9 @@ The approach this project takes is:
 
 ## todos
 
-- [ ] update open meteo data while app is running
-- [ ] create typer app to manage brightness model
-- [ ] brightness prediction cycle can push alerts
+- [ ] improved scripts to interact with brightness model
+- [ ] keep open meteo weather data updated while app is running
+- [ ] broker for generation of alerts from brightness survey
 
 ## running with docker
 
