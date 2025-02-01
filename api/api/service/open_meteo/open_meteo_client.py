@@ -9,11 +9,12 @@ from ..utils import get_astro_time_hour
 
 model = config["meteo"]["model"]
 
+
 class OpenMeteoClient:
     def __init__(self, site: ObservationSite) -> None:
         self.site = site
 
-        protocol=config["meteo"]["protocol"]
+        protocol = config["meteo"]["protocol"]
         host = config["meteo"]["host"]
         port = config["meteo"]["port"]
         self.url_base = f"{protocol}://{host}:{port}"
@@ -26,13 +27,13 @@ class OpenMeteoClient:
             "latitude": lat,
             "longitude": lon,
             "models": model,
-            "hourly": ",".join(hourly_params)
+            "hourly": ",".join(hourly_params),
         }
         r = requests.get(f"{self.url_base}/v1/forecast", params=params)
         r.raise_for_status()
 
         res_json = r.json()
-        elevation = float(res_json.get("elevation", 0.))
+        elevation = float(res_json.get("elevation", 0.0))
 
         idx = self.get_hourly_index_of_site_time()
         cloud_cover = res_json["hourly"]["cloud_cover"][idx]
@@ -50,8 +51,12 @@ class OpenMeteoClient:
         import math
 
         if cloud_cover_percentage is None or math.isnan(cloud_cover_percentage):
-            raise ValueError("cloud cover percentage is not a number. is open meteo volume up to date?")
+            raise ValueError(
+                "cloud cover percentage is not a number. is open meteo volume up to date?"
+            )
 
         max_oktas = config["meteo"]["max_oktas"]
-        percentage_as_oktas = int(np.interp(cloud_cover_percentage, (0, 100), (0, max_oktas)))
+        percentage_as_oktas = int(
+            np.interp(cloud_cover_percentage, (0, 100), (0, max_oktas))
+        )
         return percentage_as_oktas

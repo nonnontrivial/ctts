@@ -15,7 +15,9 @@ from .observer_site import ObservationSite
 from .pollution.pollution_image import PollutionImage
 from . import config
 
-path_to_state_dict = Path(__file__).parent / config["model"]["state_dict_filename"]
+model_filename = "model.pth"
+path_to_state_dict = Path(__file__).parent / model_filename
+
 pollution_image = PollutionImage()
 
 
@@ -23,8 +25,8 @@ class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
     def GetPollution(self, request, context):
         lat, lon = request.lat, request.lon
 
-        r,g,b,a = pollution_image.get_rgba_at_coords(lat,lon)
-        pollution = brightness_service_pb2.Pollution(r=r,g=g,b=b,a=a)
+        r, g, b, a = pollution_image.get_rgba_at_coords(lat, lon)
+        pollution = brightness_service_pb2.Pollution(r=r, g=g, b=b, a=a)
         return pollution
 
     def GetBrightnessObservation(self, request, context):
@@ -72,6 +74,6 @@ class BrightnessServicer(brightness_service_pb2_grpc.BrightnessServiceServicer):
                 lat=lat,
                 lon=lon,
                 utc_iso=time_utc.isoformat(),
-                mpsas=predicted_y
+                mpsas=predicted_y,
             )
             return observation
