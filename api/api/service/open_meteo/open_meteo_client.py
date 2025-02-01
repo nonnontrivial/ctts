@@ -1,4 +1,5 @@
 import typing as t
+import logging
 
 import requests
 
@@ -6,6 +7,8 @@ from .. import config
 
 from ..observer_site import ObservationSite
 from ..utils import get_astro_time_hour
+
+log = logging.getLogger(__name__)
 
 model = config["meteo"]["model"]
 
@@ -37,7 +40,11 @@ class OpenMeteoClient:
 
         idx = self.get_hourly_index_of_site_time()
         cloud_cover = res_json["hourly"]["cloud_cover"][idx]
-        cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
+        try:
+            cloud_cover = self.get_cloud_cover_as_oktas(cloud_cover)
+        except Exception as e:
+            log.error(f"failed to get cloud cover {e}")
+            cloud_cover = 8
 
         return cloud_cover, elevation
 
