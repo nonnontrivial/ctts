@@ -68,7 +68,7 @@ def add_moon_columns(df: pd.DataFrame) -> pd.DataFrame:
     import astropy.units as u
 
     def get_moon_altaz(datetime, lat, lon):
-        """get moon position in altitude/azimuth"""
+        """get moon position (altitude, azimuth)"""
         time = Time(datetime)
         location = EarthLocation.from_geodetic(lon * u.degree, lat * u.degree)
         observer = Observer(location=location)

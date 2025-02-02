@@ -15,7 +15,7 @@ The approach this project takes is:
 
 ## todos
 
-- [ ] improved scripts to interact with brightness model
+- [x] improved scripts to interact with brightness model
 - [ ] keep open meteo weather data updated while app is running
 - [ ] broker for generation of alerts from brightness survey
 

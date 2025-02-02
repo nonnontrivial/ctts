@@ -2,6 +2,15 @@
 
 > n.b. these scripts use [`uv`](https://docs.astral.sh/uv/guides/scripts/#declaring-script-dependencies)
 
+## `unpack.py`
+
+unpacks zip containing sky brightness dataset into the path that the prepare
+script looks for it.
+
+```sh
+uv run unpack.py
+```
+
 ## `prepare.py`
 
 prepares the training data by combining source data into a single dataframe
