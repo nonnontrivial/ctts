@@ -15,7 +15,7 @@ The approach this project takes is:
 
 ## todos
 
-- [x] improved scripts to interact with brightness model
+- [x] improved scripts for interacting with brightness model
 - [ ] keep open meteo weather data updated while app is running
 - [ ] broker for generation of alerts from brightness survey
 
@@ -26,9 +26,6 @@ The approach this project takes is:
 - run the following:
 
 ```shell
-# create the volume for weather data
-docker volume create --name open-meteo-data
-
 # get latest data into the above volume
 ./update-open-meteo-data.sh
 
