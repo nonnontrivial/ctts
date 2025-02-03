@@ -13,3 +13,5 @@ data/globe_at_night/*.csv
 
 prediction/*.csv
 design.md
+
+scripts/stubs/*.py
