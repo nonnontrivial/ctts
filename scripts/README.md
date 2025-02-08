@@ -7,7 +7,8 @@
 uv run unpack.py
 ```
 
-- `stubgen.py` generate gRPC stubs
+- `profile.py` get brightness message ingest rate
+- `stubgen.py` generate gRPC stubs from the top proto file
 - `verify.py` call brightness endpoint against given lat and lon
 - `unpack.py` unpacks zip containing sky brightness dataset into the path that the prepare script looks for it.
 - `prepare.py` prepares the training data by combining source data into a single dataframe and writing it to csv.
