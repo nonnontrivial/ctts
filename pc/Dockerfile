@@ -3,10 +3,11 @@ FROM python:${VERSION}
 
 LABEL maintainer="Kevin Donahue <nonnontrivial@gmail.com>"
 
-WORKDIR /app
-COPY ./requirements.txt .
+RUN pip install uv
 
-RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
+WORKDIR /app
+COPY requirements.txt .
+RUN uv pip install --system -r requirements.txt
 
 COPY . .
 
