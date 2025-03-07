@@ -37,7 +37,7 @@ features = [
 
 # we need the package containing nn module; add it to the path
 try:
-    sys.path.append((list(Path.cwd().parent.rglob("neural_net"))[0]).as_posix())
+    sys.path.append((list(Path.cwd().parent.rglob("model.py"))[0]).parent.as_posix())
 except Exception as e:
     log.error(f"failed to add nn module to path {e}")
     sys.exit(1)

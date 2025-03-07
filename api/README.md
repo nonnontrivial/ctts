@@ -1,37 +1,17 @@
 # api
 
-api server for sky brightness
+API server for sky brightness in terms of H3 cells.
 
-## running the tests
+## run
+
+Startup the API server:
 
 ```sh
-python3 -m pytest
+uv run fastapi dev
 ```
 
-## gRPC client example
+Make a request:
 
-- install dependencies `pip install grpcio-tools grpcio protobuf`
-- generate the stubs using `python3 -m grpc_tools.protoc` in terms of the `.proto` file in this repo
-
-```py
-"""client which will get predicted sky brightness for the current time at
-given coordinates"""
-import grpc
-
-from stubs import brightness_service_pb2
-from stubs import brightness_service_pb2_grpc
-
-host = "localhost"
-port = 50051
-
-with grpc.insecure_channel(f"{host}:{port}") as channel:
-    lat,lon=(0.,0.)
-
-    stub = brightness_service_pb2_grpc.BrightnessServiceStub(channel)
-
-    request = brightness_service_pb2.Coordinates(lat=lat, lon=lon)
-    response = stub.GetBrightnessObservation(request)
-
-    print(response)
-
+```sh
+curl -X POST -H 'Content-Type: application/json' -d '["8928308280fffff"]' localhost:8000/infer
 ```

@@ -1,15 +1,8 @@
+from pathlib import Path
+import torch
 import torch.nn as nn
 
-features = [
-    "Latitude",
-    "Longitude",
-    "Elevation",
-    "CloudCover",
-    "UTTimeHour",
-    "MoonAlt",
-    "MoonAz",
-]
-
+NUM_FEATURES = 7
 HIDDEN_SIZE = 64 * 3
 OUTPUT_SIZE = 1
 
@@ -17,9 +10,8 @@ OUTPUT_SIZE = 1
 class NN(nn.Module):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(len(features), HIDDEN_SIZE),
+            nn.Linear(NUM_FEATURES, HIDDEN_SIZE),
             nn.ReLU(),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE // 2),
             nn.ReLU(),
@@ -27,6 +19,7 @@ class NN(nn.Module):
         )
 
     def forward(self, x):
-        x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
+        return self.linear_relu_stack(x)
+
+
+path_to_state_dict = Path(__file__).parent / "model.pth"

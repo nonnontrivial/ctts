@@ -1,14 +1,9 @@
-ARG VERSION=3.12.6-slim-bookworm
-FROM python:${VERSION}
+FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-LABEL maintainer="Kevin Donahue <nonnontrivial@gmail.com>"
-
-RUN pip install uv
+COPY . /app
 
 WORKDIR /app
-COPY requirements.txt .
-RUN uv pip install --system -r requirements.txt
+RUN uv sync --frozen --no-cache
 
-COPY . .
-
-CMD python -m api.main
+CMD ["/app/.venv/bin/fastapi", "run", "app/main.py", "--port", "80", "--host", "0.0.0.0"]

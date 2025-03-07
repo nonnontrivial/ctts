@@ -35,40 +35,27 @@ services:
   api:
     build: ./api
     ports:
-      - "50051:50051"
+      - "8000:80"
     restart: on-failure
     depends_on:
       openmeteo:
         condition: service_started
 
-  producer:
-    build: ./pp
-    environment:
-      API_HOST: "api"
-      RABBITMQ_HOST: "rabbitmq"
-      RESOLUTION: 0
-    restart: on-failure
-    depends_on:
-      api:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
-
-  consumer:
-    build: ./pc
-    ports:
-      - "8090:8090"
-    environment:
-      AMQP_HOST: "rabbitmq"
-      PG_DATABASE: "postgres"
-    restart: on-failure
-    depends_on:
-      postgres:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
+  # producer:
+  #   build: ./pp
+  #   environment:
+  #     API_HOST: "api"
+  #     RABBITMQ_HOST: "rabbitmq"
+  #     RESOLUTION: 0
+  #   restart: on-failure
+  #   depends_on:
+  #     api:
+  #       condition: service_started
+  #     rabbitmq:
+  #       condition: service_healthy
 
 volumes:
   postgres-data:
   open-meteo-data:
     external: true
+
