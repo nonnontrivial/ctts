@@ -5,16 +5,12 @@
 
 from pathlib import Path
 import shutil
-import logging
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-log = logging.getLogger(__name__)
 
 
 def main() -> None:
-    zip_path = list(Path.cwd().glob("gan.zip"))[0]
-    log.info(f"unpacking {zip_path} to {zip_path.parent}")
+    zip_path = list(Path.cwd().glob("gan-data.zip"))[0]
     shutil.unpack_archive(zip_path, zip_path.parent, "zip")
+    print("done")
 
 
 if __name__ == "__main__":

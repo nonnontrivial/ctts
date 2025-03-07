@@ -115,8 +115,10 @@ def add_cloud_cover_columns(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> None:
     """collect the brightness data into a single dataframe, and then write it to
     csv file for model training."""
-    data_dir_path = list(Path.cwd().parent.rglob("brightness_data"))[0]
-    assert data_dir_path.exists(), "data dir path des not exist!"
+    data_dir_path = Path.cwd() / "gan-data"
+
+    log.info("removing old csv file")
+    (data_dir_path / csv_filename).unlink(missing_ok=True)
 
     log.info("getting single dataframe from source files")
     df = get_single_dataframe(data_dir_path)
