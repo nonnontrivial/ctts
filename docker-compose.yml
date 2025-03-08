@@ -31,6 +31,18 @@ services:
     depends_on:
       openmeteo:
         condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:80')",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
   snapshot:
     build: ./snapshot
@@ -42,7 +54,7 @@ services:
     restart: on-failure
     depends_on:
       api:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     volumes:

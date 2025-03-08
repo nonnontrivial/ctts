@@ -55,7 +55,7 @@ async def main():
     await rabbit_mq.connect()
     while True:
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=10) as client:
                 response = await client.post(inference_url, json=cell_ids)
                 response.raise_for_status()
                 data = response.json()
