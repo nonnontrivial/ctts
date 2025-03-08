@@ -32,18 +32,19 @@ services:
       openmeteo:
         condition: service_started
 
-  # producer:
-  #   build: ./pp
-  #   environment:
-  #     API_HOST: "api"
-  #     RABBITMQ_HOST: "rabbitmq"
-  #     RESOLUTION: 0
-  #   restart: on-failure
-  #   depends_on:
-  #     api:
-  #       condition: service_started
-  #     rabbitmq:
-  #       condition: service_healthy
+  snapshot:
+    build: ./snapshot
+    environment:
+      RESOLUTION: 0
+      API_HOST: "api"
+      API_PORT: "80"
+      RABBITMQ_HOST: "rabbitmq"
+    restart: on-failure
+    depends_on:
+      api:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   open-meteo-data:

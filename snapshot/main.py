@@ -5,11 +5,19 @@ import json
 import h3
 from shapely.geometry import shape, Polygon
 from pathlib import Path
+from rabbitmq import RabbitMQ
 
 
 resolution = int(os.environ.get("RESOLUTION", 0))
 api_host = os.environ.get("API_HOST", "localhost")
-api_port = 8000
+api_port = int(os.environ.get("API_PORT", 8000))
+
+rabbitmq_user = os.getenv("RABBITMQ_USER", "guest")
+rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "guest")
+rabbitmq_host = os.getenv("RABBITMQ_HOST", "localhost")
+queue = os.getenv("QUEUE", "brightness.snapshot")
+
+broker_url = f"amqp://{rabbitmq_user}:{rabbitmq_password}@{rabbitmq_host}"
 inference_url = f"http://{api_host}:{api_port}/infer"
 
 
@@ -38,13 +46,15 @@ async def main():
 
     geojson = json.loads(geojson_path.read_text())
     cell_ids = get_cell_ids(geojson)
+    rabbit_mq = RabbitMQ(broker_url, queue)
     while True:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(inference_url, json=cell_ids)
                 response.raise_for_status()
                 data = response.json()
-                print(data)
+                await rabbit_mq.publish(data)
+                # print(data)
         except Exception as e:
             print(f"failed to get inference: {e}")
         await asyncio.sleep(0.1)
