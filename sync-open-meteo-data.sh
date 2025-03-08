@@ -3,6 +3,7 @@
 volume_name="open-meteo-data"
 
 sync_open_meteo_data() {
+    echo "syncing volume"
     # Download the digital elevation model
     docker run -it --rm -v open-meteo-data:/app/data ghcr.io/open-meteo/open-meteo sync copernicus_dem90 static
 
@@ -14,7 +15,7 @@ sync_open_meteo_data() {
 }
 
 if docker volume ls -q | grep -q "^${volume_name}$"; then
-    echo "volume $volume_name exists; updating volume"
+    echo "volume $volume_name exists"
     sync_open_meteo_data
 else
     echo "$volume_name does not exist; creating it"

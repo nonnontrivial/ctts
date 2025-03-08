@@ -15,7 +15,6 @@ class RabbitMQ:
             self.channel = await self.connection.channel()
 
     async def publish(self, message: dict):
-        await self.connect()
         if self.channel is not None:
             await self.channel.default_exchange.publish(
                 aio_pika.Message(
