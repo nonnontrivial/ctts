@@ -1,15 +1,4 @@
 services:
-  postgres:
-    image: "postgres:latest"
-    environment:
-      POSTGRES_DB: "postgres"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
   rabbitmq:
     image: "rabbitmq:4.1-rc-alpine"
     environment:
@@ -37,6 +26,8 @@ services:
     ports:
       - "8000:80"
     restart: on-failure
+    environment:
+      OPEN_METEO_HOST: "openmeteo"
     depends_on:
       openmeteo:
         condition: service_started
@@ -55,7 +46,5 @@ services:
   #       condition: service_healthy
 
 volumes:
-  postgres-data:
   open-meteo-data:
     external: true
-
