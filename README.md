@@ -28,7 +28,23 @@ snapshot-1   | 2025-03-08 15:45:26,089 - INFO - published data for 30 cells to b
 
 5. run `consume.py` in `scripts/` to confirm brightness messages are published to the queue
 
+> should print similar to the following to stdout:
+
+> n.b. values are in [magnitudes per square arcsecond](http://www.unihedron.com/projects/darksky/faq.php)
+
 ```log
+{'inferred_brightnesses': {'8007fffffffffff': 10.901800155639648,
+                           '800bfffffffffff': 21.089460372924805,
+                           '800dfffffffffff': 20.05628776550293,
+                           '800ffffffffffff': 18.548799514770508,
+                           '8011fffffffffff': 19.88709259033203,
+                           '8013fffffffffff': 20.946475982666016,
+                           '8015fffffffffff': 21.49527359008789,
+                           '801ffffffffffff': 19.345762252807617,
+                           '8021fffffffffff': 19.674654006958008,
+                           '8025fffffffffff': 18.359445571899414,
+                           '8027fffffffffff': 12.232080459594727,
+                           ...
 ```
 
 ## licensing
