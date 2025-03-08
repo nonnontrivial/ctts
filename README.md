@@ -4,6 +4,8 @@
 
 CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) without a sensor.
 
+It works by using a model trained on [GaN](https://globeatnight.org/maps-data/) data to do inference of sky brightness in terms of [H3 cells](https://h3geo.org).
+
 ## features
 
 - api server for sky brightness at given H3 cells
@@ -26,7 +28,7 @@ snapshot-1   | 2025-03-08 15:45:26,085 - INFO - HTTP Request: POST http://api/in
 snapshot-1   | 2025-03-08 15:45:26,089 - INFO - published data for 30 cells to brightness.snapshot
 ```
 
-5. run `consume.py` in `scripts/` to confirm brightness messages are published to the queue
+5. run `consume.py` in `scripts/` to record brightness messages that are published to the queue
 
 > should print similar to the following to stdout:
 
