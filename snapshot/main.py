@@ -42,7 +42,7 @@ def get_cell_ids(geojson: dict) -> list[str]:
 async def main():
     geojson_path = Path("./data.geojson")
     if not geojson_path.exists():
-        raise FileNotFoundError("GeoJSON file not found")
+        raise FileNotFoundError(f"GeoJSON file not found at {geojson_path}")
 
     geojson = json.loads(geojson_path.read_text())
     cell_ids = get_cell_ids(geojson)

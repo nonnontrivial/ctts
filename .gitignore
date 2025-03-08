@@ -10,3 +10,5 @@ scripts/gan-data/**/*.csv
 
 prediction/*.csv
 design.md
+data.geojson
+
