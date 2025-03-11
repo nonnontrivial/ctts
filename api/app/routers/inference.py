@@ -39,9 +39,11 @@ async def infer(cell_ids: List[str]):
         with torch.no_grad():
             inferred = model(x)
         return {
+            "time": Time.now().iso,
+            "units": {"inferred_brightnesses": "mpsas"},
             "inferred_brightnesses": {
                 x: y[0] for x, y in zip(cell_ids, inferred.tolist()[0])
-            }
+            },
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

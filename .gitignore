@@ -3,6 +3,7 @@
 __pycache__/
 .pytest_cache
 
+*.db
 *.log
 .DS_Store
 
@@ -11,4 +12,3 @@ scripts/gan-data/**/*.csv
 prediction/*.csv
 design.md
 data.geojson
-

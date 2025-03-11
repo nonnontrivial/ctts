@@ -20,7 +20,7 @@ To continuously generate snapshots of sky brightness over H3 cells in given geoj
 3. create `./data.geojson` (cells will be made from the exterior space of polygons in this file)
 4. run the containers: `docker compose up --build`
 
-> logs in docker should look like this:
+> e.g. logs in docker should look like this:
 
 ```log
 api-1        |       INFO   172.18.0.5:53506 - "POST /infer HTTP/1.1" 200
@@ -28,26 +28,28 @@ snapshot-1   | 2025-03-08 15:45:26,085 - INFO - HTTP Request: POST http://api/in
 snapshot-1   | 2025-03-08 15:45:26,089 - INFO - published data for 30 cells to brightness.snapshot
 ```
 
-5. run `consume.py` in `scripts/` to record brightness messages that are published to the queue
+5. hook into this data by running one of the consumer scripts in `./consumers/`
 
-> should print similar to the following to stdout:
+## consumers
 
-> n.b. values are in [magnitudes per square arcsecond](http://www.unihedron.com/projects/darksky/faq.php)
+> n.b. examples are provided in `./consumers/`
 
-```log
-{'inferred_brightnesses': {'8007fffffffffff': 10.901800155639648,
-                           '800bfffffffffff': 21.089460372924805,
-                           '800dfffffffffff': 20.05628776550293,
-                           '800ffffffffffff': 18.548799514770508,
-                           '8011fffffffffff': 19.88709259033203,
-                           '8013fffffffffff': 20.946475982666016,
-                           '8015fffffffffff': 21.49527359008789,
-                           '801ffffffffffff': 19.345762252807617,
-                           '8021fffffffffff': 19.674654006958008,
-                           '8025fffffffffff': 18.359445571899414,
-                           '8027fffffffffff': 12.232080459594727,
-                           ...
+**consumers** are just a way of hooking into brightness data published by the snapshot container.
+
+The messages coming over the `brightness.snapshot` queue are JSON objects with the following structure:
+
+```json
+{
+  "time": "<iso 8601 datetime at inference completion>",
+  "units": {
+    "inferred_brightnesses": "mpsas"
+  },
+  "inferred_brightnesses": {
+    "<cell_id>": "<brightness>"
+  }
+}
 ```
+
 
 ## licensing
 

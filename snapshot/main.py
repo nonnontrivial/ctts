@@ -61,7 +61,7 @@ async def main():
                 data = response.json()
                 await rabbit_mq.publish(data)
                 log.info(
-                    f"published data for {len(data[next(iter(data))])} cells to {queue}"
+                    f"published data for {len(data['inferred_brightnesses'])} cells to {queue}"
                 )
         except Exception as e:
             import traceback
