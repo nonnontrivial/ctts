@@ -11,10 +11,11 @@ import time
 import asyncio
 import aio_pika
 
-snapshot_queue_name = "brightness.snapshot"
+snapshot_queue = "brightness.snapshot"
 broker_url = "amqp://guest:guest@localhost/"
 
-conn = sqlite3.connect("brightness.db")
+db = "brightness.db"
+conn = sqlite3.connect(db)
 cursor = conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS brightness (
@@ -34,7 +35,7 @@ def insert_records(records: list[tuple]) -> None:
     """,
         records,
     )
-    print(f"inserted {len(records)} records")
+    print(f"inserted {len(records)} records to {db}")
     conn.commit()
 
 
@@ -42,7 +43,7 @@ async def main() -> None:
     try:
         connection = await aio_pika.connect_robust(broker_url)
         channel = await connection.channel()
-        queue = await channel.declare_queue(snapshot_queue_name)
+        queue = await channel.declare_queue(snapshot_queue)
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():
