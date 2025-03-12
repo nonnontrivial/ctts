@@ -30,7 +30,7 @@ snapshot-1   | 2025-03-08 15:45:26,089 - INFO - published data for 30 cells to b
 
 5. hook into this data by running one of the consumer scripts in `./consumers/`
 
-## consumers
+### consumers
 
 > n.b. examples are provided in `./consumers/`
 
@@ -40,7 +40,9 @@ The messages coming over the `brightness.snapshot` queue are JSON objects with t
 
 ```json
 {
-  "time": "<iso 8601 datetime at inference completion>",
+  "times": {
+    "completed_at": "<iso8601 timestamp>",
+  },
   "units": {
     "inferred_brightnesses": "mpsas"
   },
@@ -50,6 +52,21 @@ The messages coming over the `brightness.snapshot` queue are JSON objects with t
 }
 ```
 
+### configuration
+
+#### resolution
+
+To adjust the H3 resolution that is used to fill the geojson geometry, edit the `RESOLUTION` env var in
+the snapshot container in `./docker-compose.yml` file.
+
+## images
+
+the `api` image is available from ghcr.io:
+
+```sh
+docker pull ghcr.io/nonnontrivial/ctts-api:latest
+
+```
 
 ## licensing
 
