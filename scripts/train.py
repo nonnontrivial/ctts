@@ -23,7 +23,6 @@ log = logging.getLogger(__name__)
 epochs = 100
 csv_filename = "gan.csv"
 model_filename = "model.pth"
-service_dir_path = list(Path.cwd().parent.rglob("service"))[0]
 
 features = [
     "Latitude",
@@ -37,12 +36,13 @@ features = [
 
 # we need the package containing nn module; add it to the path
 try:
-    sys.path.append((list(Path.cwd().parent.rglob("model.py"))[0]).parent.as_posix())
+    model_path = list(Path.cwd().parent.rglob("model.py"))[0]
+    sys.path.append(model_path.parent.as_posix())
 except Exception as e:
     log.error(f"failed to add nn module to path {e}")
     sys.exit(1)
 else:
-    from nn import NN
+    from model import NN
 
     log.info("loaded neural net")
 
@@ -112,8 +112,8 @@ def evaluate_model(data_loader: DataLoader, model: NN, loss_fn: nn.HuberLoss):
 
 
 def main() -> None:
-    data_dir_path = list(Path.cwd().parent.rglob("brightness_data"))[0]
-    assert data_dir_path.exists(), "data dir path des not exist!"
+    data_dir_path = Path("./gan-data")
+    assert data_dir_path.exists(), "data dir path does not exist!"
 
     log.info("getting datasets from source file")
     train_dataloader, test_dataloader = get_datasets(data_dir_path)
@@ -134,8 +134,8 @@ def main() -> None:
     log.info("running model on test data")
     evaluate_model(test_dataloader, model, loss_fn)
 
-    log.info(f"writing {model_filename} to {service_dir_path}")
-    torch.save(model.state_dict(), service_dir_path / model_filename)
+    log.info(f"writing {model_filename} to {model_path.parent}")
+    torch.save(model.state_dict(), model_path.parent / model_filename)
 
 
 if __name__ == "__main__":
