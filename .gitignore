@@ -5,6 +5,7 @@ __pycache__/
 
 *.db
 *.log
+*.swp
 .DS_Store
 
 scripts/gan-data/**/*.csv
