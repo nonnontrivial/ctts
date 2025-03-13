@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 epochs = 100
 csv_filename = "gan.csv"
-model_filename = "model.pth"
+state_dict_filename = "model.pth"
 
 features = [
     "Latitude",
@@ -34,12 +34,13 @@ features = [
     "MoonAz",
 ]
 
-# we need the package containing nn module; add it to the path
+# we need the package containing the model; add it to the path
 try:
     model_path = list(Path.cwd().parent.rglob("model.py"))[0]
-    sys.path.append(model_path.parent.as_posix())
+    model_parent = model_path.parent.as_posix()
+    sys.path.append(model_parent)
 except Exception as e:
-    log.error(f"failed to add nn module to path {e}")
+    log.error(f"failed to add package to path {e}")
     sys.exit(1)
 else:
     from model import NN
@@ -94,7 +95,7 @@ def train_model(
         output = model(X)
         loss = loss_fn(output.squeeze(), y)
         loss.backward()
-        nn.utils.clip_grad.clip_grad_norm(model.parameters(), max_norm=5)
+        nn.utils.clip_grad.clip_grad_norm_(model.parameters(), max_norm=5)
         optimizer.step()
         if batch % 100 == 0:
             loss, current = loss.item(), (batch + 1) * len(X)
@@ -134,9 +135,12 @@ def main() -> None:
     log.info("running model on test data")
     evaluate_model(test_dataloader, model, loss_fn)
 
-    log.info(f"writing {model_filename} to {model_path.parent}")
-    torch.save(model.state_dict(), model_path.parent / model_filename)
+    log.info(f"writing {state_dict_filename} to {model_path.parent}")
+    torch.save(model.state_dict(), model_path.parent / state_dict_filename)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        log.warning("exiting")
