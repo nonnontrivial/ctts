@@ -58,7 +58,7 @@ services:
       rabbitmq:
         condition: service_healthy
     volumes:
-      - ./data.geojson:/app/data.geojson
+      - ./snapshot/data.geojson:/app/data.geojson
 
 volumes:
   open-meteo-data:

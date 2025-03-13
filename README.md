@@ -17,8 +17,8 @@ To continuously generate snapshots of sky brightness over H3 cells in given geoj
 
 1. clone the repo
 2. sync openmeteo data: `./sync-open-meteo-data.sh`
-3. create `./data.geojson` (cells will be made from the exterior space of polygons in this file)
-4. run the containers: `docker compose up --build`
+3. create `./snapshot/data.geojson` (cells will be made from the exterior space of polygons in this file)
+4. run the containers: `docker compose up`
 
 > e.g. logs in docker should look like this:
 
