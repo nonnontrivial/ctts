@@ -9,30 +9,18 @@
 
 import logging
 import sys
-import typing
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 log = logging.getLogger(__name__)
-
-epochs = 100
-csv_filename = "gan.csv"
-state_dict_filename = "model.pth"
-
-features = [
-    "Latitude",
-    "Longitude",
-    "Elevation",
-    "CloudCover",
-    "UTTimeHour",
-    "MoonAlt",
-    "MoonAz",
-]
 
 # we need the package containing the model; add it to the path
 try:
@@ -47,14 +35,28 @@ else:
 
     log.info("loaded neural net")
 
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
 
-def get_datasets(data_dir_path: Path):
-    """get the training and test data objects from the gan csv"""
-    import numpy as np
+epochs = 150
+features = [
+    "Latitude",
+    "Longitude",
+    "Elevation",
+    "CloudCover",
+    "UTTimeHour",
+    "MoonAlt",
+    "MoonAz",
+]
 
-    df = pd.read_csv(data_dir_path / csv_filename)
 
-    torch.set_printoptions(sci_mode=False)
+def get_datasets(data_dir_path: Path) -> tuple:
+    df = pd.read_csv(data_dir_path / "gan.csv")
     feature_tensor = torch.tensor(df[features].values.astype(np.float32))
     feature_tensor = torch.nan_to_num(feature_tensor, nan=0.0)
     target_tensor = torch.tensor(df["SQMReading"].values.astype(np.float32)).to(
@@ -71,14 +73,7 @@ def get_datasets(data_dir_path: Path):
     return train_dataloader, test_dataloader
 
 
-def get_model() -> typing.Any:
-    device = (
-        "cuda"
-        if torch.cuda.is_available()
-        else "mps"
-        if torch.backends.mps.is_available()
-        else "cpu"
-    )
+def get_model():
     model = NN().to(device)
     return model
 
@@ -88,9 +83,9 @@ def train_model(
     model: NN,
     loss_fn: nn.HuberLoss,
     optimizer: torch.optim.Adam,
-):
-    model.train()
+) -> None:
     for batch, (X, y) in enumerate(data_loader):
+        X, y = X.to(device), y.to(device)
         optimizer.zero_grad()
         output = model(X)
         loss = loss_fn(output.squeeze(), y)
@@ -102,21 +97,25 @@ def train_model(
             log.info(f"loss: {loss:>7f} [{current:>5d}]")
 
 
-def evaluate_model(data_loader: DataLoader, model: NN, loss_fn: nn.HuberLoss):
-    model.eval()
+def evaluate_model(data_loader: DataLoader, model: NN, loss_fn: nn.HuberLoss) -> None:
+    size = len(data_loader.dataset)
+    test_loss = 0
     with torch.no_grad():
-        test_loss = 0
-        for batch, (X, y) in enumerate(data_loader):
+        for X, y in data_loader:
+            X, y = X.to(device), y.to(device)
             pred = model(X)
             loss = loss_fn(pred.squeeze(), y)
             test_loss += loss.item() * X.size(0)
+    test_loss /= size
+    log.info(f"avg loss during eval was {test_loss:>8f}")
 
 
 def main() -> None:
+    torch.set_printoptions(sci_mode=False)
+
     data_dir_path = Path("./gan-data")
     assert data_dir_path.exists(), "data dir path does not exist!"
 
-    log.info("getting datasets from source file")
     train_dataloader, test_dataloader = get_datasets(data_dir_path)
     assert train_dataloader is not None, "no training data!"
     assert test_dataloader is not None, "no testing data!"
@@ -124,17 +123,18 @@ def main() -> None:
     model = get_model()
 
     loss_fn = nn.HuberLoss()
-    learning_rate = 1e-5
+    learning_rate = 1e-3
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    log.info("training model")
-    for epoch in range(epochs):
-        log.info(f"epoch {epoch + 1}/{epochs}")
+    model.train()
+    for i in range(epochs):
+        log.info(f"epoch {i + 1}/{epochs}")
         train_model(train_dataloader, model, loss_fn, optimizer)
 
-    log.info("running model on test data")
+    model.eval()
     evaluate_model(test_dataloader, model, loss_fn)
 
+    state_dict_filename = "model.pth"
     log.info(f"writing {state_dict_filename} to {model_path.parent}")
     torch.save(model.state_dict(), model_path.parent / state_dict_filename)
 
