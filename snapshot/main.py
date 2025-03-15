@@ -3,6 +3,7 @@ import httpx
 import os
 import json
 import logging
+import traceback
 import h3
 from shapely.geometry import shape, Polygon
 from pathlib import Path
@@ -21,6 +22,8 @@ rabbitmq_user = os.getenv("RABBITMQ_USER", "guest")
 rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "guest")
 rabbitmq_host = os.getenv("RABBITMQ_HOST", "localhost")
 queue = os.getenv("QUEUE", "brightness.snapshot")
+
+client_timeout_seconds = int(os.getenv("CLIENT_TIMEOUT_SECONDS", 60))
 
 broker_url = f"amqp://{rabbitmq_user}:{rabbitmq_password}@{rabbitmq_host}"
 inference_url = f"http://{api_host}:{api_port}/infer"
@@ -55,17 +58,16 @@ async def main():
     await rabbit_mq.connect()
     while True:
         try:
-            async with httpx.AsyncClient(timeout=10) as client:
+            log.info(f"requesting inference for {len(cell_ids)} cells")
+            async with httpx.AsyncClient(timeout=client_timeout_seconds) as client:
                 response = await client.post(inference_url, json=cell_ids)
                 response.raise_for_status()
                 data = response.json()
                 await rabbit_mq.publish(data)
                 log.info(
-                    f"published data for {len(data['inferred_brightnesses'])} cells to {queue}"
+                    f"published data for {len(data.get('inferred_brightnesses', []))} cells to {queue}"
                 )
         except Exception as e:
-            import traceback
-
             log.error(f"failed to get inference: {traceback.format_exc()}")
         await asyncio.sleep(0.1)
 
