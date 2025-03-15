@@ -15,11 +15,13 @@ snapshot_queue = "brightness.snapshot"
 broker_url = "amqp://guest:guest@localhost/"
 
 db = "brightness.db"
+
 conn = sqlite3.connect(db)
 cursor = conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS brightness (
-    cell TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cell TEXT NOT NULL,
     timestamp INTEGER NOT NULL,
     brightness REAL NOT NULL
 )
@@ -29,14 +31,11 @@ conn.commit()
 
 def insert_records(records: list[tuple]) -> None:
     cursor.executemany(
-        """
-    INSERT OR REPLACE INTO brightness (cell, timestamp, brightness)
-    VALUES (?, ?, ?)
-    """,
+        """INSERT INTO brightness (cell, timestamp, brightness) VALUES (?, ?, ?)""",
         records,
     )
-    print(f"inserted {len(records)} records to {db}")
     conn.commit()
+    print(f"inserted {len(records)} records to {db}")
 
 
 async def main() -> None:
@@ -54,13 +53,14 @@ async def main() -> None:
                         insert_records(
                             [(x, int(time.time()), y) for x, y in data.items()]
                         )
-    except KeyboardInterrupt:
-        pass
     except aio_pika.exceptions.AMQPError as e:
-        print("failed to start consumer; are the main containers running?")
+        print("failed to start consumer; are the containers running?")
     finally:
         conn.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
