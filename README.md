@@ -40,9 +40,7 @@ The messages coming over the `brightness.snapshot` queue are JSON objects with t
 
 ```json
 {
-  "times": {
-    "completed_at": "<iso8601 timestamp>",
-  },
+  "completed_at": "<iso8601 timestamp>",
   "units": {
     "inferred_brightnesses": "mpsas"
   },

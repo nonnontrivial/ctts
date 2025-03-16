@@ -40,9 +40,7 @@ async def infer(cell_ids: List[str]):
             inferred = model(x)
         end = Time.now()
         return {
-            "times": {
-                "completed_at": end.iso,
-            },
+            "completed_at": end.iso,
             "units": {"inferred_brightnesses": "mpsas"},
             "inferred_brightnesses": {
                 x: y[0] for x, y in zip(cell_ids, inferred.tolist()[0])

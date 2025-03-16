@@ -52,11 +52,14 @@ def generate_map(snapshot: dict[str, float]) -> None:
     def cell_brightness_to_hex_color(
         value: float, *, lower_bound=16.0, upper_bound=22.0
     ):
-        normalized = (upper_bound - value) / (upper_bound - lower_bound)
-        r = int(255 * (1 - normalized))
-        g = int(255 * (1 - normalized))
-        b = int(255 * (1 - normalized))
-        return f"#{r:02x}{g:02x}{b:02x}"
+        try:
+            normalized = (upper_bound - value) / (upper_bound - lower_bound)
+            r = int(255 * normalized)
+            g = int(255 * normalized)
+            b = int(255 * normalized)
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except ZeroDivisionError:
+            return "#ffffff"
 
     # TODO get centroid
     cell = next(iter(snapshot.keys()))
@@ -73,6 +76,7 @@ def generate_map(snapshot: dict[str, float]) -> None:
                 brightness, lower_bound=min_brightness, upper_bound=max_brightness
             ),
             fill_opacity=0.5,
+            popup=f"Brightness: {brightness:.2f}",
         ).add_to(m)
     m.save(f"map-{int(time.time())}.html")
 
