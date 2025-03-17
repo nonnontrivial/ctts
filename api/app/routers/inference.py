@@ -6,6 +6,7 @@ from astroplan import Observer
 from astropy.time import Time
 from ..internal.model import NN, path_to_state_dict
 from ..internal.cell import Cell
+from ..internal.region import get_is_night_across_cells
 
 
 router = APIRouter()
@@ -38,9 +39,10 @@ async def infer(cell_ids: List[str]):
         )
         with torch.no_grad():
             inferred = model(x)
-        end = Time.now()
+        end_time = Time.now()
         return {
-            "completed_at": end.iso,
+            "is_night": get_is_night_across_cells(cell_ids, end_time),
+            "completed_at": end_time.iso,
             "units": {"inferred_brightnesses": "mpsas"},
             "inferred_brightnesses": {
                 x: y[0] for x, y in zip(cell_ids, inferred.tolist()[0])

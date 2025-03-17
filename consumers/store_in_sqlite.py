@@ -61,9 +61,8 @@ def generate_map(snapshot: dict[str, float]) -> None:
         except ZeroDivisionError:
             return "#ffffff"
 
-    # TODO get centroid
     cell = next(iter(snapshot.keys()))
-    m = folium.Map(location=list(h3.cell_to_latlng(cell)), zoom_start=10)
+    m = folium.Map(location=list(h3.cell_to_latlng(cell)), zoom_start=7)
     min_brightness = min(snapshot.values())
     max_brightness = max(snapshot.values())
     for cell, brightness in snapshot.items():
@@ -76,7 +75,7 @@ def generate_map(snapshot: dict[str, float]) -> None:
                 brightness, lower_bound=min_brightness, upper_bound=max_brightness
             ),
             fill_opacity=0.5,
-            popup=f"Brightness: {brightness:.2f}",
+            popup=f"{cell}: {brightness:.2f}",
         ).add_to(m)
     m.save(f"map-{int(time.time())}.html")
 
@@ -89,10 +88,10 @@ async def main() -> None:
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():
-                    snapshot: dict | None = json.loads(message.body.decode()).get(
-                        "inferred_brightnesses", None
-                    )
-                    if snapshot is not None:
+                    message_data: dict = json.loads(message.body.decode())
+                    if (
+                        snapshot := message_data.get("inferred_brightnesses")
+                    ) is not None:
                         store_snapshot(snapshot)
                         generate_map(snapshot)
                     else:
