@@ -1,6 +1,6 @@
 import torch
 import h3
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from typing import List
 from astroplan import Observer
 from astropy.time import Time
@@ -29,7 +29,7 @@ def create_cell_feature_vector(lat: float, lon: float) -> list:
 
 
 @router.post("/infer", tags=["inference"])
-async def infer(cell_ids: List[str]):
+async def infer(cell_ids: List[str], get_is_night: bool = Query(True)):
     torch.set_printoptions(sci_mode=False)
     try:
         coords = [h3.cell_to_latlng(x) for x in cell_ids]
@@ -41,12 +41,15 @@ async def infer(cell_ids: List[str]):
             inferred = model(x)
         end_time = Time.now()
         return {
-            "is_night": get_is_night_across_cells(cell_ids, end_time),
             "completed_at": end_time.iso,
             "units": {"inferred_brightnesses": "mpsas"},
             "inferred_brightnesses": {
                 x: y[0] for x, y in zip(cell_ids, inferred.tolist()[0])
             },
-        }
+        } | (
+            {"is_night": get_is_night_across_cells(cell_ids, end_time)}
+            if get_is_night
+            else {}
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
