@@ -32,6 +32,7 @@ def create_cell_feature_vector(lat: float, lon: float) -> list:
 async def infer(cell_ids: List[str], get_is_night: bool = Query(True)):
     torch.set_printoptions(sci_mode=False)
     try:
+        start_time = Time.now()
         coords = [h3.cell_to_latlng(x) for x in cell_ids]
         x = torch.tensor(
             [[create_cell_feature_vector(*x) for x in coords]],
@@ -41,8 +42,9 @@ async def infer(cell_ids: List[str], get_is_night: bool = Query(True)):
             inferred = model(x)
         end_time = Time.now()
         return {
+            "generated_in": (end_time - start_time).to_value("ms"),
             "completed_at": end_time.iso,
-            "units": {"inferred_brightnesses": "mpsas"},
+            "units": {"inferred_brightnesses": "mpsas", "generated_in": "ms"},
             "inferred_brightnesses": {
                 x: y[0] for x, y in zip(cell_ids, inferred.tolist()[0])
             },

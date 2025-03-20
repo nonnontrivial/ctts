@@ -40,13 +40,16 @@ The messages coming over the `brightness.snapshot` queue are JSON objects with t
 
 ```json
 {
-  "is_night": true,
-  "completed_at": "2025-03-17 01:51:55.104",
-  "units": { "inferred_brightnesses": "mpsas" },
+  "generated_in": 50.59500000399453,
+  "completed_at": "2025-03-20 12:37:51.516",
+  "units": {
+    "inferred_brightnesses": "mpsas",
+    "generated_in": "ms"
+  },
   "inferred_brightnesses": {
-    "852aa61bfffffff": 14.050867080688477,
-    "852aa69bfffffff": 13.867841720581055
-  }
+    "8928308280fffff": 18.303659439086914
+  },
+  "is_night": true
 }
 ```
 
