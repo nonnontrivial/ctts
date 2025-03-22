@@ -40,11 +40,7 @@ snapshot-1   | 2025-03-22 23:37:57,268 - INFO - published data for 49 cells to b
 uv run store_in_sqlite.py
 ```
 
-### consumers
-
-> n.b. examples are provided in `./consumers/`
-
-**consumers** are just a way of hooking into brightness data published by the snapshot container.
+## message format
 
 The messages coming over the `brightness.snapshot` queue are JSON objects with the following structure:
 
