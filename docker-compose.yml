@@ -23,9 +23,11 @@ services:
 
   api:
     build: ./api
+    restart: on-failure
     ports:
       - "8000:80"
-    restart: on-failure
+    volumes:
+      - ./data:/data
     environment:
       OPEN_METEO_HOST: "openmeteo"
     depends_on:

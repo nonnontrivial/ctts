@@ -18,9 +18,7 @@ import h3
 snapshot_queue = "brightness.snapshot"
 broker_url = "amqp://guest:guest@localhost/"
 
-db = "brightness.db"
-
-conn = sqlite3.connect(db)
+conn = sqlite3.connect("../data/ctts.db")
 cursor = conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS brightness (
@@ -39,7 +37,7 @@ def insert_cell_brightness_records(records: list[tuple]) -> None:
         records,
     )
     conn.commit()
-    print(f"inserted {len(records)} records to brightness table in {db}")
+    print(f"inserted {len(records)} records to brightness table")
 
 
 def store_snapshot(snapshot: dict[str, float]) -> None:

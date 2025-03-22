@@ -1,35 +1,25 @@
 import asyncio
+from asyncio.tasks import all_tasks
+from h3._cy import cells
 import httpx
 import os
 import json
 import logging
 import traceback
 import h3
-from shapely.geometry import shape, Polygon
+from itertools import chain
 from pathlib import Path
+from shapely.geometry import shape, Polygon
 from rabbitmq import RabbitMQ
+from config import *
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 log = logging.getLogger(__name__)
 
-resolution = int(os.environ.get("RESOLUTION", 0))
-api_host = os.environ.get("API_HOST", "localhost")
-api_port = int(os.environ.get("API_PORT", 8000))
 
-rabbitmq_user = os.getenv("RABBITMQ_USER", "guest")
-rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "guest")
-rabbitmq_host = os.getenv("RABBITMQ_HOST", "localhost")
-queue = os.getenv("QUEUE", "brightness.snapshot")
-
-client_timeout_seconds = int(os.getenv("CLIENT_TIMEOUT_SECONDS", 60))
-
-broker_url = f"amqp://{rabbitmq_user}:{rabbitmq_password}@{rabbitmq_host}"
-inference_url = f"http://{api_host}:{api_port}/infer"
-
-
-def get_cell_ids(geojson: dict) -> list[str]:
+def get_cell_ids_from_geojson(geojson: dict) -> list[str]:
     cell_ids = []
     for feature in geojson["features"]:
         geometry = shape(feature["geometry"])
@@ -47,29 +37,42 @@ def get_cell_ids(geojson: dict) -> list[str]:
     return cell_ids
 
 
-async def main():
-    geojson_path = Path("./data.geojson")
-    if not geojson_path.exists():
-        raise FileNotFoundError(f"GeoJSON file not found at {geojson_path}")
+async def get_all_geojson() -> list:
+    async with httpx.AsyncClient(timeout=client_timeout_seconds) as client:
+        res = await client.get(geojson_url)
+        res.raise_for_status()
+        return res.json()
 
-    geojson = json.loads(geojson_path.read_text())
-    cell_ids = get_cell_ids(geojson)
+
+async def create_snapshot(cell_ids: list[str]) -> dict:
+    async with httpx.AsyncClient(timeout=client_timeout_seconds) as client:
+        res = await client.post(inference_url, json=cell_ids)
+        res.raise_for_status()
+        return res.json()
+
+
+async def main():
     rabbit_mq = RabbitMQ(broker_url, queue)
     await rabbit_mq.connect()
+
+    all_geojson = await get_all_geojson()
+    cell_ids = list(chain(*[get_cell_ids_from_geojson(x) for x in all_geojson]))
     while True:
         try:
+            if len(cell_ids) == 0:
+                log.info("no cells to process")
+                await asyncio.sleep(1)
+                continue
             log.info(f"requesting inference for {len(cell_ids)} cells")
-            async with httpx.AsyncClient(timeout=client_timeout_seconds) as client:
-                response = await client.post(inference_url, json=cell_ids)
-                response.raise_for_status()
-                data = response.json()
-                await rabbit_mq.publish(data)
-                log.info(
-                    f"published data for {len(data.get('inferred_brightnesses', []))} cells to {queue}"
-                )
+            data = await create_snapshot(cell_ids)
+            await rabbit_mq.publish(data)
         except Exception as e:
             log.error(f"failed to get inference: {traceback.format_exc()}")
-        await asyncio.sleep(0.1)
+        else:
+            log.info(
+                f"published data for {len(data.get('inferred_brightnesses', []))} cells to {queue}"
+            )
+        await asyncio.sleep(1)
 
 
 if __name__ == "__main__":
