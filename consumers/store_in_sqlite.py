@@ -11,12 +11,16 @@ import sqlite3
 import json
 import time
 import asyncio
+import logging
 import aio_pika
 import folium
 import h3
 
-snapshot_queue = "brightness.snapshot"
-broker_url = "amqp://guest:guest@localhost/"
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+log = logging.getLogger(__name__)
+
 
 conn = sqlite3.connect("../data/ctts.db")
 cursor = conn.cursor()
@@ -37,12 +41,12 @@ def insert_cell_brightness_records(records: list[tuple]) -> None:
         records,
     )
     conn.commit()
-    print(f"inserted {len(records)} records to brightness table")
+    log.info(f"inserted {len(records)} records to brightness table")
 
 
 def store_snapshot(snapshot: dict[str, float]) -> None:
     insert_cell_brightness_records(
-        [(x, int(time.time()), y) for x, y in snapshot.items()]
+        [(cell, int(time.time()), mpsas) for cell, mpsas in snapshot.items()]
     )
 
 
@@ -79,10 +83,13 @@ def generate_map(snapshot: dict[str, float]) -> None:
 
 
 async def main() -> None:
+    snapshot_queue = "brightness.snapshot"
+    broker_url = "amqp://guest:guest@localhost/"
     try:
         connection = await aio_pika.connect_robust(broker_url)
         channel = await connection.channel()
         queue = await channel.declare_queue(snapshot_queue)
+
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():
@@ -93,9 +100,9 @@ async def main() -> None:
                         store_snapshot(snapshot)
                         generate_map(snapshot)
                     else:
-                        print("no snapshot found")
+                        log.warning("no snapshot found")
     except aio_pika.exceptions.AMQPError as e:
-        print("failed to start consumer; are the containers running?")
+        log.error("failed to start consumer; are the containers running?")
     finally:
         conn.close()
 

@@ -1,15 +1,15 @@
 import asyncio
-from asyncio.tasks import all_tasks
-from h3._cy import cells
-import httpx
 import os
 import json
 import logging
 import traceback
-import h3
 from itertools import chain
 from pathlib import Path
-from shapely.geometry import shape, Polygon
+
+import h3
+import httpx
+from shapely.geometry import shape, Polygon, MultiPolygon
+
 from rabbitmq import RabbitMQ
 from config import *
 
@@ -23,17 +23,12 @@ def get_cell_ids_from_geojson(geojson: dict) -> list[str]:
     cell_ids = []
     for feature in geojson["features"]:
         geometry = shape(feature["geometry"])
-        if not isinstance(geometry, Polygon):
-            raise TypeError("geojson is not a Polygon")
-
-        # TODO support other types
-        match geometry.geom_type:
-            case "Polygon":
-                exterior = [[y, x] for x, y in list(geometry.exterior.coords)]
-                cells = h3.polygon_to_cells(h3.LatLngPoly(exterior), resolution)
-                cell_ids.extend(cells)
-            case _:
-                pass
+        if isinstance(geometry, Polygon):
+            exterior = [[y, x] for x, y in list(geometry.exterior.coords)]
+            cells = h3.polygon_to_cells(h3.LatLngPoly(exterior), resolution)
+            cell_ids.extend(cells)
+        else:
+            raise NotImplementedError()
     return cell_ids
 
 
@@ -67,7 +62,7 @@ async def main():
             data = await create_snapshot(cell_ids)
             await rabbit_mq.publish(data)
         except Exception as e:
-            log.error(f"failed to get inference: {traceback.format_exc()}")
+            log.error(f"failed to publish snapshot: {traceback.format_exc()}")
         else:
             log.info(
                 f"published data for {len(data.get('inferred_brightnesses', []))} cells to {queue}"
