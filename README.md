@@ -66,6 +66,90 @@ The messages coming over the `brightness.snapshot` queue are JSON objects with t
 To adjust the H3 resolution that is used to fill the geojson geometry, edit the `RESOLUTION` env var in
 the snapshot container in `./docker-compose.yml` file.
 
+## REST api
+
+### `POST /infer`
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d '["8928308280fffff"]' localhost:8000/infer
+```
+
+```json
+{
+  "generated_in": 53.8709999968745,
+  "completed_at": "2025-03-24 23:43:28.575",
+  "units": {
+    "inferred_brightnesses": "mpsas",
+    "generated_in": "ms"
+  },
+  "inferred_brightnesses": {
+    "8928308280fffff": 11.824697494506836
+  },
+  "is_night": false
+}
+```
+
+### `POST /geojson`
+
+> n.b. the geojson stored in the db is what the `snapshot` container uses to
+> make brightness requests
+
+Add a geojson object to the db.
+
+```sh
+# where `data.geojson` is some geojson file
+curl -X POST -H "Content-Type: application/json" -d @data.geojson localhost:8000/geojson
+```
+
+### `GET /geojson`
+
+Get the geojson objects from the db.
+
+```sh
+curl -X GET localhost:8000/geojson
+```
+
+```json
+[
+  {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -79.05384859000527,
+                43.25389088469879
+              ],
+              [
+                -79.05384859000527,
+                42.48475162030496
+              ],
+              [
+                -77.2358957097201,
+                42.48475162030496
+              ],
+              [
+                -77.2358957097201,
+                43.25389088469879
+              ],
+              [
+                -79.05384859000527,
+                43.25389088469879
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      }
+    ]
+  }
+]
+```
+
 ## images
 
 the `api` image is available from ghcr.io:
