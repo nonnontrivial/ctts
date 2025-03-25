@@ -11,16 +11,20 @@
 import logging
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from astroplan import Observer
+from astropy.coordinates import EarthLocation
+from astropy.time import Time
+import astropy.units as u
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
 csv_filename = "gan.csv"
-
 min_sqm = 16
 max_sqm = 22
-
 columns_to_drop = [
     "ID",
     "SQMSerial",
@@ -53,20 +57,12 @@ def get_single_dataframe(data_dir_path: Path) -> pd.DataFrame:
 
 
 def add_date_columns(df: pd.DataFrame) -> pd.DataFrame:
-    import numpy as np
-
-    # create utdatetime column in order to form sine-mapped uttimehour
     df["UTDatetime"] = pd.to_datetime(df["ObsDateTime"], utc=True)
     df["UTTimeHour"] = np.sin(2 * np.pi * df["UTDatetime"].dt.hour / 24)
     return df
 
 
 def add_moon_columns(df: pd.DataFrame) -> pd.DataFrame:
-    from astroplan import Observer
-    from astropy.coordinates import EarthLocation
-    from astropy.time import Time
-    import astropy.units as u
-
     def get_moon_altaz(datetime, lat, lon):
         """get moon position (altitude, azimuth)"""
         time = Time(datetime)
@@ -112,39 +108,43 @@ def add_cloud_cover_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def main() -> None:
-    """collect the brightness data into a single dataframe, and then write it to
-    csv file for model training."""
-    data_dir_path = Path.cwd() / "gan-data"
-
-    log.info("removing old csv file")
-    (data_dir_path / csv_filename).unlink(missing_ok=True)
+def main(data_dir_path: Path) -> None:
+    csv_path = data_dir_path / csv_filename
+    if input(f"this will remove {csv_path}. Continue? [y/N] ").strip().lower() not in {
+        "y",
+        "",
+    }:
+        raise ValueError("User cancelled")
+    csv_path.unlink(missing_ok=True)
 
     log.info("getting single dataframe from source files")
     df = get_single_dataframe(data_dir_path)
-    assert df is not None, "no dataframe!"
+    if df is None:
+        raise ValueError("no dataframe!")
 
     log.info("dropping unnecessary columns")
-    df = df.drop(columns=columns_to_drop)
-    df = df.dropna(subset=columns_that_must_not_be_na, how="any", axis=0)
+    df = df.drop(columns=columns_to_drop).dropna(
+        subset=columns_that_must_not_be_na, how="any", axis=0
+    )
 
     log.info("dropping rows outside of sqm range")
     df = df[df["SQMReading"] <= max_sqm]
     df = df[df["SQMReading"] >= min_sqm]
     df = df.reset_index()
 
-    log.info("adding date columns")
+    log.info(f"adding date columns to {len(df)} rows")
     df = add_date_columns(df)
 
-    log.info("adding moon columns")
+    log.info(f"adding moon columns to {len(df)} rows")
     df = add_moon_columns(df)
 
-    log.info("adding cloud cover columns")
+    log.info(f"adding cloud cover columns to {len(df)} rows")
     df = add_cloud_cover_columns(df)
 
-    log.info(f"writing {csv_filename} to {data_dir_path}")
-    df.to_csv(data_dir_path / csv_filename, index=False)
+    log.info(f"writing {csv_path}")
+    df.to_csv(csv_path, index=False)
 
 
 if __name__ == "__main__":
-    main()
+    data_dir_path = Path.cwd() / "gan-data"
+    main(data_dir_path)

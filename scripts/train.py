@@ -123,20 +123,22 @@ def main() -> None:
     model = get_model()
 
     loss_fn = nn.HuberLoss()
-    learning_rate = 1e-3
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
 
     model.train()
     for i in range(epochs):
         log.info(f"epoch {i + 1}/{epochs}")
         train_model(train_dataloader, model, loss_fn, optimizer)
+        scheduler.step()
 
     model.eval()
     evaluate_model(test_dataloader, model, loss_fn)
 
-    state_dict_filename = "model.pth"
-    log.info(f"writing {state_dict_filename} to {model_path.parent}")
-    torch.save(model.state_dict(), model_path.parent / state_dict_filename)
+    state_dict_path = model_path.parent / "model.pth"
+    log.info(f"writing {state_dict_path}")
+    torch.save(model.state_dict(), state_dict_path)
+    log.info("done")
 
 
 if __name__ == "__main__":
