@@ -2,6 +2,7 @@ import torch
 import h3
 from fastapi import APIRouter, HTTPException, Query
 from typing import List
+from pathlib import Path
 from astroplan import Observer
 from astropy.time import Time
 from ..internal.model import NN, path_to_state_dict
@@ -55,3 +56,11 @@ async def infer(cell_ids: List[str], get_is_night: bool = Query(True)):
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/version", tags=["version"])
+async def version():
+    import json
+
+    model_metadata = Path(__file__).parent.parent / "internal" / "model.json"
+    return json.loads(model_metadata.read_text())

@@ -8,6 +8,8 @@
 # ///
 
 import logging
+import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -21,6 +23,9 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 log = logging.getLogger(__name__)
+
+VERSION = "0.0.1"
+EPOCHS = 220
 
 # we need the package containing the model; add it to the path
 try:
@@ -43,7 +48,6 @@ device = (
     else "cpu"
 )
 
-epochs = 150
 features = [
     "Latitude",
     "Longitude",
@@ -110,6 +114,17 @@ def evaluate_model(data_loader: DataLoader, model: NN, loss_fn: nn.HuberLoss) ->
     log.info(f"avg loss during eval was {test_loss:>8f}")
 
 
+def save_state_dict(model, model_save_path=model_path.parent / "model.pth") -> None:
+    log.info(f"saving state dict to {model_save_path}")
+
+    torch.save(model.state_dict(), model_save_path)
+
+    model_bytes = model_save_path.read_bytes()
+    model_hash = hashlib.sha256(model_bytes).hexdigest()
+    model_metadata = {"hash": model_hash, "version": VERSION}
+    (model_save_path.parent / "model.json").write_text(json.dumps(model_metadata))
+
+
 def main() -> None:
     torch.set_printoptions(sci_mode=False)
 
@@ -124,20 +139,17 @@ def main() -> None:
 
     loss_fn = nn.HuberLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
 
     model.train()
-    for i in range(epochs):
-        log.info(f"epoch {i + 1}/{epochs}")
+    for i in range(EPOCHS):
+        log.info(f"epoch {i + 1}/{EPOCHS}")
         train_model(train_dataloader, model, loss_fn, optimizer)
         scheduler.step()
 
     model.eval()
     evaluate_model(test_dataloader, model, loss_fn)
-
-    state_dict_path = model_path.parent / "model.pth"
-    log.info(f"writing {state_dict_path}")
-    torch.save(model.state_dict(), state_dict_path)
+    save_state_dict(model)
     log.info("done")
 
 

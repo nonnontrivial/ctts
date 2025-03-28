@@ -149,6 +149,21 @@ curl -X GET localhost:8000/geojson
   }
 ]
 ```
+### `GET /version`
+
+Get the hash and version of the sky brightness model.
+
+```sh
+curl -X GET localhost:8000/version
+```
+
+```json
+{
+  "hash": "9b1063ca1c578d67d33b2150ae1a8e5c9c7d87e1261373f2c507a2dd5fe37bf4",
+  "version": "0.0.1"
+}
+
+```
 
 ## images
 
