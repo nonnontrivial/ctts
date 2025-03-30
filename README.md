@@ -13,19 +13,25 @@ It works by using a model trained on [GaN](https://globeatnight.org/maps-data/) 
 
 ## run
 
-To continuously generate snapshots of sky brightness over H3 cells in given geojson file:
+Follow these steps to continuously generate snapshots of sky brightness over
+H3 cells in a given geojson file:
 
 1. clone the repo
-2. sync openmeteo data: `./sync-open-meteo-data.sh`
-3. run the containers: `docker compose up`
-4. add geojson data using the REST endpoint:
+2. run the containers:
 
 ```sh
-# n.b. assumes you have already created `data.geojson`
+docker compose up -d
+```
+
+3. add geojson data using the REST endpoint:
+
+```sh
+# n.b. assumes you have already created `data.geojson`; you can create one with
+# a tool like https://geojson.io/
 curl -X POST -H "Content-Type: application/json" -d @data.geojson localhost:8000/geojson
 ```
 
-5. logs should then begin to look like:
+4. logs should then begin to look like:
 
 ```log
 snapshot-1   | 2025-03-22 23:37:54,313 - INFO - requesting inference for 49 cells
@@ -34,7 +40,7 @@ snapshot-1   | 2025-03-22 23:37:57,265 - INFO - HTTP Request: POST http://api/in
 snapshot-1   | 2025-03-22 23:37:57,268 - INFO - published data for 49 cells to brightness.snapshot
 ```
 
-6. hook into this data by running one of the consumer scripts in `./consumers/`:
+5. hook into this data by running one of the consumer scripts in `./consumers/`:
 
 ```sh
 uv run store_in_sqlite.py
