@@ -171,15 +171,6 @@ curl -X GET localhost:8000/version
 
 ```
 
-## images
-
-the `api` image is available from ghcr.io:
-
-```sh
-docker pull ghcr.io/nonnontrivial/ctts-api:latest
-
-```
-
 ## licensing
 
 This project is licensed under the AGPL-3.0 license.
