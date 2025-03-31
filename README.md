@@ -1,7 +1,5 @@
 # CTTS
 
-> n.b.: this is _alpha software_; apis may change quickly, and inference quality is still being ironed out
-
 CTTS is an open source application for reading [sky brightness](https://en.wikipedia.org/wiki/Sky_brightness) without a sensor.
 
 It works by using a model trained on [GaN](https://globeatnight.org/maps-data/) data to do inference of sky brightness in terms of [H3 cells](https://h3geo.org).
@@ -12,9 +10,6 @@ It works by using a model trained on [GaN](https://globeatnight.org/maps-data/) 
 - continuous "snapshots" of sky brightness over H3 cells in geojson
 
 ## run
-
-Follow these steps to continuously generate snapshots of sky brightness over
-H3 cells in a given geojson file:
 
 1. clone the repo
 2. run the containers:
