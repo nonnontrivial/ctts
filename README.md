@@ -21,8 +21,7 @@ docker compose up -d
 3. add geojson data using the REST endpoint:
 
 ```sh
-# n.b. assumes you have already created `data.geojson`; you can create one with
-# a tool like https://geojson.io/
+# n.b. assumes you have already created `data.geojson`; you can create it using a tool like https://geojson.io/
 curl -X POST -H "Content-Type: application/json" -d @data.geojson localhost:8000/geojson
 ```
 
@@ -38,7 +37,9 @@ snapshot-1   | 2025-03-22 23:37:57,268 - INFO - published data for 49 cells to b
 5. hook into this data by running one of the consumer scripts in `./consumers/`:
 
 ```sh
+# n.b. this script will store the snapshots in a new table in the existing sqlite db, and create folium maps showing the brightness at each cell
 uv run store_in_sqlite.py
+
 ```
 
 ## message format
