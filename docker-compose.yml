@@ -16,7 +16,7 @@ services:
 
   openmeteo-sync:
     image: "ghcr.io/open-meteo/open-meteo"
-    command: sync ncep_gfs013 temperature_2m,cloud_cover --past-days 1 --repeat-interval 10
+    command: sync ncep_gfs013 temperature_2m,cloud_cover --past-days 1
     volumes:
       - open-meteo-data:/app/data
     restart: unless-stopped
@@ -44,7 +44,7 @@ services:
       test:
         [
           "CMD",
-          "python",
+          "python3",
           "-c",
           "import urllib.request; urllib.request.urlopen('http://localhost:80')",
         ]

@@ -13,6 +13,7 @@ import json
 import sys
 import tomllib
 from pathlib import Path
+from argparse import ArgumentParser
 
 import numpy as np
 import pandas as pd
@@ -20,17 +21,19 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
-with open("training.toml", "rb") as f:
+with open("config.toml", "rb") as f:
     config = tomllib.load(f)
 
-VERSION = config["meta"]["version"]
+VERSION = config["model"]["version"]
 EPOCHS = config["training"]["epochs"]
 LEARNING_RATE = config["training"]["learning_rate"]
+FEATURES = config["training"]["features"]
+TARGET = config["training"]["target"]
+BATCH_SIZE = config["training"]["batch_size"]
+HUBER_LOSS_DELTA = config["training"]["huber_loss_delta"]
 
 
 # we need the package containing the model; add it to the path
@@ -54,34 +57,26 @@ device = (
     else "cpu"
 )
 
-features = [
-    "Latitude",
-    "Longitude",
-    "Elevation",
-    "CloudCover",
-    "UTTimeHour",
-    "MoonAlt",
-    "MoonAz",
-]
-
 
 def get_datasets(path_to_gan_csv) -> tuple:
     df = pd.read_csv(path_to_gan_csv)
     log.debug(df.describe())
 
-    feature_tensor = torch.tensor(df[features].values.astype(np.float32))
+    feature_tensor = torch.tensor(df[FEATURES].values.astype(np.float32))
     feature_tensor = torch.nan_to_num(feature_tensor, nan=0.0)
-    target_tensor = torch.tensor(df["SQMReading"].values.astype(np.float32)).to(
-        torch.float32
-    )
+    target_tensor = torch.tensor(df[TARGET].values.astype(np.float32)).to(torch.float32)
 
     data_tensor = TensorDataset(feature_tensor, target_tensor)
     train_size = int(0.8 * len(data_tensor))
     test_size = len(data_tensor) - train_size
     train_tensor, test_tensor = random_split(data_tensor, [train_size, test_size])
 
-    train_dataloader = DataLoader(dataset=train_tensor, batch_size=16, shuffle=True)
-    test_dataloader = DataLoader(dataset=test_tensor, batch_size=16, shuffle=True)
+    train_dataloader = DataLoader(
+        dataset=train_tensor, batch_size=BATCH_SIZE, shuffle=True
+    )
+    test_dataloader = DataLoader(
+        dataset=test_tensor, batch_size=BATCH_SIZE, shuffle=True
+    )
     return train_dataloader, test_dataloader
 
 
@@ -132,15 +127,16 @@ def save_state_dict(model, model_save_path=model_path.parent / "model.pth") -> N
     (model_save_path.parent / "model.json").write_text(json.dumps(model_metadata))
 
 
-def main(path_to_gan_csv: Path) -> None:
+def main(**kwargs) -> None:
     torch.set_printoptions(sci_mode=False)
 
+    path_to_gan_csv = kwargs["data_dir_path"] / "gan.csv"
     train_dataloader, test_dataloader = get_datasets(path_to_gan_csv)
     model = get_model()
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     log.debug(f"staging model {model.__class__.__name__} ({total_params} parameters)")
 
-    loss_fn = nn.HuberLoss(delta=0.1)
+    loss_fn = nn.HuberLoss(delta=HUBER_LOSS_DELTA)
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
 
@@ -156,11 +152,10 @@ def main(path_to_gan_csv: Path) -> None:
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("data_dir_path", type=Path)
     try:
-        path_to_gan_csv = Path("./gan-data/gan.csv")
-        if not path_to_gan_csv.exists():
-            raise FileNotFoundError(f"failed to find {path_to_gan_csv}")
-        main(path_to_gan_csv)
+        main(**vars(parser.parse_args()))
     except KeyboardInterrupt:
         log.warning("exiting")
     else:

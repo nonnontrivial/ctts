@@ -1,0 +1,42 @@
+[model]
+version = "0.0.3"
+
+[data]
+min_sqm = 16
+max_sqm = 22
+obsolete_columns = [
+    "ID",
+    "SQMSerial",
+    "Constellation",
+    "SkyComment",
+    "LocationComment",
+    "Country",
+]
+required_columns = [
+    "ObsDateTime",
+    "Latitude",
+    "Longitude",
+    "Elevation",
+    "CloudCover",
+    "SQMReading",
+]
+[data.open_meteo]
+host = "localhost"
+port = 8080
+
+[training]
+epochs = 80
+learning_rate = 0.00001
+batch_size = 16
+huber_loss_delta = 0.01
+target = "SQMReading"
+features = [
+    "Latitude",
+    "Longitude",
+    "Elevation",
+    "CloudCover",
+    "UTTimeHour",
+    "MoonAlt",
+    "MoonAz",
+]
+

@@ -1,10 +1,13 @@
+from typing import List
+from pathlib import Path
+import json
+
 import torch
 import h3
 from fastapi import APIRouter, HTTPException, Query
-from typing import List
-from pathlib import Path
 from astroplan import Observer
 from astropy.time import Time
+
 from ..internal.model import NN, path_to_state_dict
 from ..internal.cell import Cell
 from ..internal.region import get_is_night_across_cells
@@ -30,7 +33,9 @@ def create_cell_feature_vector(lat: float, lon: float) -> list:
 
 
 @router.post("/infer", tags=["inference"])
-async def infer(cell_ids: List[str], get_is_night: bool = Query(True)):
+async def infer(
+    cell_ids: List[str], get_is_night: bool = Query(True), precision: int = Query(2)
+):
     torch.set_printoptions(sci_mode=False)
     try:
         start_time = Time.now()
@@ -47,7 +52,8 @@ async def infer(cell_ids: List[str], get_is_night: bool = Query(True)):
             "completed_at": end_time.iso,
             "units": {"inferred_brightnesses": "mpsas", "generated_in": "ms"},
             "inferred_brightnesses": {
-                x: y[0] for x, y in zip(cell_ids, inferred.tolist()[0])
+                x: round(y[0], precision)
+                for x, y in zip(cell_ids, inferred.tolist()[0])
             },
         } | (
             {"is_night": get_is_night_across_cells(cell_ids, end_time)}
@@ -60,7 +66,5 @@ async def infer(cell_ids: List[str], get_is_night: bool = Query(True)):
 
 @router.get("/version", tags=["version"])
 async def version():
-    import json
-
     model_metadata = Path(__file__).parent.parent / "internal" / "model.json"
     return json.loads(model_metadata.read_text())
